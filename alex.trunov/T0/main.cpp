@@ -1,6 +1,6 @@
 #include <iostream>
 
-int main(){
-	std::cout << "alex.trunov\n";
+int main() {
+	std::cout << "\n not work \nalex.trunov\n";
 	return 0;
 }
