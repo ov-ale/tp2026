@@ -17,6 +17,10 @@ public:
     void move(double dx, double dy) override;
     void scale(double factor) override;
     std::string getName() const override;
+
+    Point getAverageCenter() const;
+    std::pair<Point, Point> getBounds() const override;
+    void print(std::ostream& stream) const override;
 };
 
 #endif // COMPOSITE_SHAPE_H

@@ -16,7 +16,9 @@ public:
     void move(double dx, double dy) override;
     void scale(double factor) override;
     std::string getName() const override;
+
     std::pair<Point, Point> getBounds() const override;
+    void print(std::ostream& stream) const override;
 };
 
 #endif // RECTANGLE_H

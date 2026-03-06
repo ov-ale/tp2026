@@ -39,3 +39,11 @@ std::string Rectangle::getName() const {
 std::pair<Point, Point> Rectangle::getBounds() const {
     return { bottomLeft, topRight };
 }
+
+void Rectangle::print(std::ostream& stream) const {
+    Point center = getCenter();
+    stream << "[";
+    stream << getName() << ", ";
+    stream << "(" << center.x << ", " << center.y << ")" << ", ";
+    stream << getArea() << "]";
+}

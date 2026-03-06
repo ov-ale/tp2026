@@ -46,3 +46,11 @@ std::pair<Point, Point> RectangularTrapezoid::getBounds() const {
         Point(bottomLeft.x + maxBase, bottomLeft.y + height)
     );
 }
+
+void RectangularTrapezoid::print(std::ostream& stream) const {
+    Point center = getCenter();
+    stream << "[";
+    stream << getName() << ", ";
+    stream << "(" << center.x << ", " << center.y << ")" << ", ";
+    stream << getArea() << "]";
+}

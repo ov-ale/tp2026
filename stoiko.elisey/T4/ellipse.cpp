@@ -30,7 +30,15 @@ std::string Ellipse::getName() const {
 
 std::pair<Point, Point> Ellipse::getBounds() const {
     return {
-        Point(center.x - r1, center.y - r2),
-        Point(center.x + r1, center.y + r2)
+        Point(center.x - r2, center.y - r1),
+        Point(center.x + r2, center.y + r1)
     };
+}
+
+void Ellipse::print(std::ostream& stream) const {
+    Point center = getCenter();
+    stream << "[";
+    stream << getName() << ", ";
+    stream << "(" << center.x << ", " << center.y << ")" << ", ";
+    stream << getArea() << "]";
 }
