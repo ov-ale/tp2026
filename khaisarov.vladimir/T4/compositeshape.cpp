@@ -40,8 +40,9 @@ void CompositeShape::scale(double factor)
     Point commonCenter = getCenter();
     for (size_t i = 0; i < shapes.size(); ++i)
     {
-        double dx = (shapes[i]->getCenter().x - commonCenter.x) * (factor - 1);
-        double dy = (shapes[i]->getCenter().y - commonCenter.y) * (factor - 1);
+        Point shapeCenter = shapes[i]->getCenter();
+        double dx = (shapeCenter - commonCenter.x) * (factor - 1);
+        double dy = (shapeCenter - commonCenter.y) * (factor - 1);
         shapes[i]->move(dx, dy);
         shapes[i]->scale(factor);
     }
