@@ -25,8 +25,8 @@ void Ellipse::move(double dx, double dy)
 
 void Ellipse::scale(double factor)
 {
-	radiusVer += factor;
-	radiusHor += factor;
+	radiusVer = radiusVer * factor;
+	radiusHor = radiusHor * factor;
 }
 
 void Ellipse::print(std::ostream& os) const

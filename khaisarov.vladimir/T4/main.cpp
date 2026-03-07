@@ -2,43 +2,77 @@
 #include "rectangle.h"
 #include "ellipse.h"
 #include <iostream>
+#include <vector>
 #include "recttrapezoid.h"
 #include "compositeshape.h"
 
+
+template<class T>
+void fillContainer(std::vector<std::unique_ptr<Shape>>& cont, T shape)
+{
+    cont.push_back(std::make_unique<T>(std::move(shape)));
+}
+
+void scaleInContainer(std::vector<std::unique_ptr<Shape>>& cont, int factor)
+{
+    if (cont.empty())
+    {
+        std::cout << "Container is empty, nothing to scale." << std::endl;
+    }
+    else
+    {
+        for (int i = 0; i < cont.size(); ++i)
+        {
+            cont[i]->scale(factor);
+        }
+    }
+}
+
+void printCont(const std::vector<std::unique_ptr<Shape>>& cont)
+{
+    if (cont.empty())
+    {
+        std::cout << "Container is empty, nothing to print." << std::endl;
+    }
+    else
+    {
+        for (int i = 0; i < cont.size(); ++i)
+        {
+            std::cout << *cont[i] << std::endl;
+        }
+    }
+}
+
 int main()
 {
+    std::vector<std::unique_ptr<Shape>> container;
     std::cout << "before scaling:\n";
     Point pr1(1, 1);
     Point pr2(-2, -2);
     Rectangle r1(pr1, pr2);
+    fillContainer(container, r1);
+
     Rectangle r2(Point(2, 3), Point(-3, -5));
-    std::cout << r1 << " " << r2 << std::endl;
+    fillContainer(container, r2);
 
     Point pe(0, 0);
     Ellipse e1(pe, 3, 4);
-    std::cout << e1 << std::endl;
+    fillContainer(container, e1);
 
     Point prt(1, 1);
     RectTrapezoid rt(prt, 4, 5, 3);
-    std::cout << rt << std::endl;
+    fillContainer(container, rt);
 
-    r1.scale(2);
-    r2.scale(2);
-    e1.scale(2);
-    rt.scale(2);
 
     CompositeShape cs1;
     cs1.add(std::make_unique<RectTrapezoid>(Point(1,1), 4, 5, 3));
     cs1.add(std::make_unique<Ellipse>(Point(2, 2), 3, 4));
     cs1.add(std::make_unique<Rectangle>(Point(0, 0), Point(10, 10)));
+    fillContainer(container, std::move(cs1));
 
-    std::cout << cs1 << std::endl;
+    printCont(container);
 
-    cs1.scale(2); 
-    std::cout << "after scaling:\n";
+    scaleInContainer(container, 2);
 
-    std::cout << r1 << std::endl;
-    std::cout << e1 << std::endl;
-    std::cout << rt << std::endl;
-    std::cout << cs1 << std::endl;
+    printCont(container);
 }
