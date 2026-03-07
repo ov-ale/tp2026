@@ -3,7 +3,7 @@
 
 #include "point.h"
 #include "shape.h"
-#include <string.h>
+#include <string>
 
 class RectangularTrapezoid : public Shape {
 private:
