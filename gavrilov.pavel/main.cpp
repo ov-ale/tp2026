@@ -1,6 +1,6 @@
 #include <iostream>
 
 int main() {
-    std::cout << "stoiko.elisey\n";
+    std::cout << "gavrilov.pavel" << std::endl;
     return 0;
 }
