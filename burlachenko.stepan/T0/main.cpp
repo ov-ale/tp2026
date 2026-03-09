@@ -2,6 +2,6 @@
 
 int main()
 {
-    std::cout << "burlachenko.stepan/T0\n";
+    std::cout << "burlachenko.stepan\n";
     return 0;
 }
