@@ -19,4 +19,4 @@ public:
     virtual double getPerimeter() const = 0;
 };
 
-#endif 
+#endif

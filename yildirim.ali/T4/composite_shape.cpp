@@ -17,7 +17,7 @@ void CompositeShape::getBoundingBox(Point& min, Point& max) const {
     double maxY = std::numeric_limits<double>::lowest();
 
     for (const auto& shape : shapes) {
-        Point center = shape->getCenter();  
+        Point center = shape->getCenter();
         minX = std::min(minX, center.x);
         minY = std::min(minY, center.y);
         maxX = std::max(maxX, center.x);
