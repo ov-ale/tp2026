@@ -61,7 +61,6 @@ int main() {
                     std::cerr << "Error: No shapes to scale\n";
                     return 1;
                 }
-                
                 bool hasComp = false;
                 for (const auto& s : shapes) {
                     if (dynamic_cast<CompositeShape*>(s.get())) {
@@ -77,7 +76,6 @@ int main() {
                     shapes.pop_back();
                     shapes.push_back(comp);
                 }
-
                 for (const auto& s : shapes) {
                     printShape(*s);
                 }
