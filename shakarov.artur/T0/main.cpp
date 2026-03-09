@@ -2,6 +2,6 @@
 
 int main()
 {
-    std::cout << "shakarov.artur" << sdt::endl;
+    std::cout << "shakarov.artur" << std::endl;
     return 0;
 }
