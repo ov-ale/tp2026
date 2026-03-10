@@ -7,6 +7,7 @@
 #include "ellipse.h"
 #include "rectangular_trapezoid.h"
 #include "composite_shape.h"
+#include "point.h"
 
 void printInfo(const std::vector<std::unique_ptr<Shape>>& shapes) {
     std::cout << std::fixed << std::setprecision(2);

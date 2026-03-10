@@ -31,7 +31,6 @@ std::pair<Point, Point> CompositeShape::getBounds() const
     std::pair<Point, Point> firstFrame = shapes_[0]->getBounds();
     double minX = firstFrame.first.x;
     double minY = firstFrame.first.y;
-
     double maxX = firstFrame.second.x;
     double maxY = firstFrame.second.y;
 
