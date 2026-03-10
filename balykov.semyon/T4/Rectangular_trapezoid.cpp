@@ -1,9 +1,9 @@
 #include "rectangular_trapezoid.h"
 #include <iostream>
 #include <string>
-Rectangular_trapezoid::Rectangular_trapezoid(const Point& bl, 
-    double lowerBase, double upperBase, double height) 
-    : bottomLeft(bl), lowerBase_(lowerBase), 
+Rectangular_trapezoid::Rectangular_trapezoid(const Point& bl,
+    double lowerBase, double upperBase, double height)
+    : bottomLeft(bl), lowerBase_(lowerBase),
     upperBase_(upperBase), height_(height) {}
 
 double Rectangular_trapezoid::getArea() const {
