@@ -46,5 +46,11 @@ int main() {
     std::cout << "\n--- after ---\n";
     printInfo(shapes);
 
+    std::string in;
+    if (!(std::cin >> in)) {
+        std::cerr << "ERROR: No input provided!\n";
+        return 1;
+    }
+
     return 0;
 }
