@@ -11,7 +11,6 @@ Point Ellipse::getCenter() const {
 }
 void Ellipse::move(double dx, double dy) {
     center_.x += dx;
-
     center_.y += dy;
 }
 void Ellipse::scale(double factor) {

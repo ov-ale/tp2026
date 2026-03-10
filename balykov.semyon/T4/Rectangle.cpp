@@ -17,7 +17,6 @@ Point Rectangle::getCenter() const {
 void Rectangle::move(double dx, double dy) {
     bottomLeft.x += dx;
     bottomLeft.y += dy;
-
     topRight.x += dx;
     topRight.y += dy;
 }
