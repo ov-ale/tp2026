@@ -32,8 +32,8 @@ void printAllShapes(const std::vector<std::unique_ptr<Shape>>& shapes, const std
 }
 
 int main() {
-     if (std::cin.peek() == EOF) {
-        std::cerr << "No input" << std::endl;
+    if (std::cin.peek() == EOF) {
+        std::cout << "No input" << std::endl;
         return 1;
     }
 
