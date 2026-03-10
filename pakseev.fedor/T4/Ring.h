@@ -9,11 +9,11 @@ class Ring : public Shape {
 public:
     Ring() = delete;
     Ring(const Point& center, double radOut, double radIn) :
-        center_(center), 
-        radiusIn_(radIn), 
+        center_(center),
+        radiusIn_(radIn),
         radiusOut_(radOut) {
             if (radOut <= radIn) {
-                throw std::invalid_argument("ERROR: Outer radius must be greater than inner radius");
+                throw std::invalid_argument("ERROR: Outer radius must be greater than in radius");
             }
             if (radIn < 0) {
                 throw std::invalid_argument("ERROR: Radius cannot be negative");
@@ -22,10 +22,10 @@ public:
     ~Ring() override = default;
 
     std::string getName() const override { return "Ring"; }
-    double getArea() const override { 
-        return ((M_PI * radiusOut_ * radiusOut_) - (M_PI * radiusIn_ * radiusIn_)); 
+    double getArea() const override {
+        return ((M_PI * radiusOut_ * radiusOut_) - (M_PI * radiusIn_ * radiusIn_));
     }
-    Point getCenter() const override { 
+    Point getCenter() const override {
         return center_;
     }
 

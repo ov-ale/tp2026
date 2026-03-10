@@ -11,10 +11,10 @@ typename std::enable_if_t<std::is_base_of<Shape, T>::value, void>
 print(const std::unique_ptr<T>& shp) {
     if (auto comp = dynamic_cast<CompositeShape*>(shp.get())) {
         std::cout   << "[" 
-                    << comp->getName() 
-                    << ", (" << comp->getCenter().x_ 
+                    << comp->getName()
+                    << ", (" << comp->getCenter().x_
                     << ", " 
-                    << comp->getCenter().y_ << ")" 
+                    << comp->getCenter().y_ << ")"
                     << ", " << comp->getArea() << "]" << std::endl;
 
         for (const auto& shape : comp->getVec()) {
@@ -24,10 +24,10 @@ print(const std::unique_ptr<T>& shp) {
         return;
     }
 
-    std::cout   << "[" << shp->getName() 
-                << ", (" << shp->getCenter().x_ 
+    std::cout   << "[" << shp->getName()
+                << ", (" << shp->getCenter().x_
                 << ", " 
-                << shp->getCenter().y_ << ")" 
+                << shp->getCenter().y_ << ")"
                 << ", " << shp->getArea();
     
     std::cout << "]" << std::endl;
@@ -83,4 +83,3 @@ int main() {
     }
     return 0;
 }
-

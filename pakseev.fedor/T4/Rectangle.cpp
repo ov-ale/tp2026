@@ -15,4 +15,5 @@ void Rectangle::scale(double factor) {
     tr_.y_ = center.y_ + (tr_.y_ - center.y_) * factor;
     width_ *= factor;
     height_ *= factor;
-}   
+
+}
