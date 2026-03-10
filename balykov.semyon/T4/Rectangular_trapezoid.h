@@ -11,7 +11,8 @@ private:
     double upperBase_;
     double height_;
 public:
-    Rectangular_trapezoid(const Point& bl, double lowerBase, double upperBase, double height);
+    Rectangular_trapezoid(const Point& bl, double lowerBase, 
+        double upperBase, double height);
     double getArea() const override;
     Point getCenter() const override;
     void move(double dx, double dy) override;

@@ -6,6 +6,7 @@ struct Point {
     double y = 0.0;
 
     Point() = default;
-    Point(double x_val, double y_val) : x(x_val), y(y_val) {}
+    Point(double x_val, double y_val) 
+        : x(x_val), y(y_val) {}
 };
 #endif

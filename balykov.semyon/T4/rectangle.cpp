@@ -1,7 +1,8 @@
 #include "rectangle.h"
 #include <iostream>
 #include <string>
-Rectangle::Rectangle(const Point& bl, const Point& tr) : bottomLeft(bl), topRight(tr) {}
+Rectangle::Rectangle(const Point& bl, const Point& tr) : 
+    bottomLeft(bl), topRight(tr) {}
 
 double Rectangle::getArea() const {
     double width = topRight.x - bottomLeft.x;
@@ -14,10 +15,10 @@ Point Rectangle::getCenter() const {
     return Point(centerX, centerY);
 }
 void Rectangle::move(double dx, double dy) {
-    bottomLeft.x = bottomLeft.x + dx;
-    bottomLeft.y = bottomLeft.y + dy;
-    topRight.x = topRight.x + dx;
-    topRight.y = topRight.y + dy;
+    bottomLeft.x += dx;
+    bottomLeft.y += dy;
+    topRight.x += dx;
+    topRight.y += dy;
 }
 void Rectangle::scale(double factor) {
     Point center = getCenter();
