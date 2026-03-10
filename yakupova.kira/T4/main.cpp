@@ -32,6 +32,11 @@ void printAllShapes(const std::vector<std::unique_ptr<Shape>>& shapes, const std
 }
 
 int main() {
+    if (std::cin.peek() == EOF) {
+        std::cerr << "Error: no input" << std::endl;
+        return 1;
+    }
+    
     std::vector<std::unique_ptr<Shape>> shapes;
 
     shapes.push_back(std::make_unique<Rectangle>(Point(0, 0), Point(4, 3)));
