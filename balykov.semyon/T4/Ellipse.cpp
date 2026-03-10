@@ -1,10 +1,12 @@
 #include "Ellipse.h"
 #include <iostream>
 #include <string>
+#include <cmath>
 Ellipse::Ellipse(const Point& center, double rx, double ry)
     : center_(center), rx_(rx), ry_(ry) {}
 double Ellipse::getArea() const {
-    return 3, 14 * rx_ * ry_;
+    const double PI = 3.14159265358979323846;
+    return PI * rx_ * ry_;
 }
 Point Ellipse::getCenter() const {
     return center_;
