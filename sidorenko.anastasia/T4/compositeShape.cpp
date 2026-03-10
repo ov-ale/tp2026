@@ -4,7 +4,10 @@
 
 void CompositeShape::addShape(std::unique_ptr<Shape> newShape)
 {
-    shapes.push_back(std::move(newShape));
+    if (newShape)
+    {
+        shapes.push_back(std::move(newShape));
+    }
 }
 
 std::pair<Point, Point> CompositeShape::getFrame() const

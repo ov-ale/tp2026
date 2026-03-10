@@ -24,19 +24,22 @@ void printInfo(const std::vector<std::unique_ptr<Shape>>& shapes)
                 << composite->getArea() << ":\n";
 
             const std::vector<std::unique_ptr<Shape>>& innerShapes = composite->getShapes();
-            for (size_t j = 0; j < innerShapes.size() - 1; ++j)
+            if (!innerShapes.empty())
             {
-                double icX = innerShapes[j]->getCenter().x;
-                double icY = innerShapes[j]->getCenter().y;
-                std::cout << "  " << innerShapes[j]->getName() << ", ("
-                    << icX << ", " << icY << "), "
-                    << innerShapes[j]->getArea() << "," << "\n";
+                for (size_t j = 0; j < innerShapes.size() - 1; ++j)
+                {
+                    double icX = innerShapes[j]->getCenter().x;
+                    double icY = innerShapes[j]->getCenter().y;
+                    std::cout << "  " << innerShapes[j]->getName() << ", ("
+                        << icX << ", " << icY << "), "
+                        << innerShapes[j]->getArea() << "," << "\n";
+                }
+                std::cout << "  " << innerShapes[innerShapes.size() - 1]->getName() << ", ("
+                    << innerShapes[innerShapes.size() - 1]->getCenter().x << ", " <<
+                    innerShapes[innerShapes.size() - 1]->getCenter().y << "), "
+                    << innerShapes[innerShapes.size() - 1]->getArea() << "\n";
+                std::cout << "]\n";
             }
-            std::cout << "  " << innerShapes[innerShapes.size() - 1]->getName() << ", ("
-                << innerShapes[innerShapes.size() - 1]->getCenter().x << ", " <<
-                innerShapes[innerShapes.size() - 1]->getCenter().y << "), "
-                << innerShapes[innerShapes.size() - 1]->getArea() << "\n";
-            std::cout << "]\n";
         }
         else
         {
@@ -71,7 +74,7 @@ int main()
     }
     for (size_t i = 0; i < shapes.size(); ++i)
     {
-        shapes[i]->scale(2.0);
+        shapes[i]->scale(factor);
     }
     printInfo(shapes);
     return 0;

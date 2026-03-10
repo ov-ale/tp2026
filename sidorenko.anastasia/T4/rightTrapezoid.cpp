@@ -30,11 +30,11 @@ void RightTrapezoid::move(double dx, double dy)
 void RightTrapezoid::scale(double factor)
 {
     Point center = getCenter();
+    bottomLeft.x = center.x + (bottomLeft.x - center.x) * factor;
+    bottomLeft.y = center.y + (bottomLeft.y - center.y) * factor;
     bottomWidth *= factor;
     topWidth *= factor;
     height *= factor;
-    bottomLeft.x = center.x + (bottomLeft.x - center.x) * factor;
-    bottomLeft.y = center.y + (bottomLeft.y - center.y) * factor;
 
 }
 std::string RightTrapezoid::getName() const
