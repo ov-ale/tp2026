@@ -18,3 +18,4 @@ public:
     std::pair<Point, Point> getBounds() const override;
 };
 #endif
+
