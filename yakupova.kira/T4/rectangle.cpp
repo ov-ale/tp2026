@@ -11,7 +11,7 @@ double Rectangle::getArea() const {
 }
 
 Point Rectangle::getCenter() const {
-    return Point((bottomLeft.x + topRight.x) / 2, 
+    return Point((bottomLeft.x + topRight.x) / 2,
                  (bottomLeft.y + topRight.y) / 2);
 }
 
@@ -24,7 +24,7 @@ void Rectangle::move(double dx, double dy) {
 
 void Rectangle::scale(double factor) {
     Point center = getCenter();
-    
+
     // Масштабируем относительно центра
     bottomLeft.x = center.x + (bottomLeft.x - center.x) * factor;
     bottomLeft.y = center.y + (bottomLeft.y - center.y) * factor;

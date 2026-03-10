@@ -10,8 +10,8 @@
 void printShapeInfo(const Shape* shape) {
     Point center = shape->getCenter();
     std::cout << std::fixed << std::setprecision(2);
-    std::cout << "[" << shape->getName() << ", (" 
-              << center.x << ", " << center.y << "), " 
+    std::cout << "[" << shape->getName() << ", ("
+              << center.x << ", " << center.y << "), "
               << shape->getArea() << "]";
 
     const CompositeShape* composite = dynamic_cast<const CompositeShape*>(shape);
@@ -43,7 +43,7 @@ int main() {
     composite->addShape(std::make_unique<Rectangle>(Point(10, 10), Point(15, 13)));
     composite->addShape(std::make_unique<Ellipse>(Point(12, 15), 2, 1.5));
     composite->addShape(std::make_unique<Rhombus>(Point(18, 12), 4, 3));
-    
+
     shapes.push_back(std::move(composite));
 
     shapes.push_back(std::make_unique<Rectangle>(Point(5, 8), Point(7, 10)));
@@ -55,6 +55,6 @@ int main() {
     }
 
     printAllShapes(shapes, "Фигуры после масштабирования (x2)");
-    
+
     return 0;
 }
