@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 #include <ostream>
-#include "point.h"
+#include "Point.h"
 
 class Shape {
 public:

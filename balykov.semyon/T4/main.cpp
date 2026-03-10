@@ -3,11 +3,12 @@
 #include <vector>
 #include <memory>
 
-#include "rectangle.h"
-#include "ellipse.h"
-#include "rectangular_trapezoid.h"
-#include "composite_shape.h"
-#include "point.h"
+#include "Rectangle.h"
+#include "Ellipse.h"
+#include "Rectangular_trapezoid.h"
+#include "Composite_shape.h"
+#include "Point.h"
+#include "Shape.h"
 
 void printInfo(const std::vector<std::unique_ptr<Shape>>& shapes) {
     std::cout << std::fixed << std::setprecision(2);

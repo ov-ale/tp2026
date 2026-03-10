@@ -1,4 +1,4 @@
-#include "rectangle.h"
+#include "Rectangle.h"
 #include <iostream>
 #include <string>
 Rectangle::Rectangle(const Point& bl, const Point& tr) :

@@ -1,4 +1,4 @@
-#include "rectangular_trapezoid.h"
+#include "Rectangular_trapezoid.h"
 #include <iostream>
 #include <string>
 Rectangular_trapezoid::Rectangular_trapezoid(const Point& bl,
