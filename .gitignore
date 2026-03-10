@@ -1,14 +1,22 @@
-# Local configuration
-.boost_location
-# Built files
-out
-# Emacs temporaries
-\#*\#
-.\#*
-# Various backups
-*.bak
-*~
-# Test configuration
-.config
-.config.cache
+# Compiled files
+*.o
+*.obj
+*.exe
+*.out
 
+# Visual Studio
+.vs/
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.sln
+Debug/
+Release/
+x64/
+x86/
+
+# IDE
+*.user
+*.suo
+*.swp
+*.swo

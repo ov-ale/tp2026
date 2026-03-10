@@ -1,6 +1,7 @@
 #ifndef SHAPE_H
 #define SHAPE_H
-#include "Point.h"
+
+#include "point.h"
 #include <string>
 
 class Shape {
@@ -14,5 +15,5 @@ public:
     virtual void getBoundingBox(Point& bl, Point& tr) const = 0;
     virtual void print() const;
 };
-#endif
 
+#endif

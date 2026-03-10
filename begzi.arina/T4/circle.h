@@ -1,12 +1,14 @@
 #ifndef CIRCLE_H
 #define CIRCLE_H
-#include "Shape.h"
+#include "shape.h"
 
 class Circle : public Shape {
-    Point pos;
-    double r;
+private:
+    Point center;
+    double radius;
+
 public:
-    Circle(Point center, double radius);
+    Circle(Point c, double r);
     double getArea() const override;
     Point getCenter() const override;
     void move(double dx, double dy) override;
@@ -14,5 +16,5 @@ public:
     std::string getName() const override;
     void getBoundingBox(Point& bl, Point& tr) const override;
 };
-#endif
 
+#endif
