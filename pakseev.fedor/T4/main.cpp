@@ -63,6 +63,17 @@ int main() {
         shapes.push_back(std::make_unique<Rectangle>(p5, p3));
         shapes.push_back(std::make_unique<Square>(p4, 3.5));
 
+        double factor;
+        if (!(std::cin >> factor)) {
+            std::cerr << "ERROR: Factor cin failed" << std::endl;
+            return 1;
+        }
+
+        if (factor <= 0.0) {
+            std::cerr << "ERROR: Factor must be positive" << std::endl;
+            return 1;
+        }
+
         std::cout << "\n------BEFORE SCALE------" << std::endl;
         //printing
         for (const auto& i : shapes) {
@@ -72,7 +83,7 @@ int main() {
         std::cout << "\n------AFTER SCALE------" << std::endl;
 
         for (const auto& i : shapes) {
-            i->scale(2.0);
+            i->scale(factor);
         }
 
         for (const auto& i : shapes) {
@@ -81,8 +92,9 @@ int main() {
 
         std::cout << std::endl;
     } catch (const std::exception& e) {
-        std::cerr << e.what() << std::endl;
+        std::cerr << "ERROR:" << e.what() << std::endl;
         return 1;
     }
+
     return 0;
 }
