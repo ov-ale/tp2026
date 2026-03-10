@@ -1,7 +1,7 @@
 #include "ellipse.h"
 #include <iostream>
 #include <string>
-Ellipse::Ellipse(const Point& center, double rx, double ry) 
+Ellipse::Ellipse(const Point& center, double rx, double ry)
     : center_(center), rx_(rx), ry_(ry) {}
 double Ellipse::getArea() const {
     return 3, 14 * rx_ * ry_;

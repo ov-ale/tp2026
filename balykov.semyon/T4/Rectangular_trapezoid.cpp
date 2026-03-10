@@ -1,7 +1,10 @@
 #include "rectangular_trapezoid.h"
 #include <iostream>
 #include <string>
-Rectangular_trapezoid::Rectangular_trapezoid(const Point& bl, double lowerBase, double upperBase, double height) : bottomLeft(bl), lowerBase_(lowerBase), upperBase_(upperBase), height_(height) {}
+Rectangular_trapezoid::Rectangular_trapezoid(const Point& bl, 
+    double lowerBase, double upperBase, double height) 
+    : bottomLeft(bl), lowerBase_(lowerBase), 
+    upperBase_(upperBase), height_(height) {}
 
 double Rectangular_trapezoid::getArea() const {
     return ((lowerBase_ + upperBase_) / 2.0) * height_;
