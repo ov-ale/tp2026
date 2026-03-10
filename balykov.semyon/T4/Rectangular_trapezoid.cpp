@@ -26,6 +26,7 @@ void Rectangular_trapezoid::move(double dx, double dy) {
 void Rectangular_trapezoid::scale(double factor) {
     lowerBase_ *= factor;
     upperBase_ *= factor;
+
     height_ *= factor;
     Point center = getCenter();
     bottomLeft.x = center.x + (bottomLeft.x - center.x) * factor;

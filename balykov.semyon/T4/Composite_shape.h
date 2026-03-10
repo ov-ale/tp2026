@@ -16,6 +16,7 @@ public:
     ~CompositeShape() = default;
 
     void addShape(std::unique_ptr<Shape> shape);
+
     double getArea() const override;
     Point getCenter() const override;
     void move(double dx, double dy) override;
