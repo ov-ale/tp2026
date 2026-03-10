@@ -2,7 +2,7 @@
 #define ELLIPSE_H
 #include <iostream>
 #include <string>
-#include "shape.h"
+#include "Shape.h"
 class Ellipse : public Shape {
 private:
     Point center_;

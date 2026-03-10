@@ -2,7 +2,7 @@
 #define RECTANGLE_H
 #include <iostream>
 #include <string>
-#include "shape.h"
+#include "Shape.h"
 class Rectangle : public Shape {
 private:
     Point bottomLeft;

@@ -1,6 +1,6 @@
 #ifndef COMPOSITE_SHAPE_H
 #define COMPOSITE_SHAPE_H
-#include "shape.h"
+#include "Shape.h"
 #include <vector>
 #include <memory>
 #include <string>

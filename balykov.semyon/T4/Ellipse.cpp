@@ -1,4 +1,4 @@
-#include "ellipse.h"
+#include "Ellipse.h"
 #include <iostream>
 #include <string>
 Ellipse::Ellipse(const Point& center, double rx, double ry)
