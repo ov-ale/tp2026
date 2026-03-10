@@ -1,5 +1,5 @@
 #include <iostream>
 int main(){
-	std::cout<<"korolev.ilia\n";
-	return 0;
+    std::cout<<"korolev.ilia\n";
+    return 0;
 }
