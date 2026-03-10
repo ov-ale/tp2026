@@ -3,7 +3,7 @@ project(GeometricShapes)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(GeometricShapes 
+add_executable(GeometricShapes
     main.cpp
     rectangle.cpp
     ellipse.cpp

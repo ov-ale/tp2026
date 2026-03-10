@@ -12,12 +12,12 @@ Point CompositeShape::calculateBoundingBoxCenter() const {
     if (shapes.empty()) {
         return Point(0, 0);
     }
-    
+
     double minX = std::numeric_limits<double>::max();
     double minY = std::numeric_limits<double>::max();
     double maxX = std::numeric_limits<double>::lowest();
     double maxY = std::numeric_limits<double>::lowest();
-    
+
     for (const auto& shape : shapes) {
         Point center = shape->getCenter();
         minX = std::min(minX, center.x);
@@ -25,7 +25,7 @@ Point CompositeShape::calculateBoundingBoxCenter() const {
         maxX = std::max(maxX, center.x);
         maxY = std::max(maxY, center.y);
     }
-    
+
     return Point((minX + maxX) / 2, (minY + maxY) / 2);
 }
 
@@ -49,7 +49,7 @@ void CompositeShape::move(double dx, double dy) {
 
 void CompositeShape::scale(double factor) {
     Point center = getCenter();
-    
+
     for (auto& shape : shapes) {
         Point shapeCenter = shape->getCenter();
 
@@ -69,10 +69,10 @@ void CompositeShape::printComponents() const {
     for (const auto& shape : shapes) {
         Point center = shape->getCenter();
         std::cout << std::fixed << std::setprecision(2);
-        std::cout << "  " << shape->getName() << ", (" 
-                  << center.x << ", " << center.y << "), " 
+        std::cout << "  " << shape->getName() << ", ("
+                  << center.x << ", " << center.y << "), "
                   << shape->getArea();
-        
+
         if (shape != shapes.back()) {
             std::cout << ",";
         }
