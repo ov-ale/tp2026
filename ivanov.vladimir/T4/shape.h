@@ -6,6 +6,7 @@
 
 class Shape {
 public:
+    Shape() = default;
     virtual ~Shape() = default;
     Shape(const Shape&) = default;
     Shape(Shape&&) = default;
