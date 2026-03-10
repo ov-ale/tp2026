@@ -1,5 +1,7 @@
 #include "CompositeShape.h"
 
+#include <stdexcept>
+
 Point CompositeShape::getCenter() const {
     if (vec_.empty()) {
         return Point(0.0, 0.0);
@@ -33,6 +35,10 @@ void CompositeShape::move(double dx, double dy) {
 }
 
 void CompositeShape::scale(double factor) {
+    if (factor < 0.0) {
+        throw std::invalid_argument("ERROR: Factor should be > 0");
+    }
+
     Point centerComp = getCenter();
     for (const auto& i : vec_) {
         Point shapeCenter = i->getCenter();

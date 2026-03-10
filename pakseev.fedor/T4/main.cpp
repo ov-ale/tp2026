@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <type_traits>
+#include <iomanip>
 
 template<class T>
 typename std::enable_if_t<std::is_base_of<Shape, T>::value, void>
@@ -15,7 +16,7 @@ print(const std::unique_ptr<T>& shp) {
                     << ", (" << comp->getCenter().x_
                     << ", "
                     << comp->getCenter().y_ << ")"
-                    << ", " << comp->getArea() << "]" << std::endl;
+                    << ", " << comp->getArea() << " :" << std::endl;
 
         for (const auto& shape : comp->getVec()) {
             std::cout << "    ";
@@ -35,6 +36,7 @@ print(const std::unique_ptr<T>& shp) {
 
 int main() {
     try {
+        std::cout << std::fixed << std::setprecision(2);
         //preparing & testing
         Point p1(1.0, 1.5);
         Point p2(2.0, 8.3);
@@ -77,8 +79,9 @@ int main() {
             print(i);
         }
 
+        std::cout << std::endl;
     } catch (const std::exception& e) {
-        std::cout << e.what() << std::endl;
+        std::cerr << e.what() << std::endl;
         return 1;
     }
     return 0;
