@@ -9,7 +9,7 @@ void CompositeShape::addShape(std::unique_ptr<Shape> shape)
   shapes_.push_back(std::move(shape));
 }
 
-double CompositeShape::getArea() const 
+double CompositeShape::getArea() const
 {
   double sum=0;
   size_t size=shapes_.size();
@@ -19,7 +19,7 @@ double CompositeShape::getArea() const
   return sum;
 }
 
-Point CompositeShape::getCenter() const 
+Point CompositeShape::getCenter() const
 {
   size_t size=shapes_.size();
   if(size==0){
@@ -70,7 +70,7 @@ void CompositeShape::scale(double factor)
     }
 }
 
-std::string CompositeShape::getName() const 
+std::string CompositeShape::getName() const
 {
     return "CompositeShape";
 }

@@ -15,7 +15,7 @@ public:
 private:
     Point center_;
     double radiusBig_;
-    double radiusSmall_; 
+    double radiusSmall_;
 };
 
 #endif // __RING_H__

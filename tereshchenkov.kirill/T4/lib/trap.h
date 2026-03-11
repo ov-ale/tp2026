@@ -16,7 +16,7 @@ private:
     Point bottomLeft_;
     double topLenght_;
     double bottomLenght_;
-    double height_; 
+    double height_;
 };
 
 #endif // __TRAP_H__

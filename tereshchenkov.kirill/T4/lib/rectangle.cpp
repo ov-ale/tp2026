@@ -12,7 +12,7 @@ double Rectangle::getArea() const
   return width * height;
 }
 
-Point Rectangle::getCenter() const 
+Point Rectangle::getCenter() const
 {
   double cx=(topRight.x_+bottomLeft.x_)/2;
   double cy=(topRight.y_+bottomLeft.y_)/2;
@@ -41,7 +41,7 @@ void Rectangle::scale(double factor)
   bottomLeft=center+rBot;
 }
 
-std::string Rectangle::getName() const 
+std::string Rectangle::getName() const
 {
   return "Rectangle";
 }

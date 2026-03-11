@@ -1,4 +1,4 @@
-#include <stdexcept> 
+#include <stdexcept>
 
 #include "ring.h"
 
@@ -11,12 +11,12 @@ Ring::Ring(const Point& center, const double r1,const double r2) : center_(cente
   }
 }
 
-double Ring::getArea() const 
+double Ring::getArea() const
 {
   return (pi*(radiusBig_*radiusBig_-radiusSmall_*radiusSmall_));
 }
 
-Point Ring::getCenter() const 
+Point Ring::getCenter() const
 {
   return center_;
 }
@@ -32,7 +32,7 @@ void Ring::scale(double factor)
   radiusSmall_*=factor;
 }
 
-std::string Ring::getName() const 
+std::string Ring::getName() const
 {
   return "Ring";
 }
