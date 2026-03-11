@@ -24,30 +24,30 @@ int main(int argc, char* argv[]) {
         if (argc > 1) {
             if (argc == 3 && std::strcmp(argv[1], "--scale") == 0) {
                 double scaleFactor = std::stod(argv[2]);
-                
+
                 Rectangle rect(Point(0, 0), Point(4, 3));
                 Ring ring(Point(5, 5), 5.0, 2.0);
                 Rhombus rhombus(Point(10, 10), 6.0, 4.0);
-                
+
                 std::cout << "Creating shapes" << std::endl;
                 std::cout << "\nShape information BEFORE scaling" << std::endl;
-                
+
                 std::cout << "\nIndividual shapes:" << std::endl;
                 printShapeInfo(rect);
                 printShapeInfo(ring);
                 printShapeInfo(rhombus);
-                
+
                 rect.scale(scaleFactor);
                 ring.scale(scaleFactor);
                 rhombus.scale(scaleFactor);
-                
+
                 std::cout << "\nShape information AFTER scaling by " << scaleFactor << std::endl;
-                
+
                 std::cout << "\nIndividual shapes:" << std::endl;
                 printShapeInfo(rect);
                 printShapeInfo(ring);
                 printShapeInfo(rhombus);
-                
+
                 return 0;
             } else {
                 std::cerr << "Error: Invalid arguments" << std::endl;
