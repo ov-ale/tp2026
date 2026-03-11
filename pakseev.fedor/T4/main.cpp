@@ -50,7 +50,7 @@ int main() {
         auto sqr = std::make_unique<Square>(p1, 2.0);
         auto sqr2 = std::make_unique<Square>(p5, 3.0);
         auto ring = std::make_unique<Ring>(p2, 5.0, 2.0);
-        auto rec = std::make_unique<Rectangle>(p3, p6);
+        auto rec = std::make_unique<Rectangle>(p6, p3);
         compShape->push_back(std::move(sqr2));
         compShape->push_back(std::move(ring));
         compShape->push_back(std::move(rec));
