@@ -8,18 +8,19 @@
 class CompositeShape : public Shape {
 private:
     std::vector<std::unique_ptr<Shape>> shapes;
-
+    
     Point calculateBoundingBoxCenter() const;
-
+    
 public:
     void addShape(std::unique_ptr<Shape> shape);
-
+    
     double getArea() const override;
     Point getCenter() const override;
     void move(double dx, double dy) override;
     void scale(double factor) override;
     std::string getName() const override;
-
+    void getBounds(double& minX, double& minY, double& maxX, double& maxY) const override;
+    
     void printInfo() const;
 };
 
