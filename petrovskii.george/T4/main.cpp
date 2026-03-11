@@ -24,7 +24,7 @@ void printCompositeInfo(const CompositeShape& composite) {
         }
         std::cout << std::endl;
     }
-    
+
     std::cout << "]" << std::endl;
 }
 
@@ -36,7 +36,7 @@ void printAllShapes(const std::vector<std::unique_ptr<Shape>>& shapes) {
             if (composite) {
                 printCompositeInfo(*composite);
             }
-        } 
+        }
         else {
             printShapeInfo(*shape);
             std::cout << std::endl;
@@ -47,7 +47,7 @@ void printAllShapes(const std::vector<std::unique_ptr<Shape>>& shapes) {
 int main() {
     try {
         std::vector<std::unique_ptr<Shape>> shapes;
-        
+
         std::cout << "Creating shapes..." << std::endl;
 
         shapes.push_back(std::make_unique<Rectangle>(Point(0, 0), Point(4, 3)));
@@ -60,27 +60,27 @@ int main() {
         composite->addShape(std::make_unique<Ellipse>(Point(5, 3), 1.5, 1));
         composite->addShape(std::make_unique<Square>(Point(2, 2), 1.5));
         shapes.push_back(std::move(composite));
-        
+
         std::cout << "Total shapes: " << shapes.size() << std::endl;
         std::cout << "======================================" << std::endl;
-        
+
         std::cout << "\nBEFORE SCALING (factor = 2.0):" << std::endl;
         std::cout << "======================================" << std::endl;
         printAllShapes(shapes);
-        
+
         std::cout << "\nScaling all shapes by factor 2.0..." << std::endl;
         for (auto& shape : shapes) {
             shape->scale(2.0);
         }
-        
+
         std::cout << "\nAFTER SCALING:" << std::endl;
         std::cout << "======================================" << std::endl;
         printAllShapes(shapes);
-        
+
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
         return 1;
     }
-    
+
     return 0;
 }
