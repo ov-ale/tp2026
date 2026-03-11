@@ -12,7 +12,6 @@ void printInfo(const std::vector<std::unique_ptr<Shape>>& shapes)
 {
     for (const auto& shape : shapes)
     {
-        // не выводим CompositeShape
         if (shape->getName() == "CompositeShape")
             continue;
 
