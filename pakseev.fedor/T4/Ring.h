@@ -10,8 +10,8 @@ public:
     Ring() = delete;
     Ring(const Point& center, double radOut, double radIn) :
         center_(center),
-        radiusIn_(radOut),
-        radiusOut_(radIn) { // changed order of initialization
+        radiusOut_(radOut),
+        radiusIn_(radIn) { // changed order of initialization
             if (radOut <= radIn) {
                 throw std::invalid_argument("ERROR: Outer radius must be greater than in radius");
             }
