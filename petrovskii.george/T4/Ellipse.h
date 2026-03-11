@@ -7,7 +7,7 @@
 #include "Shape.h"
 
 class Ellipse : public Shape {
-private: 
+private:
     Point center;
     double radiusX;
     double radiusY;
