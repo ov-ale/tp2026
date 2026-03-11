@@ -9,7 +9,7 @@ class Square : public Shape {
 public:
     Square() = delete;
     Square(const Point& bl, double size) : bl_(bl), size_(size) {
-        if (size_ < 0) {
+        if (size_ <= 0) { // changed condition
             throw std::invalid_argument("ERROR: Size cannot be less than 0");
         }
     }

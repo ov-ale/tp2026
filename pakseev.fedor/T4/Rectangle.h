@@ -3,10 +3,15 @@
 
 #include "Shape.h"
 
+#include <stdexcept>
+
 class Rectangle : public Shape {
 public:
     Rectangle() = delete;
     Rectangle(const Point& bl, const Point& tr) : bl_(bl), tr_(tr) {
+        if (bl_.x_ > tr_.x_ || bl_.y_ > tr_.y_) { // added validation check condition
+            throw std::invalid_argument("ERROR: Bottom left point cant be > top right point");
+        }
         width_ = tr_.x_ - bl_.x_;
         height_ = tr_.y_ - bl_.y_;
     };
