@@ -24,7 +24,7 @@ void printShape(const Shape& s) {
             std::cout << children[i]->getName() << ", ("
                 << std::fixed << std::setprecision(2) << cc.x << ", " << cc.y
                 << "), " << children[i]->getArea();
-            if (i != children.size() - 1) std::cout << ","; 
+            if (i != children.size() - 1) std::cout << ",";
         }
     }
     std::cout << "\n";
