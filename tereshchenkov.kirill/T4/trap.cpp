@@ -30,6 +30,9 @@ void Trap::move(double dx, double dy)
 
 void Trap::scale(double factor)
 {
+  if (factor<=0) {
+    throw std::invalid_argument("factor must be > 0");
+  }
   Point center = getCenter();
   double halfTop= topLenght_/2;
   double halfBottom= bottomLenght_/2;

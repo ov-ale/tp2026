@@ -55,6 +55,9 @@ void CompositeShape::move(double dx, double dy)
 
 void CompositeShape::scale(double factor)
 {
+  if (factor<=0) {
+    throw std::invalid_argument("factor must be > 0");
+  }
   Point center = getCenter();
   size_t size=shapes_.size();
   for (size_t i=0;i<size;i++) {

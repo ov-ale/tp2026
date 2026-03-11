@@ -31,6 +31,9 @@ void Ring::move(double dx,double dy)
 
 void Ring::scale(double factor)
 {
+  if (factor<=0) {
+    throw std::invalid_argument("factor must be > 0");
+  }
   radiusBig_*=factor;
   radiusSmall_*=factor;
 }

@@ -10,6 +10,12 @@
 #include "complex.h"
 
 int main() {
+    double factor;
+    std::cin>>factor;
+    if(std::cin.fail()){
+        std::cerr << "Error: Invalid scale factor input" << std::endl;
+        return 1;
+    }
     try{
 
         std::vector<std::unique_ptr<Shape>> shapes;
@@ -30,8 +36,9 @@ int main() {
             std::cout << shapes[i]->getName() << ", ("<< shapes[i]->getCenter().x_ <<\
             "," << shapes[i]->getCenter().y_<< "), " << shapes[i]->getArea() << "\n";
         }
+
         for (size_t i = 0;i<size;i++) {
-            shapes[i]->scale(2.0);
+            shapes[i]->scale(factor);
         }
 
         for (size_t i = 0;i<size;i++) {

@@ -37,6 +37,9 @@ void Rectangle::move(double dx, double dy)
 
 void Rectangle::scale(double factor)
 {
+  if (factor<=0) {
+    throw std::invalid_argument("factor must be > 0");
+  }
   Point center=this->getCenter();
   Point rTop=topRight-center;
   Point rBot=bottomLeft-center;
