@@ -34,3 +34,10 @@ void Rectangle::scale(double factor) {
 std::string Rectangle::getName() const {
     return "RECTANGLE";
 }
+
+void Rectangle::getBounds(double& minX, double& minY, double& maxX, double& maxY) const {
+    minX = bottomLeft.x;
+    minY = bottomLeft.y;
+    maxX = topRight.x;
+    maxY = topRight.y;
+}

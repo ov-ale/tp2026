@@ -30,3 +30,10 @@ void Rhombus::scale(double factor) {
 std::string Rhombus::getName() const {
     return "RHOMBUS";
 }
+
+void Rhombus::getBounds(double& minX, double& minY, double& maxX, double& maxY) const {
+    minX = center.x - horizontalDiagonal / 2;
+    minY = center.y - verticalDiagonal / 2;
+    maxX = center.x + horizontalDiagonal / 2;
+    maxY = center.y + verticalDiagonal / 2;
+}
