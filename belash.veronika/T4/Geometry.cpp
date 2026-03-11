@@ -38,7 +38,7 @@ void printInfo(const std::vector<std::unique_ptr<Shape>>& shapes) {
     }
 }
 
-int main() {
+int main(int argc, char* argv[]) {
     std::vector<std::unique_ptr<Shape>> shapes;
 
     shapes.push_back(std::make_unique<Rectangle>(Point{ 0, 0 }, Point{ 2, 3 }));
@@ -52,14 +52,24 @@ int main() {
     composite->addShape(std::make_unique<Ellipse>(Point{ 4, 3 }, 1.0, 2.0));
     shapes.push_back(std::move(composite));
 
-    std::cout << "BEFORE SCALING:\n";
+    bool fullMode = false;
+    for (int i = 1; i < argc; ++i) {
+        if (std::string(argv[i]) == "--full") {
+            fullMode = true;
+            break;
+        }
+    }
+
     printInfo(shapes);
 
+    if (!fullMode) {
+        std::cerr << "Error: No input provided" << std::endl;
+        return 1;
+    }
+    std::cout << "\nAFTER SCALING:\n";
     for (size_t i = 0; i < shapes.size(); ++i) {
         shapes[i]->scale(2.0);
     }
-
-    std::cout << "\nAFTER SCALING:\n";
     printInfo(shapes);
 
     return 0;
