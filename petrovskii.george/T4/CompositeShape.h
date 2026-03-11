@@ -9,21 +9,21 @@
 #include "Shape.h"
 
 class CompositeShape : public Shape {
-private: 
+private:
     std::vector<std::unique_ptr<Shape>> shapes;
 
     Point calculateCenter() const;
 public:
     CompositeShape() = default;
-    
+
     CompositeShape(const CompositeShape&) = delete;
     CompositeShape& operator=(const CompositeShape&) = delete;
-    
+
     CompositeShape(CompositeShape&&) = default;
     CompositeShape& operator=(CompositeShape&&) = default;
-    
+
     ~CompositeShape() = default;
-    
+
     void addShape(std::unique_ptr<Shape> shape);
 
     const std::vector<std::unique_ptr<Shape>>& getShapes() const {

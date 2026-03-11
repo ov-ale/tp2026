@@ -20,6 +20,6 @@ public:
     void move(double dx, double dy) override;
     void scale(double fact) override;
     std::string getName() const override;
-} ; 
+} ;
 
 #endif // RECTANGLE_H
