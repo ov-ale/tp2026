@@ -5,8 +5,8 @@
 
 Rectangle::Rectangle(const Point& bl, const Point& tr) : bottomLeft(bl), topRight(tr)
 {
-  double width = topRight_.getX() - bottomLeft_.getX();
-  double height = topRight_.getY() - bottomLeft_.getY();
+  double width = topRight.getX() - bottomLeft.getX();
+  double height = topRight.getY() - bottomLeft.getY();
   if (width <= 0 || height <= 0) {
     throw std::invalid_argument("Rectangle width and height must be positive");
   }
