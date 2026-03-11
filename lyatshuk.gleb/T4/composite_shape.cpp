@@ -20,12 +20,12 @@ Point CompositeShape::getCenter() const {
     if (shapes.empty()) {
         return Point(0, 0);
     }
-    
+
     double minX = std::numeric_limits<double>::max();
     double minY = std::numeric_limits<double>::max();
     double maxX = std::numeric_limits<double>::lowest();
     double maxY = std::numeric_limits<double>::lowest();
-    
+
     double shapeMinX, shapeMinY, shapeMaxX, shapeMaxY;
     for (const auto& shape : shapes) {
         shape->getBounds(shapeMinX, shapeMinY, shapeMaxX, shapeMaxY);
@@ -34,7 +34,7 @@ Point CompositeShape::getCenter() const {
         maxX = std::max(maxX, shapeMaxX);
         maxY = std::max(maxY, shapeMaxY);
     }
-    
+
     return Point((minX + maxX) / 2, (minY + maxY) / 2);
 }
 
@@ -46,13 +46,13 @@ void CompositeShape::move(double dx, double dy) {
 
 void CompositeShape::scale(double factor) {
     Point compositeCenter = getCenter();
-    
+
     for (auto& shape : shapes) {
         Point shapeCenter = shape->getCenter();
-        
+
         double dx = shapeCenter.x - compositeCenter.x;
         double dy = shapeCenter.y - compositeCenter.y;
-        
+
         shape->move(dx * (factor - 1), dy * (factor - 1));
         shape->scale(factor);
     }
@@ -67,10 +67,10 @@ void CompositeShape::getBounds(double& minX, double& minY, double& maxX, double&
         minX = minY = maxX = maxY = 0;
         return;
     }
-    
+
     double shapeMinX, shapeMinY, shapeMaxX, shapeMaxY;
     shapes[0]->getBounds(minX, minY, maxX, maxY);
-    
+
     for (size_t i = 1; i < shapes.size(); ++i) {
         shapes[i]->getBounds(shapeMinX, shapeMinY, shapeMaxX, shapeMaxY);
         minX = std::min(minX, shapeMinX);
@@ -83,11 +83,11 @@ void CompositeShape::getBounds(double& minX, double& minY, double& maxX, double&
 void CompositeShape::printInfo() const {
     std::cout << std::fixed << std::setprecision(2);
     std::cout << "[" << getName() << ", (" << getCenter().x << ", " << getCenter().y << "), " << getArea() << ":" << std::endl;
-    
+
     for (const auto& shape : shapes) {
         Point center = shape->getCenter();
         std::cout << "  " << shape->getName() << ", (" << center.x << ", " << center.y << "), " << shape->getArea() << std::endl;
     }
-    
+
     std::cout << "]" << std::endl;
 }
