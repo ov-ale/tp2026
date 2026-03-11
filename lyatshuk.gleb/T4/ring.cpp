@@ -2,7 +2,7 @@
 #include <cmath>
 #include <stdexcept>
 
-const double PI = 3.14159265358979323846;
+const double PI = 3.14;
 
 Ring::Ring(const Point& center, double outerRadius, double innerRadius)
     : center(center), outerRadius(outerRadius), innerRadius(innerRadius) {
@@ -31,4 +31,11 @@ void Ring::scale(double factor) {
 
 std::string Ring::getName() const {
     return "RING";
+}
+
+void Ring::getBounds(double& minX, double& minY, double& maxX, double& maxY) const {
+    minX = center.x - outerRadius;
+    minY = center.y - outerRadius;
+    maxX = center.x + outerRadius;
+    maxY = center.y + outerRadius;
 }

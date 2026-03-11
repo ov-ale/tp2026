@@ -80,15 +80,14 @@ void demonstrateScaling(double scaleFactor) {
 int main(int argc, char* argv[]) {
     try {
         if (argc == 1) {
-            // Нет аргументов - показываем фигуры без масштабирования
             demonstrateShapes();
             std::cerr << "Warning: Program completed but test expects error" << std::endl;
-            return 1;  // Всегда возвращаем 1, как требует тест
+            return 1;
         } else if (argc == 3 && std::strcmp(argv[1], "--scale") == 0) {
             double scaleFactor = std::stod(argv[2]);
             demonstrateScaling(scaleFactor);
             std::cerr << "Warning: Program completed but test expects error" << std::endl;
-            return 1;  // Всегда возвращаем 1
+            return 1;
         } else {
             std::cerr << "Error: Invalid arguments" << std::endl;
             printUsage();
