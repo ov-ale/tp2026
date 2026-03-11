@@ -55,10 +55,37 @@ int main()
             std::cerr << "Error: No scaling command provided\n";
             return 1;
         }
+        double factor = 2.0;
+        try
+        {
+            factor = std::stod(cmd);
+        }
+        catch (...)
+        {
+            if (cmd == "SCALE")
+            {
+                double cx, cy;
+                if (!(std::cin >> cx >> cy >> factor))
+                {
+                    std::cerr << "Error: Invalid SCALE parameters\n";
+                    return 1;
+                }
+            }
+            else
+            {
+                std::cerr << "Error: Invalid input format\n";
+                return 1;
+            }
+        }
+        if (factor <= 0.0)
+        {
+            std::cerr << "Error: Scale factor must be positive\n";
+            return 1;
+        }
         std::cout << "\n";
         for (auto& s : shapes)
         {
-            s->scale(2.0);
+            s->scale(factor);
             printShape(*s);
         }
     }
