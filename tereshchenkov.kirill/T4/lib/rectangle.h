@@ -14,7 +14,7 @@ public:
    std::string getName() const override;
 private:
     Point bottomLeft;
-    Point topRight; 
+    Point topRight;
 };
 
 #endif // __RECTANGLE_H__

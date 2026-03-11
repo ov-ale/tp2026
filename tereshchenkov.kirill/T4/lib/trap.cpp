@@ -1,18 +1,20 @@
 #include "trap.h"
 
 
-Trap::Trap(const Point& bl, const double bottom, const double top, const double h) : bottomLeft_(bl), bottomLenght_(bottom), topLenght_(top), height_(h)
+Trap::Trap(const Point& bl, const double bottom, const double top, const double h) : \
+bottomLeft_(bl), bottomLenght_(bottom), topLenght_(top), height_(h)
 {
 }
 
-double Trap::getArea() const 
+double Trap::getArea() const
 {
   return (topLenght_+bottomLenght_)/2*height_;
 }
 
-Point Trap::getCenter() const 
+Point Trap::getCenter() const
 {
-  const double xc = bottomLeft_.x_ + (bottomLenght_ + topLenght_) / 4.0;
+  const double xc = bottomLeft_.x_ + \
+  (bottomLenght_ + topLenght_) / 4.0;
   const double yc = bottomLeft_.y_ + height_ / 2.0;
   return Point(xc, yc);
 }
@@ -36,7 +38,7 @@ void Trap::scale(double factor)
   bottomLeft_.y_=center.y_-height_/2;
 }
 
-std::string Trap::getName() const 
+std::string Trap::getName() const
 {
   return "isosceles trapezoid";
 }
