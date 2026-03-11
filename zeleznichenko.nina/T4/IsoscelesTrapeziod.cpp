@@ -37,3 +37,4 @@ void IsoscelesTrapeziod::scale(double factor)
     topBase *= factor;
     height *= factor;
 }
+

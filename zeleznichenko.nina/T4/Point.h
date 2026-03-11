@@ -13,3 +13,4 @@ struct Point
         y = y_val;
     }
 };
+
