@@ -21,33 +21,33 @@ void printUsage() {
 
 void demonstrateShapes() {
     std::cout << "Creating shapes" << std::endl;
-    
+
     Rectangle rect(Point(0, 0), Point(4, 3));
     Ring ring(Point(5, 5), 5.0, 2.0);
     Rhombus rhombus(Point(10, 10), 6.0, 4.0);
-    
+
     std::vector<std::unique_ptr<Shape>> shapes;
     shapes.push_back(std::make_unique<Rectangle>(Point(1, 1), Point(3, 4)));
     shapes.push_back(std::make_unique<Ring>(Point(-2, -2), 3.0, 1.0));
     shapes.push_back(std::make_unique<Rhombus>(Point(2, -3), 5.0, 3.0));
-    
+
     CompositeShape composite;
     composite.addShape(std::make_unique<Rectangle>(Point(2, 2), Point(5, 5)));
     composite.addShape(std::make_unique<Ring>(Point(3, 3), 2.0, 0.5));
     composite.addShape(std::make_unique<Rhombus>(Point(4, 4), 4.0, 2.0));
-    
+
     std::cout << "\nShape information WITHOUT scaling" << std::endl;
-    
+
     std::cout << "\nIndividual shapes:" << std::endl;
     printShapeInfo(rect);
     printShapeInfo(ring);
     printShapeInfo(rhombus);
-    
+
     std::cout << "\nShapes in vector:" << std::endl;
     for (const auto& shape : shapes) {
         printShapeInfo(*shape);
     }
-    
+
     std::cout << "\nComposite shape:" << std::endl;
     composite.printInfo();
 }
@@ -56,21 +56,21 @@ void demonstrateScaling(double scaleFactor) {
     Rectangle rect(Point(0, 0), Point(4, 3));
     Ring ring(Point(5, 5), 5.0, 2.0);
     Rhombus rhombus(Point(10, 10), 6.0, 4.0);
-    
+
     std::cout << "Creating shapes" << std::endl;
     std::cout << "\nShape information BEFORE scaling" << std::endl;
-    
+
     std::cout << "\nIndividual shapes:" << std::endl;
     printShapeInfo(rect);
     printShapeInfo(ring);
     printShapeInfo(rhombus);
-    
+
     rect.scale(scaleFactor);
     ring.scale(scaleFactor);
     rhombus.scale(scaleFactor);
-    
+
     std::cout << "\nShape information AFTER scaling by " << scaleFactor << std::endl;
-    
+
     std::cout << "\nIndividual shapes:" << std::endl;
     printShapeInfo(rect);
     printShapeInfo(ring);
