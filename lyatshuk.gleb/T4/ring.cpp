@@ -39,10 +39,3 @@ void Ring::getBounds(double& minX, double& minY, double& maxX, double& maxY) con
     maxX = center.x + outerRadius;
     maxY = center.y + outerRadius;
 }
-
-void Ring::getBounds(double& minX, double& minY, double& maxX, double& maxY) const {
-    minX = center.x - outerRadius;
-    minY = center.y - outerRadius;
-    maxX = center.x + outerRadius;
-    maxY = center.y + outerRadius;
-}
