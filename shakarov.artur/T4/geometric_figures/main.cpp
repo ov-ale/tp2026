@@ -44,7 +44,6 @@ int main() {
             printShape(shapes[i]);
             cout << "\n";
         }
-        cout << "\n";
     }
 
     cout << "\nПОСЛЕ МАСШТАБИРОВАНИЯ (x2):\n";
@@ -65,9 +64,7 @@ int main() {
             cout << "]\n";
         } else {
             printShape(shapes[i]);
-            cout << "\n";
         }
-        cout << "\n";
     }
 
     for (int i = 0; i < 5; i++) {
