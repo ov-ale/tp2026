@@ -28,7 +28,7 @@ void Rectangle::scale(double factor) {
     if (factor <= 0) {
         std::cerr << "Error: scale factor must be positive" << std::endl;
         exit(1);
-    }   
+    }
     Point center = getCenter();
     bottomLeft.x = center.x + (bottomLeft.x - center.x) * factor;
     bottomLeft.y = center.y + (bottomLeft.y - center.y) * factor;
@@ -44,7 +44,7 @@ double Rectangle::getPerimeter() const {
     return 2 * (width + height);
 }
 bool Rectangle::containsPoint(const Point& p) const {
-    return (p.x >= bottomLeft.x && p.x <= topRight.x && 
+    return (p.x >= bottomLeft.x && p.x <= topRight.x &&
             p.y >= bottomLeft.y && p.y <= topRight.y);
 }
 //
