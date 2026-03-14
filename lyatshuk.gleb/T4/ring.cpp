@@ -2,7 +2,7 @@
 #include <cmath>
 #include <stdexcept>
 
-const double PI = 3.14;
+const double PI = 3.141592653589793;
 
 Ring::Ring(const Point& center, double outerRadius, double innerRadius)
     : center(center), outerRadius(outerRadius), innerRadius(innerRadius) {
