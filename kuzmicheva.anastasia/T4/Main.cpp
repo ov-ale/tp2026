@@ -21,11 +21,6 @@ void printinfo(const std::vector<std::unique_ptr<Shape>>& figures) {
 
 int main() {
     try {
-        std::string check;
-        if (!(std::cin >> check)) {
-            std::cerr << "No input!" << '\n';
-            return 1;
-        }
 
         std::cout << std::fixed << std::setprecision(2);
 
@@ -47,6 +42,12 @@ int main() {
         shapes.push_back(std::move(group));
 
         printinfo(shapes);
+
+        std::string check;
+        if (!(std::cin >> check)) {
+            std::cerr << "No input!" << '\n';
+            return 1;
+        }
 
         for (size_t i = 0; i < shapes.size(); i++) {
             shapes[i]->scale(2.0);
