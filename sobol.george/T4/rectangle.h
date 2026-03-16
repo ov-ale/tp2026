@@ -1,5 +1,7 @@
 #ifndef RECT
 #define RECT
+#include <iostream>
+#include <cstdlib>
 #include "shape.h"
 
 class Rectangle : public Shape
