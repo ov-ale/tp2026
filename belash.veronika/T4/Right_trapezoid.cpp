@@ -15,8 +15,7 @@ double RightTrapezoid::getArea() const {
 Shape::BoundingBox RightTrapezoid::getBoundingBox() const {
     double maxBase = std::max(bottomBase_, topBase_);
     return {
-        bottomLeft_,                                         
-        Point(bottomLeft_.x + maxBase, bottomLeft_.y + height_) 
+        bottomLeft_, Point(bottomLeft_.x + maxBase, bottomLeft_.y + height_)
     };
 }
 
