@@ -2,6 +2,7 @@
 #define RING_H
 #define PI 3.1415
 #include "Shape.h"
+#include<iostream>
 class Ring : public Shape
 {
 public:
@@ -15,6 +16,7 @@ public:
     double getX_max() override;
     double getY_min() override;
     double getY_max() override;
+    void print() override;
 private:
     Point O;
     double R, r;
