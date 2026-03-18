@@ -26,17 +26,7 @@ int main()
     composite->addShape(std::make_unique<Ring>(Point{ 12, 12 }, 1, 0.5));
     shapes.push_back(std::move(composite));
     printInfo(shapes);
-    double k = 0.0;
-    if (!(std::cin >> k))
-    {
-        std::cerr << "Error with std::cin\n";
-        return 1;
-    }
-    if (k <= 0.0)
-    {
-        std::cerr << "Error k must be positive\n";
-        return 1;
-    }
+    double k = 2.0;
     for (size_t i = 0; i < shapes.size(); ++i)
     {
         shapes[i]->scale(k);
