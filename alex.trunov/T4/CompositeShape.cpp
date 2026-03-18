@@ -73,5 +73,5 @@ void CompositeShape::print(std::ostream& stream) const {
         stream << "\n " << s->getName() << ", (" << s->getCenter().x_ << ", " << 
             s->getCenter().y_ << "), " << s->getArea() << ";";
     }
-    stream << "\n]";
+    stream << "\n]\n";
 }
