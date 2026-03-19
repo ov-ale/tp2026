@@ -8,14 +8,13 @@
 #include "composite_shape.h"
 
 int main(int argc, char* argv[]) {
-    if (argc == 1) {
-        std::cerr << "Error: No input arguments provided" << std::endl;
-        return 1;
-    }
+    double scaleFactor = 2.0;
 
-    double scaleFactor = std::atof(argv[1]);
-    if (scaleFactor <= 0) {
-        scaleFactor = 2.0;
+    if (argc > 1) {
+        scaleFactor = std::atof(argv[1]);
+        if (scaleFactor <= 0) {
+            scaleFactor = 2.0;
+        }
     }
 
     std::vector<std::unique_ptr<Shape>> scene;
@@ -30,7 +29,7 @@ int main(int argc, char* argv[]) {
     comp->add(std::make_unique<Circle>(Point{ 21, 21 }, 0.5));
     scene.push_back(std::move(comp));
 
-    std::cout << "--- BEFORE SCALE ---\n";
+    std::cout << " BEFORE SCALE \n";
     for (size_t i = 0; i < scene.size(); i++) {
         scene[i]->print();
         std::cout << "\n";
@@ -40,7 +39,7 @@ int main(int argc, char* argv[]) {
         scene[i]->scale(scaleFactor);
     }
 
-    std::cout << "\n--- AFTER SCALE ---\n";
+    std::cout << "\n AFTER SCALE \n";
     for (size_t i = 0; i < scene.size(); i++) {
         scene[i]->print();
         std::cout << "\n";
