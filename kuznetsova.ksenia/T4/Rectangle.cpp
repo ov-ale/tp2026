@@ -1,6 +1,7 @@
 #include "Rectangle.h"
 #include <stdexcept>
 #include <memory>
+#include <algorithm>
 
 Rectangle::Rectangle(const Point& p1, const Point& p2)
 : bottomLeft_(std::min(p1.x, p2.x), std::min(p1.y, p2.y)),
