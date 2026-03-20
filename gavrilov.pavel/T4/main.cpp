@@ -8,7 +8,6 @@
 #include "composite_shape.h"
 
 int main() {
-
     std::vector<std::unique_ptr<Shape>> shapes;
 
     shapes.push_back(std::make_unique<Rectangle>(
@@ -23,11 +22,12 @@ int main() {
         Point(3.0, 3.0), 3.0
     ));
 
-    CompositeShape* composite = new CompositeShape();
-    composite->addShape(new Rectangle(Point(10.0, 10.0), Point(13.0, 12.0)));
-    composite->addShape(new Square(Point(15.0, 10.0), 2.0));
-    composite->addShape(new Ring(Point(11.0, 15.0), 2.0, 1.0));
-    shapes.push_back(std::unique_ptr<Shape>(composite));
+    auto composite = std::make_unique<CompositeShape>();
+    composite->addShape(std::make_unique<Rectangle>(Point(10.0, 10.0), Point(13.0, 12.0)));
+    composite->addShape(std::make_unique<Square>(Point(15.0, 10.0), 2.0));
+    composite->addShape(std::make_unique<Ring>(Point(11.0, 15.0), 2.0, 1.0));
+
+    shapes.push_back(std::move(composite));
 
     std::cout << "BEFORE SCALING BY 2:\n";
     std::cout << "====================\n";
