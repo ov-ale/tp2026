@@ -6,8 +6,8 @@
 class Rhombus : public Shape {
 private:
     Point center;
-    double verticalDiagonal;   // диагональ по вертикали
-    double horizontalDiagonal; // диагональ по горизонтали
+    double verticalDiagonal;
+    double horizontalDiagonal;
     
 public:
     Rhombus(const Point& center, double verticalDiagonal, double horizontalDiagonal);
@@ -17,12 +17,13 @@ public:
     void move(double dx, double dy) override;
     void scale(double factor) override;
     std::string getName() const override;
+
+    BoundingBox getBoundingBox() const override;
     
-    // Дополнительные методы для получения вершин ромба
     Point getTop() const;
     Point getBottom() const;
     Point getLeft() const;
     Point getRight() const;
 };
 
-#endif // RHOMBUS_H
+#endif

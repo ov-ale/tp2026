@@ -32,38 +32,32 @@ void printCompositeInfo(const CompositeShape& composite) {
 int main() {
     std::vector<std::unique_ptr<Shape>> shapes;
     
-    // Вариант 0: Прямоугольник
     shapes.push_back(std::make_unique<Rectangle>(
-        Point(0, 0), Point(6, 4)));  // Прямоугольник 6x4
-    
-    // Вариант 2: Кольцо
+        Point(0, 0), Point(6, 4)));
+
     shapes.push_back(std::make_unique<Ring>(
-        Point(10, 5), 5.0, 2.0));  // Кольцо с внешним радиусом 5, внутренним 2
+        Point(10, 5), 5.0, 2.0)); 
     
-    // Вариант 5: Ромб
+
     shapes.push_back(std::make_unique<Rhombus>(
-        Point(-5, -2), 8.0, 6.0));  // Ромб с диагоналями 8 и 6
+        Point(-5, -2), 8.0, 6.0));
     
-    // Еще один прямоугольник для разнообразия
     shapes.push_back(std::make_unique<Rectangle>(
-        Point(-10, 2), Point(-6, 5)));  // Прямоугольник 4x3
+        Point(-10, 2), Point(-6, 5)));
     
-    // Еще одно кольцо
     shapes.push_back(std::make_unique<Ring>(
-        Point(0, 10), 3.0, 1.0));  // Кольцо с внешним радиусом 3, внутренним 1
+        Point(0, 10), 3.0, 1.0));
     
-    // Создаем составную фигуру (COMPOSITE)
     auto composite = std::make_unique<CompositeShape>();
     
-    // Добавляем разные фигуры в составную
     composite->addShape(std::make_unique<Rectangle>(
-        Point(15, 15), Point(20, 18)));  // Прямоугольник 5x3
+        Point(15, 15), Point(20, 18)));
     
     composite->addShape(std::make_unique<Ring>(
-        Point(18, 20), 2.5, 1.0));  // Кольцо
+        Point(18, 20), 2.5, 1.0));
     
     composite->addShape(std::make_unique<Rhombus>(
-        Point(22, 17), 5.0, 4.0));  // Ромб
+        Point(22, 17), 5.0, 4.0));
     
     shapes.push_back(std::move(composite));
     
@@ -80,7 +74,6 @@ int main() {
         std::cout << "\n\n";
     }
     
-    // Масштабируем все фигуры в 2 раза
     std::cout << "\n=== Масштабирование всех фигур в 2 раза ===\n\n";
     for (auto& shape : shapes) {
         shape->scale(2.0);

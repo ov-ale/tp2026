@@ -38,3 +38,10 @@ void Ring::scale(double factor) {
 std::string Ring::getName() const {
     return "RING";
 }
+
+BoundingBox Ring::getBoundingBox() const {
+    BoundingBox box;
+    box.bottomLeft = Point(center.x - outerRadius, center.y - outerRadius);
+    box.topRight = Point(center.x + outerRadius, center.y + outerRadius);
+    return box;
+}

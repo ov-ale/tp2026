@@ -24,7 +24,6 @@ void Rectangle::move(double dx, double dy) {
 
 void Rectangle::scale(double factor) {
     Point center = getCenter();
-    // Масштабируем относительно центра
     bottomLeft.x = center.x - (center.x - bottomLeft.x) * factor;
     bottomLeft.y = center.y - (center.y - bottomLeft.y) * factor;
     topRight.x = center.x + (topRight.x - center.x) * factor;
@@ -33,4 +32,11 @@ void Rectangle::scale(double factor) {
 
 std::string Rectangle::getName() const {
     return "RECTANGLE";
+}
+
+BoundingBox Rectangle::getBoundingBox() const {
+    BoundingBox box;
+    box.bottomLeft = bottomLeft;
+    box.topRight = topRight;
+    return box;
 }
