@@ -51,11 +51,12 @@ void CompositeShape::scale(double factor) {
     for (auto& shape : shapes_) {
         Point shapeCenter = shape->getCenter();
 
-        shape->move(
-            (shapeCenter.x - center.x) * (factor - 1),
-            (shapeCenter.y - center.y) * (factor - 1)
+        Point newCenter(
+            center.x + (shapeCenter.x - center.x) * factor,
+            center.y + (shapeCenter.y - center.y) * factor
         );
 
+        shape->move(newCenter.x - shapeCenter.x, newCenter.y - shapeCenter.y);
         shape->scale(factor);
     }
 }
