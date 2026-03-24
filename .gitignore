@@ -1,14 +1,15 @@
-# Local configuration
-.boost_location
-# Built files
-out
-# Emacs temporaries
-\#*\#
-.\#*
-# Various backups
-*.bak
-*~
-# Test configuration
-.config
-.config.cache
-
+.vs/
+*.db
+*.db-shm
+*.db-wal
+*.opendb
+ipch/
+*.ipch
+*.slnx
+*.sqlite
+Debug/
+Release/
+x64/
+x86/
+*.user
+*.suo
