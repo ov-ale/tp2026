@@ -75,7 +75,7 @@ int main()
         double fact;
         if (!(std::cin >> fact))
         {
-            std::cerr << "error" << std::endl;
+            std::cerr << "error!" << std::endl;
             return 0;
         }
 
