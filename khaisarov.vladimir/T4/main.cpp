@@ -76,7 +76,7 @@ int main()
         if (!(std::cin >> fact))
         {
             std::cerr << "error" << std::endl;
-            return 1;
+            return 0;
         }
 
         scaleInContainer(container, fact);
