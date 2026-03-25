@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <limits>
 #include <cctype>
+#include <sstream>
 
 struct DataStruct {
     unsigned long long key1;
@@ -24,11 +25,11 @@ struct DelimiterIO {
 };
 
 std::istream& operator>>(std::istream& in, DelimiterIO&& dest) {
-    std::istream::sentry sentry(in);
+    std::istream::sentry sentry(in, true);
     if (!sentry) return in;
-    char c = '0';
-    in >> c;
-    if (in && (std::tolower(c) != std::tolower(dest.exp))) {
+    char c = '\0';
+    in.get(c);
+    if (!in || c != dest.exp) {
         in.setstate(std::ios::failbit);
     }
     return in;
@@ -39,14 +40,41 @@ struct UllLitIO {
 };
 
 std::istream& operator>>(std::istream& in, UllLitIO&& dest) {
-    std::istream::sentry sentry(in);
+    std::istream::sentry sentry(in, true);
     if (!sentry) return in;
-    unsigned long long val;
-    in >> val;
-    char s1 = ' ', s2 = ' ', s3 = ' ';
-    in >> s1 >> s2 >> s3;
-    if (in && ((std::tolower(s1) == 'u' && std::tolower(s2) == 'l' && std::tolower(s3) == 'l'))) {
-        dest.ref = val;
+
+    std::string digits;
+    int c = in.peek();
+    while (in && c != std::char_traits<char>::eof() && std::isdigit(static_cast<unsigned char>(c))) {
+        digits.push_back(static_cast<char>(in.get()));
+        c = in.peek();
+    }
+
+    if (digits.empty() || (digits.size() > 1 && digits.front() == '0')) {
+        in.setstate(std::ios::failbit);
+        return in;
+    }
+
+    unsigned long long value = 0;
+    for (char ch : digits) {
+        const unsigned digit = static_cast<unsigned>(ch - '0');
+        if (value > (std::numeric_limits<unsigned long long>::max() - digit) / 10) {
+            in.setstate(std::ios::failbit);
+            return in;
+        }
+        value = value * 10 + digit;
+    }
+
+    char s1 = '\0';
+    char s2 = '\0';
+    char s3 = '\0';
+    in.get(s1);
+    in.get(s2);
+    in.get(s3);
+    if (in && std::tolower(static_cast<unsigned char>(s1)) == 'u' &&
+        std::tolower(static_cast<unsigned char>(s2)) == 'l' &&
+        std::tolower(static_cast<unsigned char>(s3)) == 'l') {
+        dest.ref = value;
     } else {
         in.setstate(std::ios::failbit);
     }
@@ -58,25 +86,34 @@ struct UllBinIO {
 };
 
 std::istream& operator>>(std::istream& in, UllBinIO&& dest) {
-    std::istream::sentry sentry(in);
+    std::istream::sentry sentry(in, true);
     if (!sentry) return in;
-    char p1 = ' ', p2 = ' ';
-    in >> p1 >> p2;
-    if (in && p1 == '0' && (std::tolower(p2) == 'b')) {
-        unsigned long long val = 0;
-        char c = in.peek();
-        bool has_digits = false;
-        while (in && (c == '0' || c == '1')) {
-            has_digits = true;
-            in.get(c);
-            val = (val << 1) | (c - '0');
-            c = in.peek();
-        }
-        if (has_digits) {
-            dest.ref = val;
-        } else {
+
+    char p1 = '\0';
+    char p2 = '\0';
+    in.get(p1);
+    in.get(p2);
+    if (!(in && p1 == '0' && std::tolower(static_cast<unsigned char>(p2)) == 'b')) {
+        in.setstate(std::ios::failbit);
+        return in;
+    }
+
+    unsigned long long value = 0;
+    bool has_digits = false;
+    int c = in.peek();
+    while (in && c != std::char_traits<char>::eof() && (c == '0' || c == '1')) {
+        has_digits = true;
+        const unsigned digit = static_cast<unsigned>(in.get() - '0');
+        if (value > (std::numeric_limits<unsigned long long>::max() - digit) / 2) {
             in.setstate(std::ios::failbit);
+            return in;
         }
+        value = value * 2 + digit;
+        c = in.peek();
+    }
+
+    if (has_digits) {
+        dest.ref = value;
     } else {
         in.setstate(std::ios::failbit);
     }
@@ -88,44 +125,91 @@ struct StringIO {
 };
 
 std::istream& operator>>(std::istream& in, StringIO&& dest) {
-    std::istream::sentry sentry(in);
+    std::istream::sentry sentry(in, true);
     if (!sentry) return in;
-    char c;
-    in >> c;
-    if (in && c == '"') {
-        std::getline(in, dest.ref, '"');
-    } else {
-        in.setstate(std::ios::failbit);
+    char c = '\0';
+    in.get(c);
+    if (in && c == '"' && std::getline(in, dest.ref, '"')) {
+        return in;
     }
+    in.setstate(std::ios::failbit);
     return in;
+}
+
+bool readKey(std::istream& in, std::string& key) {
+    key.clear();
+    int c = in.peek();
+    while (in && c != std::char_traits<char>::eof() &&
+           c != ' ' && c != ':' && c != '(' && c != ')' &&
+           !std::isspace(static_cast<unsigned char>(c))) {
+        key.push_back(static_cast<char>(in.get()));
+        c = in.peek();
+    }
+    if (key.empty()) {
+        in.setstate(std::ios::failbit);
+        return false;
+    }
+    return true;
 }
 
 std::istream& operator>>(std::istream& in, DataStruct& dest) {
     std::istream::sentry sentry(in);
     if (!sentry) return in;
+
     DataStruct temp;
+    bool k1 = false;
+    bool k2 = false;
+    bool k3 = false;
+
     in >> DelimiterIO{'('} >> DelimiterIO{':'};
-    bool k1 = false, k2 = false, k3 = false;
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 3 && in; ++i) {
         std::string key;
-        in >> key;
+        if (!readKey(in, key)) {
+            return in;
+        }
+
+        in >> DelimiterIO{' '};
+        if (!in) {
+            return in;
+        }
+
         if (key == "key1") {
+            if (k1) {
+                in.setstate(std::ios::failbit);
+                return in;
+            }
             in >> UllLitIO{temp.key1};
             k1 = true;
         } else if (key == "key2") {
+            if (k2) {
+                in.setstate(std::ios::failbit);
+                return in;
+            }
             in >> UllBinIO{temp.key2};
             k2 = true;
         } else if (key == "key3") {
+            if (k3) {
+                in.setstate(std::ios::failbit);
+                return in;
+            }
             in >> StringIO{temp.key3};
             k3 = true;
         } else {
             in.setstate(std::ios::failbit);
+            return in;
         }
+
         in >> DelimiterIO{':'};
     }
+
     in >> DelimiterIO{')'};
     if (in && k1 && k2 && k3) {
-        dest = std::move(temp);
+        in >> std::ws;
+        if (in.peek() == std::char_traits<char>::eof()) {
+            dest = std::move(temp);
+        } else {
+            in.setstate(std::ios::failbit);
+        }
     }
     return in;
 }
@@ -133,15 +217,14 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
 std::ostream& operator<<(std::ostream& out, const DataStruct& src) {
     std::ostream::sentry sentry(out);
     if (!sentry) return out;
+
     out << "(:key1 " << src.key1 << "ull:key2 0b";
 
     unsigned long long k2 = src.key2;
     if (k2 == 0) {
         out << "0";
-    } else if (k2 == 1) {
-        out << "01";
     } else {
-        std::string bin = "";
+        std::string bin;
         while (k2 > 0) {
             bin = char('0' + (k2 % 2)) + bin;
             k2 /= 2;
@@ -161,14 +244,13 @@ bool compareDS(const DataStruct& a, const DataStruct& b) {
 
 int main() {
     std::vector<DataStruct> data;
-    while (!std::cin.eof()) {
-        std::copy(std::istream_iterator<DataStruct>(std::cin),
+    std::string line;
+
+    while (std::getline(std::cin, line)) {
+        std::istringstream lineStream(line);
+        std::copy(std::istream_iterator<DataStruct>(lineStream),
                   std::istream_iterator<DataStruct>(),
                   std::back_inserter(data));
-        if (std::cin.fail() && !std::cin.eof()) {
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        }
     }
 
     std::sort(data.begin(), data.end(), compareDS);
