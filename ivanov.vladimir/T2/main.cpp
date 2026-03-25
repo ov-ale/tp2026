@@ -12,8 +12,9 @@ struct DataStruct {
     unsigned long long key1;
     unsigned long long key2;
     std::string key3;
+    std::string key2raw;
 
-    DataStruct() : key1(0), key2(0), key3("") {}
+    DataStruct() : key1(0), key2(0), key3(""), key2raw("") {}
     DataStruct(const DataStruct&) = default;
     DataStruct(DataStruct&&) = default;
     DataStruct& operator=(const DataStruct&) = default;
@@ -88,11 +89,14 @@ std::istream& operator>>(std::istream& in, UllLitIO&& dest) {
 
 struct UllBinIO {
     unsigned long long& ref;
+    std::string& raw;
 };
 
 std::istream& operator>>(std::istream& in, UllBinIO&& dest) {
     std::istream::sentry sentry(in, true);
     if (!sentry) return in;
+
+    dest.raw.clear();
 
     char p1 = '\0';
     char p2 = '\0';
@@ -110,7 +114,9 @@ std::istream& operator>>(std::istream& in, UllBinIO&& dest) {
 
     while (in && c != std::char_traits<char>::eof() && (c == '0' || c == '1')) {
         hasDigits = true;
-        const unsigned digit = static_cast<unsigned>(in.get() - '0');
+        char ch = static_cast<char>(in.get());
+        dest.raw.push_back(ch);
+        const unsigned digit = static_cast<unsigned>(ch - '0');
         if (value > (std::numeric_limits<unsigned long long>::max() - digit) / 2) {
             in.setstate(std::ios::failbit);
             return in;
@@ -203,7 +209,7 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
                 in.setstate(std::ios::failbit);
                 return in;
             }
-            in >> UllBinIO{temp.key2};
+            in >> UllBinIO{temp.key2, temp.key2raw};
             k2 = true;
         } else if (key == "key3") {
             if (k3) {
@@ -240,11 +246,13 @@ std::ostream& operator<<(std::ostream& out, const DataStruct& src) {
 
     out << "(:key1 " << src.key1 << "ull:key2 0b";
 
-    unsigned long long k2 = src.key2;
-    if (k2 == 0) {
+    if (!src.key2raw.empty()) {
+        out << src.key2raw;
+    } else if (src.key2 == 0) {
         out << '0';
     } else {
         std::string bin;
+        unsigned long long k2 = src.key2;
         while (k2 > 0) {
             bin = char('0' + (k2 % 2)) + bin;
             k2 /= 2;
