@@ -3,6 +3,7 @@
 
 #include "shape.hpp"
 #include <vector>
+#include <memory>
 
 class CompositeShape : public Shape {
 private:
