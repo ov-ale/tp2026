@@ -5,7 +5,7 @@
 #include "Rectangle.h"
 #include "Circle.h"
 #include "rectangularTrapezoid.h"
-#include "compositeShape.h"
+#include "CompositeShape.h"
 
 void printInfo(const std::vector<std::unique_ptr<Shape>>& shapes)
 {
