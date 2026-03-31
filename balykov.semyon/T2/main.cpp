@@ -207,7 +207,8 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
     bool key1_read = false;
     bool key2_read = false;
     bool key3_read = false;
-    while (in && (!key1_read || !key2_read || !key3_read)) {
+    while (in && (!key1_read || !key2_read 
+        || !key3_read)) {
         std::string label;
 
         if (!(in >> StringIO{ label })) {
