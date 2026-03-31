@@ -47,7 +47,8 @@ private:
     std::basic_ios<char>::fmtflags fmt_;
 };
 
-std::istream& operator>>(std::istream& in, DelimiterIO&& dest);
+std::istream& operator>>(std::istream& in, 
+    DelimiterIO&& dest);
 std::istream& operator>>(std::istream& in, LabelIO&& dest);
 std::istream& operator>>(std::istream& in, ULLBinIO&& dest);
 std::istream& operator>>(std::istream& in, ComplexIO&& dest);
