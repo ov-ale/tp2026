@@ -120,7 +120,8 @@ std::istream& operator>>(std::istream& in, StringIO&& dest) {
     if (!sentry) {
         return in;
     }
-    return std::getline(in >> DelimiterIO{ '"' }, dest.ref, '"');
+    return std::getline(in >> DelimiterIO{ '"' }, 
+        dest.ref, '"');
 }
 
 std::istream& operator>>(std::istream& in, LabelIO&& dest) {
@@ -185,7 +186,8 @@ std::istream& operator>>(std::istream& in, ComplexIO&& dest) {
         return in;
     }
     double real = 0.0, imag = 0.0;
-    in >> DelimiterIO{ '#' } >> DelimiterIO{ 'c' } >> DelimiterIO{ '(' };
+    in >> DelimiterIO{ '#' } >> DelimiterIO{ 'c' } 
+    >> DelimiterIO{ '(' };
     in >> real >> imag;
     in >> DelimiterIO{ ')' };
     if (in) {
