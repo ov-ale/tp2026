@@ -9,33 +9,33 @@
 #include <cmath>
 #include <cctype>
 
-struct DelimiterIO{
+struct DelimiterIO {
     char exp;
 };
 
-struct LabelIO{
+struct LabelIO {
     std::string exp;
 };
 
-struct ULLBinIO{
+struct ULLBinIO {
     unsigned long long& ref;
 };
 
-struct ComplexIO{
+struct ComplexIO {
     std::complex<double>& ref;
 };
 
-struct StringIO{
+struct StringIO {
     std::string& ref;
 };
 
-struct DataStruct{
+struct DataStruct {
     unsigned long long key1;
     std::complex<double> key2;
     std::string key3;
 };
 
-class iofmtguard{
+class iofmtguard {
 public:
     iofmtguard(std::basic_ios<char>& s);
     ~iofmtguard();
@@ -55,7 +55,7 @@ std::istream& operator>>(std::istream& in, StringIO&& dest);
 std::istream& operator>>(std::istream& in, DataStruct& dest);
 std::ostream& operator<<(std::ostream& out, const DataStruct& dest);
 
-bool compareDataStruct(const DataStruct& a, const DataStruct& b){
+bool compareDataStruct(const DataStruct& a, const DataStruct& b) {
     if (a.key1 != b.key1) {
         return a.key1 < b.key1;
     }
@@ -67,7 +67,7 @@ bool compareDataStruct(const DataStruct& a, const DataStruct& b){
     return a.key3.length() < b.key3.length();
 }
 
-int main(){
+int main() {
     std::vector<DataStruct> data;
 
     std::copy(
@@ -95,7 +95,7 @@ iofmtguard::iofmtguard(std::basic_ios<char>& s) :
     fmt_(s.flags())
 {}
 
-iofmtguard::~iofmtguard(){
+iofmtguard::~iofmtguard() {
     s_.width(width_);
     s_.fill(fill_);
     s_.precision(precision_);
@@ -279,9 +279,9 @@ std::ostream& operator<<(std::ostream& out, const DataStruct& src) {
     out << ":";
 
     out << "key2 #c(";
-    out << std::fixed << std::setprecision(1) 
+    out << std::fixed << std::setprecision(1)
         << src.key2.real() << " ";
-    out << std::fixed << std::setprecision(1) 
+    out << std::fixed << std::setprecision(1)
         << src.key2.imag() << "):";
 
     out << "key3 \"" << src.key3 << "\":)";
