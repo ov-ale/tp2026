@@ -71,6 +71,65 @@ std::string parseQuotedString(const std::string& s)
     return s.substr(1, s.length() - 2);
 }
 
+class IgnoreFailIterator
+{
+public:
+    using iterator_category = std::input_iterator_tag;
+    using value_type = DataStruct;
+    using difference_type = std::ptrdiff_t;
+    using pointer = const DataStruct*;
+    using reference = const DataStruct&;
+
+    IgnoreFailIterator() : in_(nullptr), valid_(false) {}
+    explicit IgnoreFailIterator(std::istream& in) : in_(&in), valid_(true)
+    {
+        ++(*this);
+    }
+
+    reference operator*() const { return value_; }
+    pointer operator->() const { return &value_; }
+
+    IgnoreFailIterator& operator++()
+    {
+        valid_ = false;
+        if (!in_) return *this;
+
+        std::string line;
+        while (std::getline(*in_, line))
+        {
+            std::istringstream iss(line);
+            if (iss >> value_)
+            {
+                valid_ = true;
+                break;
+            }
+        }
+        return *this;
+    }
+
+    IgnoreFailIterator operator++(int)
+    {
+        IgnoreFailIterator tmp = *this;
+        ++(*this);
+        return tmp;
+    }
+
+    bool operator==(const IgnoreFailIterator& other) const
+    {
+        return (valid_ == other.valid_) && (in_ == other.in_);
+    }
+
+    bool operator!=(const IgnoreFailIterator& other) const
+    {
+        return !(*this == other);
+    }
+
+private:
+    std::istream* in_;
+    DataStruct value_;
+    bool valid_;
+};
+
 std::istream& operator>>(std::istream& in, DataStruct& data)
 {
     std::string line;
@@ -174,8 +233,8 @@ int main()
 {
     std::vector<DataStruct> dataVector;
 
-    std::istream_iterator<DataStruct> inputBegin(std::cin);
-    std::istream_iterator<DataStruct> inputEnd;
+    IgnoreFailIterator inputBegin(std::cin);
+    IgnoreFailIterator inputEnd;
     std::copy(inputBegin, inputEnd, std::back_inserter(dataVector));
 
     std::sort(dataVector.begin(), dataVector.end(),
