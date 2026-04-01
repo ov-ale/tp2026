@@ -43,6 +43,7 @@ in.setstate(std::ios::failbit);
 else {
 dest.ref = n - '0';
 }
+
 return in;
 }
 
