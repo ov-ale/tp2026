@@ -11,10 +11,9 @@ void Square::move(double dx, double dy) {
 }
 
 void Square::scale(double factor) {
-    double vectorBLx = getCenter().x_ - bottomLeft_.x_;
-    double vectorBLy = getCenter().y_ - bottomLeft_.y_;
-    bottomLeft_.x_ = getCenter().x_ + (vectorBLx * factor);
-    bottomLeft_.y_ = getCenter().y_ + (vectorBLy * factor);
+    Point center = getCenter();
+    bottomLeft_.x_ = center.x_ + (bottomLeft_.x_ - center.x_) * factor;
+    bottomLeft_.y_ = center.y_ + (bottomLeft_.y_ - center.y_) * factor;
     length_ *= factor;
 }
 

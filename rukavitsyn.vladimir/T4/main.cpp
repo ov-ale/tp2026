@@ -22,12 +22,14 @@ int main() {
         myShapes.push_back(std::make_unique<Rectangle>(Point(0, 0), Point(2, 4)));
         myShapes.push_back(std::make_unique<Square>(Point(5, 5), 2.0));
         myShapes.push_back(std::make_unique<Ellipse>(1.0, 2.0, Point(10, 10)));
-        myShapes.push_back(std::make_unique<Square>(Point(8, 8), 1.5));
-        myShapes.push_back(std::make_unique<Ellipse>(2.0, 3.0, Point(12, 12)));
 
         auto composite = std::make_unique<CompositeShape>();
         composite->addShape(std::make_unique<Rectangle>(Point(0, 0), Point(1, 1)));
         composite->addShape(std::make_unique<Square>(Point(2, 2), 1.0));
+        composite->addShape(std::make_unique<Ellipse>(1.0, 2.0, Point(10, 10)));
+        composite->addShape(std::make_unique<Square>(Point(8, 8), 1.5));
+        composite->addShape(std::make_unique<Ellipse>(2.0, 3.0, Point(12, 12)));
+
         myShapes.push_back(std::move(composite));
 
         std::cout << "--- BEFORE SCALE ---\n";

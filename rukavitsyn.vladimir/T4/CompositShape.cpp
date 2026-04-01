@@ -33,14 +33,17 @@ void CompositeShape::move(double dx, double dy) {
 }
 
 void CompositeShape::scale(double factor) {
+    if (factor <= 0.0) {
+        return;
+    }
+
     Point compositeCenter = getCenter();
 
     for (auto& shape : shapes) {
         Point shapeCenter = shape->getCenter();
-        double dx = (shapeCenter.x_ - compositeCenter.x_) * (factor - 1.0);
-        double dy = (shapeCenter.y_ - compositeCenter.y_) * (factor - 1.0);
-
-        shape->move(dx, dy);
+        double newX = compositeCenter.x_ + (shapeCenter.x_ - compositeCenter.x_) * factor;
+        double newY = compositeCenter.y_ + (shapeCenter.y_ - compositeCenter.y_) * factor;
+        shape->move(newX - shapeCenter.x_, newY - shapeCenter.y_);
         shape->scale(factor);
     }
 }
