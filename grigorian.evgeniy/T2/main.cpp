@@ -15,27 +15,21 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
     std::istream::sentry sentry(in);
     if (!sentry) return in;
 
-    DataStruct temp;
+    DataStruct temp{0, '\0', ""};
     bool k1 = false, k2 = false, k3 = false;
 
-    char c1, c2;
+    char c1 = 0, c2 = 0;
     in >> c1 >> c2;
-
     if (c1 != '(' || c2 != ':') {
         in.setstate(std::ios::failbit);
         return in;
     }
 
     for (int i = 0; i < 3; ++i) {
-        char k, e, y, num;
+        std::string keyLabel;
+        in >> keyLabel;
 
-        in >> k >> e >> y >> num;
-        if (k != 'k' || e != 'e' || y != 'y') {
-            in.setstate(std::ios::failbit);
-            return in;
-        }
-
-        if (num == '1' && !k1) {
+        if (keyLabel == "key1" && !k1) {
             in >> std::oct >> temp.key1;
 
             int next = in.peek();
@@ -48,37 +42,35 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
             }
             k1 = true;
         }
-        else if (num == '2' && !k2) {
-            char q1, q2;
+        else if (keyLabel == "key2" && !k2) {
+            char q1 = 0, q2 = 0;
             in >> std::ws >> q1 >> std::noskipws >> temp.key2 >> std::skipws >> q2;
             if (q1 != '\'' || q2 != '\'') in.setstate(std::ios::failbit);
             k2 = true;
         }
-        else if (num == '3' && !k3) {
-            char q;
+        else if (keyLabel == "key3" && !k3) {
+            char q = 0;
             in >> std::ws >> q;
-            if (q != '"') {
-                in.setstate(std::ios::failbit);
-            } else {
+            if (q == '"') {
                 std::getline(in, temp.key3, '"');
+            } else {
+                in.setstate(std::ios::failbit);
             }
             k3 = true;
         }
         else {
             in.setstate(std::ios::failbit);
-            return in;
         }
 
         if (i < 2) {
-            char colon;
+            char colon = 0;
             in >> colon;
             if (colon != ':') in.setstate(std::ios::failbit);
         }
     }
 
-    char c3, c4;
+    char c3 = 0, c4 = 0;
     in >> c3 >> c4;
-
     if (c3 != ':' || c4 != ')') {
         in.setstate(std::ios::failbit);
     }
