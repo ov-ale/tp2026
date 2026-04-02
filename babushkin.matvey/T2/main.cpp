@@ -294,7 +294,16 @@ int main()
 
     while (std::getline(std::cin, line))
     {
-        if (line.empty() || line.find_first_not_of(" \t") == std::string::npos)
+        bool onlyWhitespace = true;
+        for (char c : line)
+        {
+            if (!std::isspace(static_cast<unsigned char>(c)))
+            {
+                onlyWhitespace = false;
+                break;
+            }
+        }
+        if (onlyWhitespace)
         {
             continue;
         }
