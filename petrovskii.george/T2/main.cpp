@@ -10,7 +10,7 @@ struct DataStruct {
     double key1;
     long long key2;
     std::string key3;
-} ;
+};
 
 struct DelimiterIO {
     char expected;
@@ -79,7 +79,7 @@ std::istream& operator>>(std::istream& in, DoubleSciIO&& dest) {
     if (dotPos != std::string::npos) {
         bool hasDigitBefore = dotPos > 0 && std::isdigit(num[dotPos - 1]);
         bool hasDigitAfter = dotPos + 1 < num.length() && std::isdigit(num[dotPos + 1]);
-        
+
         if (hasDigitBefore && hasDigitAfter) {
             size_t expPos = num.find_first_of("eE");
             if (expPos != std::string::npos && expPos > dotPos) {
@@ -94,7 +94,7 @@ std::istream& operator>>(std::istream& in, DoubleSciIO&& dest) {
                 }
             }
         }
-    
+
     }
 
     if (valid) {
@@ -188,11 +188,11 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
         else if (label == "key2" && !key2_read) {
             in >> LongLongIO{temp.key2};
             key2_read = true;
-        } 
+        }
         else if (label == "key3" && !key3_read) {
             in >> StringIO{temp.key3};
             key3_read = true;
-        } 
+        }
         else {
             in.setstate(std::ios::failbit);
             return in;
