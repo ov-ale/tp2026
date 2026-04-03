@@ -1,5 +1,9 @@
 #include "DataStruct.hpp"
-#include "cmath"
+
+#include <cmath>
+
+
+const double EPSILON = 1.0e-9;
 
 std::istream& operator>>(std::istream& in, DelimiterIO&& dest) {
     std::istream::sentry sentry(in);
@@ -38,6 +42,12 @@ std::istream& operator>>(std::istream& in, DoubleIO&& dest) {
     bool hasDecimalPoint = false;
     bool validMantissa = false;
     bool hasDigitAfterPoint = false;
+    char sign = '+';
+
+    // Fix: added support for negative numbers
+    if (in.peek() == '-') {
+        in.get(sign);
+    }
 
     while (in.get(symbol)) {
         if (isdigit(symbol)) {
@@ -88,6 +98,11 @@ std::istream& operator>>(std::istream& in, DoubleIO&& dest) {
     else {
         finalExponent = exponent;
     }
+
+    if (sign == '-') {
+        mantissa = -mantissa;
+    }
+
     dest.ref = mantissa * std::pow(10.0, finalExponent);
     return in;
 }
@@ -110,12 +125,16 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
     DataStruct temp;
     bool f1 = false, f2 = false, f3 = false;
 
-    if (!(in >> DelimiterIO{ '(' } >> DelimiterIO{ ':' })) {
+    if (!(in >> DelimiterIO{ '(' })) {
         in.setstate(std::ios::failbit);
         return in;
     }
 
     for (size_t i = 0; i < 3; ++i) {
+
+        //Changed logic of parser: now we go until ":"
+        if (!(in >> DelimiterIO{ ':' })) break;
+
         std::string label;
         if (!(in >> label)) break;
 
@@ -135,11 +154,6 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
             in.setstate(std::ios::failbit);
             break;
         }
-
-        if (i < 2 && !(in >> DelimiterIO{ ':' })) {
-            in.setstate(std::ios::failbit);
-            break;
-        }
     }
 
     if (!(in >> DelimiterIO{ ':' } >> DelimiterIO{ ')' }) || !f1 || !f2 || !f3) {
@@ -152,15 +166,17 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
 }
 
 bool comparator(const DataStruct& a, const DataStruct& b) {
-    if (a.key1 != b.key1) {
+    if (std::abs(a.key1 - b.key1) > EPSILON) { // Changed comparator, added EPSILON for double comp
         return a.key1 < b.key1;
     }
+
     else if (a.key2 != b.key2) {
         return a.key2 < b.key2;
     }
     else {
         return a.key3.length() < b.key3.length();
     }
+
 }
 
 std::ostream& operator<<(std::ostream& out, const DataStruct& data) {
@@ -170,20 +186,28 @@ std::ostream& operator<<(std::ostream& out, const DataStruct& data) {
     }
     iofmtguard fmtguard(out);
 
+    // Fix: added support for negative numbers
     double mantissa = data.key1;
     int exponent = 0;
 
-    if (data.key1 == 0.0) {
-        mantissa = 1.0;
+    if (mantissa == 0.0) { // Fix: if mantissa 0.0 output is now 0.0e+0 not 1.0e+0
         exponent = 0;
     } else {
-        while (mantissa < 1.0 && mantissa != 0.0) {
+        bool negative = mantissa < 0;
+        mantissa = std::abs(mantissa);
+
+        while (mantissa < 1.0) {
             mantissa *= 10.0;
             exponent--;
         }
+
         while (mantissa >= 10.0) {
             mantissa /= 10.0;
             exponent++;
+        }
+
+        if (negative) {
+            mantissa = -mantissa;
         }
     }
 

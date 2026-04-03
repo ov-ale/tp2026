@@ -8,13 +8,17 @@
 // --- 4 ---
 int main() {
     std::vector<DataStruct> vec;
-    while (!std::cin.eof()) {
-        std::copy(std::istream_iterator<DataStruct>(std::cin),
-                  std::istream_iterator<DataStruct>(),
-                  std::back_inserter(vec));
-        if (std::cin.fail()) {
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+    //Changed way of getting lines: reading line by line with getline to prevent eof infitite loop
+    std::string line;
+    while (std::getline(std::cin, line)) {
+        if (line.empty()) continue;
+
+        std::istringstream iss(line);
+        DataStruct temp;
+
+        if (iss >> temp) {
+            vec.push_back(temp);
         }
     }
 
