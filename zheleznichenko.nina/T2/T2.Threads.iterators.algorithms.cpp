@@ -12,60 +12,86 @@ struct DataStruct {
   std::string key3;
 };
 
-void skipChar(std::istream& in, char exp) {
+struct DelimiterIO {
+  char exp;
+};
+
+std::istream& operator>>(std::istream& in, DelimiterIO&& dest) {
+  std::istream::sentry sentry(in);
+  if (!sentry) return in;
   char c;
   in >> c;
-  if (c != exp) in.setstate(std::ios::failbit);
+  if (in && std::tolower(c) != std::tolower(dest.exp)) {
+    in.setstate(std::ios::failbit);
+  }
+  return in;
+}
+
+struct LabelIO {
+  std::string& label;
+};
+
+std::istream& operator>>(std::istream& in, LabelIO&& dest) {
+  std::istream::sentry sentry(in);
+  if (!sentry) return in;
+  dest.label.clear();
+  for (int i = 0; i < 4; ++i) {
+    char c;
+    if (in >> c) dest.label += c;
+  }
+  return in;
 }
 
 std::istream& operator>>(std::istream& in, DataStruct& dest) {
-  std::string line;
-  if (!(in >> std::ws) || in.peek() != '(') return in;
+  std::istream::sentry sentry(in);
+  if (!sentry) return in;
 
-  skipChar(in, '(');
-  skipChar(in, ':');
+  DataStruct input;
+  in >> DelimiterIO{ '(' } >> DelimiterIO{ ':' };
 
-  DataStruct temp;
-  for (int i = 0; i < 3; ++i) {
+  for (int i = 0; i < 3 && in; ++i) {
     std::string label;
-    std::getline(in, label, ' ');
-
+    in >> LabelIO{ label };
     if (label == "key1") {
-      skipChar(in, '0'); skipChar(in, 'b');
+      in >> DelimiterIO{ '0' } >> DelimiterIO{ 'b' };
       std::string bin;
-      while (std::isdigit(in.peek())) {
+      while (in.peek() == '0' || in.peek() == '1') {
         char c; in >> c; bin += c;
       }
-      temp.key1 = std::stoull(bin, nullptr, 2);
+      if (!bin.empty()) input.key1 = std::stoull(bin, nullptr, 2);
+      else in.setstate(std::ios::failbit);
     }
     else if (label == "key2") {
       double re, im;
-      skipChar(in, '#'); skipChar(in, 'c'); skipChar(in, '(');
-      in >> re >> im;
-      skipChar(in, ')');
-      temp.key2 = { re, im };
+      in >> DelimiterIO{ '#' } >> DelimiterIO{ 'c' } >> DelimiterIO{ '(' } >> re >> im >> DelimiterIO{ ')' };
+      input.key2 = { re, im };
     }
     else if (label == "key3") {
-      skipChar(in, '"');
-      std::getline(in, temp.key3, '"');
+      in >> DelimiterIO{ '"' };
+      std::getline(in, input.key3, '"');
     }
-    skipChar(in, ':');
+    in >> DelimiterIO{ ':' };
   }
-  skipChar(in, ')');
+  in >> DelimiterIO{ ')' };
 
-  if (in) dest = temp;
+  if (in) dest = input;
   return in;
 }
 
 std::ostream& operator<<(std::ostream& out, const DataStruct& src) {
-  out << "(:key1 0b";
-  std::string b;
-  unsigned long long n = src.key1;
-  if (n == 0) b = "0";
-  while (n > 0) { b += (n % 2 ? '1' : '0'); n /= 2; }
-  std::reverse(b.begin(), b.end());
+  std::ostream::sentry sentry(out);
+  if (!sentry) return out;
 
-  out << b << ":key2 #c(" << std::fixed << std::setprecision(1)
+  out << "(:key1 0b" << (src.key1 == 0 ? "0" : "");
+  if (src.key1 > 0) {
+    std::string b;
+    unsigned long long n = src.key1;
+    while (n > 0) { b += (n % 2 ? '1' : '0'); n /= 2; }
+    std::reverse(b.begin(), b.end());
+    out << b;
+  }
+
+  out << ":key2 #c(" << std::fixed << std::setprecision(1)
     << src.key2.real() << " " << src.key2.imag() << "):key3 \""
     << src.key3 << "\":)";
   return out;
@@ -74,9 +100,15 @@ std::ostream& operator<<(std::ostream& out, const DataStruct& src) {
 int main() {
   std::vector<DataStruct> data;
 
-  std::copy(std::istream_iterator<DataStruct>(std::cin),
-    std::istream_iterator<DataStruct>(),
-    std::back_inserter(data));
+  while (!std::cin.eof()) {
+    std::copy(std::istream_iterator<DataStruct>(std::cin),
+      std::istream_iterator<DataStruct>(),
+      std::back_inserter(data));
+    if (std::cin.fail() && !std::cin.eof()) {
+      std::cin.clear();
+      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    }
+  }
 
   std::sort(data.begin(), data.end(), [](const DataStruct& a, const DataStruct& b) {
     if (a.key1 != b.key1) return a.key1 < b.key1;
