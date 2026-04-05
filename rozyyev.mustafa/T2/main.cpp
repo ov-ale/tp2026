@@ -10,8 +10,8 @@
 #include <cstdlib>
 
 struct DataStruct {
-    long long key1;                 
-    std::complex<double> key2;     
+    long long key1;
+    std::complex<double> key2;
     std::string key3;
 };
 
@@ -55,13 +55,12 @@ bool compareDataStruct(const DataStruct& a, const DataStruct& b);
 int main() {
     std::vector<DataStruct> data;
 
-    while (std::cin) {
+    while (!std::cin.eof()) {
         std::copy(
             std::istream_iterator<DataStruct>(std::cin),
             std::istream_iterator<DataStruct>(),
             std::back_inserter(data)
-                 );
-
+        );
         if (std::cin.fail() && !std::cin.eof()) {
             std::cin.clear();
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -95,14 +94,10 @@ std::istream& operator>>(std::istream& in, DelimiterIO&& dest) {
 
 std::istream& operator>>(std::istream& in, SllIO&& dest) {
     std::istream::sentry sentry(in);
-    if (!sentry) {
-        return in;
-    }
+    if (!sentry) return in;
 
     in >> dest.ref;
-    if (!in) {
-        return in;
-    }
+    if (!in) return in;
 
     if (in.peek() == 'l' || in.peek() == 'L') {
         in.get();
@@ -118,13 +113,11 @@ std::istream& operator>>(std::istream& in, SllIO&& dest) {
 
 std::istream& operator>>(std::istream& in, CmpIO&& dest) {
     std::istream::sentry sentry(in);
-    if (!sentry) {
-        return in;
-    }
+    if (!sentry) return in;
 
     double re = 0.0, im = 0.0;
-    in >> DelimiterIO{ '#' } >> DelimiterIO{ 'c' } >> DelimiterIO{ '(' }
-    >> re >> im >> DelimiterIO{ ')' };
+    in >> DelimiterIO{ '#' } >> DelimiterIO{ 'c' } >> DelimiterIO{ '(' } >> re >> im >> DelimiterIO{ ')' };
+
     if (in) {
         dest.ref = std::complex<double>(re, im);
     }
@@ -206,16 +199,14 @@ std::ostream& operator<<(std::ostream& out, const DataStruct& src) {
 }
 
 bool compareDataStruct(const DataStruct& a, const DataStruct& b) {
-    if (a.key1 != b.key1) {
+    if (a.key1 != b.key1)
         return a.key1 < b.key1;
-    }
 
     double absA = std::abs(a.key2);
     double absB = std::abs(b.key2);
-   
-    if (std::abs(absA - absB) > 1e-9) {
+    const double eps = 1e-9;
+    if (std::abs(absA - absB) > eps)
         return absA < absB;
-    }
 
     return a.key3.length() < b.key3.length();
 }
