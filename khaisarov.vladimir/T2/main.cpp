@@ -11,6 +11,12 @@ namespace nspace {
         double key1;
         unsigned long long key2;
         std::string key3;
+
+        bool operator<(const DataStruct& other) const {
+            if (key1 != other.key1) return key1 < other.key1;
+            if (key2 != other.key2) return key2 < other.key2;
+            return key3.length() < other.key3.length();
+        }
     };
 
     struct DelimiterIO {
@@ -114,11 +120,7 @@ int main() {
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
     }
-    std::sort(data.begin(), data.end(), [](const nspace::DataStruct& a, const nspace::DataStruct& b) {
-        if (a.key1 != b.key1) return a.key1 < b.key1;
-        if (a.key2 != b.key2) return a.key2 < b.key2;
-        return a.key3.length() < b.key3.length();
-    });
+    std::sort(data.begin(), data.end());
     std::copy(
         data.begin(),
         data.end(),
