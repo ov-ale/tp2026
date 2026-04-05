@@ -7,8 +7,8 @@
 #include <iterator>
 #include <sstream>
 #include <cctype>
-#include <regex>
 #include <iomanip>
+#include <limits>
 
 struct DataStruct {
     unsigned long long key1;
@@ -34,18 +34,24 @@ bool parseOctULL(const std::string& str, unsigned long long& value) {
 }
 
 bool parseComplex(const std::string& str, std::complex<double>& value) {
-    std::regex complex_regex(R"(#c\(([+-]?\d*\.?\d+)\s+([+-]?\d*\.?\d+)\))");
-    std::smatch match;
-    if (std::regex_match(str, match, complex_regex) && match.size() == 3) {
-        double real, imag;
-        std::stringstream s_real(match[1].str());
-        std::stringstream s_imag(match[2].str());
-        if (s_real >> real && s_imag >> imag) {
-            value = std::complex<double>(real, imag);
-            return true;
-        }
+    if (str.length() < 7 || str.substr(0, 3) != "#c(" || str.back() != ')') {
+        return false;
     }
-    return false;
+    double real, imag;
+    std::string values = str.substr(3, str.length() - 4);
+    std::stringstream ss(values);
+    if (!(ss >> real >> imag)) {
+        return false;
+    }
+    size_t space_pos = values.find(' ');
+    if (space_pos == std::string::npos || values[0] == ' ' || values.back() == ' ') {
+        return false;
+    }
+    if (values[space_pos + 1] == ' ') {
+        return false;
+    }
+    value = std::complex<double>(real, imag);
+    return true;
 }
 
 bool parseString(const std::string& str, std::string& value) {
@@ -154,7 +160,7 @@ bool compareData(const DataStruct& d1, const DataStruct& d2) {
     }
     double abs_key1 = std::abs(d1.key2);
     double abs_key2 = std::abs(d2.key2);
-    if (abs_key1 != abs_key2) {
+    if (std::fabs(abs_key1 - abs_key2) > std::numeric_limits<double>::epsilon()) {
         return abs_key1 < abs_key2;
     }
     return d1.key3.length() < d2.key3.length();
