@@ -2,4 +2,5 @@
 int main()
 {
   std::cout<<"ivan.grishchenko"<<std::endl;
+  return 0;
 }
