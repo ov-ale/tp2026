@@ -1,6 +1,6 @@
 #include "rhombus.h"
 
-Rhombus::Rhombus(const Point& center, double vD, double hD){
+Rhombus::Rhombus(const Point& center, double vD, double hD): centerP(center){
     if(vD <= 0 || hD <= 0){
         throw std::invalid_argument("Diagonals must be possitive");
     }
