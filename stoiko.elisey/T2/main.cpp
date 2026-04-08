@@ -80,14 +80,29 @@ std::istream& operator>>(std::istream& in, OctLiteralIO&& dest) {
     in.get();
 
     unsigned long long num = 0;
+    bool has_digits = false;
 
     while (true) {
         int digit = in.peek();
         if (digit >= '0' && digit <= '7') {
+            has_digits = true;
             in.get();
+
+            if (num > (std::numeric_limits<unsigned long long>::max() - (digit - '0')) / 8) {
+                in.setstate(std::ios::failbit);
+                return in;
+            }
             num = num * 8 + (digit - '0');
         } else {
             break;
+        }
+    }
+
+    if (!has_digits) {
+        int next = in.peek();
+        if (next != ':' && !std::isspace(next) && next != ')') {
+            in.setstate(std::ios::failbit);
+            return in;
         }
     }
 
@@ -152,7 +167,7 @@ std::istream& operator>>(std::istream& in, LabelIO&& dest) {
 }
 
 void cleanup_whitespaces(std::istream& in) {
-    while (in.peek() != EOF && std::isspace(static_cast<unsigned char>(in.peek()))) {
+    while (in.peek() != std::istream::traits_type::eof() && std::isspace(static_cast<unsigned char>(in.peek()))) {
         in.get();
     }
 }
@@ -265,7 +280,8 @@ bool compare_keys(const DataStruct& a, const DataStruct& b) {
         return a.key1 < b.key1;
     }
 
-    if (a.key2 != b.key2) {
+    const double EPSILON = 1e-9;
+    if (std::abs(std::abs(a.key2) - std::abs(b.key2)) > EPSILON) {
         return std::abs(a.key2) < std::abs(b.key2);
     }
 
