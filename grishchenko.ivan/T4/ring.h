@@ -18,4 +18,4 @@ private:
     double innerRadius_;
 };
 
-#endif // RING_H
+#endif 
