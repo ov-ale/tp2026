@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <limits>
 #include <cmath>
+#include <sstream>
 
 struct DataStruct {
     double key1;
@@ -163,7 +164,6 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
     }
     if (has_key1 && has_key2 && has_key3) {
         dest = temp;
-        in.clear();
     } else {
         in.setstate(std::ios::failbit);
     }
@@ -194,14 +194,17 @@ bool compare(const DataStruct& a, const DataStruct& b) {
 }
 int main() {
     std::vector<DataStruct> data;
-    DataStruct ds;
+    std::string line;
 
-    while (std::cin >> ds) {
-        data.push_back(ds);
-    }
-    if (std::cin.fail() && !std::cin.eof()) {
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    while (std::getline(std::cin, line)) {
+        if (line.empty()) {
+            continue;
+        }
+        std::istringstream iss(line);
+        DataStruct ds;
+        if (iss >> ds) {
+            data.push_back(ds);
+        }
     }
     std::sort(data.begin(), data.end(), compare);
 
@@ -213,4 +216,3 @@ int main() {
     return 0;
 }
 //
-
