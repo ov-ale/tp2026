@@ -53,5 +53,6 @@ int main() {
     for (const auto& shape : shapes) {
         printShapeInfo(*shape);
     }
+    std::cout<<"\n";
     return 0;
 }
