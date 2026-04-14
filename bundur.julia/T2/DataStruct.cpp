@@ -64,7 +64,7 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
     in>>DelimiterIO{'('};
     for (int i=0; i<3; ++i) {
         std::string label;
-        in>>DelimiterIO{':'}; 
+        in>>DelimiterIO{':'};
         if (!(in>>label)) {
             break;
         }

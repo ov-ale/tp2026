@@ -11,20 +11,20 @@ struct DataStruct {
 bool compareData(const DataStruct& lhs, const DataStruct& rhs);
 std::istream& operator>>(std::istream& in, DataStruct& dest);
 std::ostream& operator<<(std::ostream& out, const DataStruct& src);
-struct DelimiterIO { 
-    char exp; 
+struct DelimiterIO {
+    char exp;
 };
-struct LabelIO { 
-    std::string exp; 
+struct LabelIO {
+    std::string exp;
 };
-struct DoubleLitIO { 
-    double& ref; 
+struct DoubleLitIO {
+    double& ref;
 };
-struct UllLitIO { 
-    unsigned long long& ref; 
+struct UllLitIO {
+    unsigned long long& ref;
 };
-struct StringIO { 
-    std::string& ref; 
+struct StringIO {
+    std::string& ref;
 };
 std::istream& operator>>(std::istream& in, DelimiterIO&& dest);
 std::istream& operator>>(std::istream& in, LabelIO&& dest);
