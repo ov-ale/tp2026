@@ -1,4 +1,3 @@
-//ULL LIT || CMP LSP
 #include <iostream>
 #include <sstream>
 #include <string>
