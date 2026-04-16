@@ -111,6 +111,7 @@ std::istream& operator>>(std::istream& in, DelimiterIO&& dest)
     {
         in.setstate(std::ios::failbit);
     }
+
     return in;
 }
 
