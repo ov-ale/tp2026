@@ -61,17 +61,16 @@ int main()
 {
     std::vector<DataStruct> data;
 
-    std::string line;
-    while (std::getline(std::cin, line))
+    while (!std::cin.eof())
     {
-        if (line.empty()) continue;
+            std::copy(std::istream_iterator<DataStruct>(std::cin),
+                std::istream_iterator<DataStruct>(),
+                std::back_inserter(data));
 
-        std::istringstream iss(line);
-        DataStruct temp;
-
-        if (iss >> temp)
+        if (std::cin.fail() && !std::cin.eof())
         {
-            data.push_back(temp);
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
     }
 
@@ -79,7 +78,7 @@ int main()
 
     std::copy(data.begin(), data.end(), std::ostream_iterator<DataStruct>(std::cout, "\n"));
 
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 bool compareDataStruct(const DataStruct& a, const DataStruct& b)
