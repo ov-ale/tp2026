@@ -154,6 +154,7 @@ std::istream& operator>>(std::istream& in, CmpIO&& dest)
     {
         dest.ref = std::complex<double>(re, im);
     }
+
     return in;
 }
 
