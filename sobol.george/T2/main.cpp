@@ -7,6 +7,9 @@
 #include <iomanip>
 #include <complex>
 #include <algorithm>
+#include<cstdlib>
+#include <cmath>
+#include <limits>
 
 struct DataStruct
 {
