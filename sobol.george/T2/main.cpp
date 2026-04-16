@@ -173,6 +173,7 @@ std::istream& operator>>(std::istream& in, StrIO&& dest)
     {
         in.setstate(std::ios::failbit);
     }
+
     return in;
 }
 
