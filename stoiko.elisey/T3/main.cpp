@@ -328,7 +328,7 @@ int main(int argc, char* argv[]) {
         );
     }
 
-    out_polygons(polygons);
+    // out_polygons(polygons);
 
     std::cout << std::fixed << std::setprecision(1);
 
