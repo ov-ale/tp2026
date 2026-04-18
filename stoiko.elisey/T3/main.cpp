@@ -253,6 +253,43 @@ struct IsInsideFrame {
     }
 };
 
+bool operator==(const Point &a, const Point &b) {
+    return (a.x == b.x) && (a.y == b.y);
+}
+
+bool operator==(const Polygon &a, const Polygon &b) {
+    if (a.points.size() == b.points.size()) {
+        return std::equal(
+                    a.points.begin(), a.points.end(),
+                    b.points.begin()
+                );
+    }
+    return false;
+}
+
+struct MaxSeqState {
+    std::size_t cur;
+    std::size_t best;
+};
+
+struct MaxSeqAccumulator {
+    const Polygon& target;
+
+    explicit MaxSeqAccumulator(const Polygon& p)
+        : target(p)
+    {}
+
+    MaxSeqState operator()(MaxSeqState state, const Polygon& p) const {
+        if (p == target) {
+            ++state.cur;
+            state.best = std::max(state.best, state.cur);
+        } else {
+            state.cur = 0;
+        }
+        return state;
+    }
+};
+
 int main(int argc, char* argv[]) {
     if (argc != 2) {
         std::cerr << "ERROR: No file name provided or incorrect file name\n";
@@ -513,8 +550,27 @@ int main(int argc, char* argv[]) {
 
             std::cout << (ok ? "<TRUE>\n" : "<FALSE>\n");
         } else if (main_cmd == "MAXSEQ") {
-            // add operator== for Polygons
-            // use std::adjacent_find in loop (or std::search)
+            Polygon poly;
+            iss >> poly;
+
+            if (!iss || (iss >> std::ws && !iss.eof())) {
+                std::cout << "<INVALID COMMAND>\n";
+                continue;
+            }
+
+            if (polygons.empty()) {
+                std::cout << "0\n";
+                continue;
+            }
+
+            MaxSeqState res = std::accumulate(
+                polygons.begin(),
+                polygons.end(),
+                MaxSeqState{0, 0},
+                MaxSeqAccumulator(poly)
+            );
+
+            std::cout << res.best << "\n";
         } else {
             std::cerr << "<INVALID COMMAND>\n";
             continue;
