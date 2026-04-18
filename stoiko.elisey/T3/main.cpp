@@ -13,7 +13,6 @@
 #include <vector>
 
 // variant 17: INFRAME MAXSEQ
-// #define DEBUG
 
 using namespace std::placeholders;
 
@@ -88,20 +87,6 @@ std::istream& operator>>(std::istream& in, Polygon& dest) {
     return in;
 }
 
-#ifdef DEBUG
-void out_polygons(std::vector<Polygon> &polygons) {
-    for (std::size_t i = 0; i < polygons.size(); ++i) {
-        std::cout << polygons[i].points.size() << " ";
-        for (std::size_t j = 0; j < polygons[i].points.size(); ++j) {
-            std::cout << "(" << polygons[i].points[j].x << ";" << polygons[i].points[j].y << ") ";
-        }
-        std::cout << "\n";
-    }
-}
-#endif
-
-using ll = long long;
-
 struct GaussSum {
     const std::vector<Point> &p;
     std::size_t n;
@@ -113,12 +98,12 @@ struct GaussSum {
         , i(0)
     {}
 
-    ll operator()(ll acc, const Point &curr) {
+    long long operator()(long long acc, const Point &curr) {
         const Point &next = p[(i + 1) % n];
 
-        ll term =
-            static_cast<ll>(curr.x) * next.y -
-            static_cast<ll>(next.x) * curr.y;
+        long long term =
+            static_cast<long long>(curr.x) * next.y -
+            static_cast<long long>(next.x) * curr.y;
 
         ++i;
         return acc + term;
@@ -127,7 +112,7 @@ struct GaussSum {
 
 double area(const Polygon &poly) {
     const std::vector<Point> &p = poly.points;
-    ll sum = 0;
+    long long sum = 0;
 
     sum = std::accumulate(
         p.begin(),
@@ -333,10 +318,6 @@ int main(int argc, char* argv[]) {
             }
         }
     }
-
-    #ifdef DEBUG
-    out_polygons(polygons);
-    #endif
 
     std::cout << std::fixed << std::setprecision(1);
 
