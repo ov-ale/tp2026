@@ -12,9 +12,10 @@
 #include <string>
 #include <vector>
 
-using namespace std::placeholders;
-
+// variant 17: INFRAME MAXSEQ
 // #define DEBUG
+
+using namespace std::placeholders;
 
 struct Point {
     int x, y;
@@ -87,6 +88,7 @@ std::istream& operator>>(std::istream& in, Polygon& dest) {
     return in;
 }
 
+#ifdef DEBUG
 void out_polygons(std::vector<Polygon> &polygons) {
     for (std::size_t i = 0; i < polygons.size(); ++i) {
         std::cout << polygons[i].points.size() << " ";
@@ -96,6 +98,7 @@ void out_polygons(std::vector<Polygon> &polygons) {
         std::cout << "\n";
     }
 }
+#endif
 
 using ll = long long;
 
@@ -136,15 +139,9 @@ double area(const Polygon &poly) {
     return std::abs(sum) / 2.0;
 }
 
-struct AreaCalculator {
-    double operator()(const Polygon& p) const {
-        return area(p);
-    }
-};
-
 struct SumArea {
     double operator()(double acc, const Polygon &p) const {
-        return acc + AreaCalculator()(p);
+        return acc + area(p);
     }
 };
 
@@ -154,21 +151,15 @@ struct IsEven {
     }
 };
 
-struct IsOdd {
-    bool operator()(const Polygon& p) const {
-        return p.points.size() % 2 != 0;
-    }
-};
-
 struct SumIfEven {
     double operator()(double acc, const Polygon &p) const {
-        return IsEven()(p) ? acc + AreaCalculator()(p) : acc;
+        return IsEven()(p) ? acc + area(p) : acc;
     }
 };
 
 struct SumIfOdd {
     double operator()(double acc, const Polygon &p) const {
-        return !(IsEven()(p)) ? acc + AreaCalculator()(p) : acc;
+        return !(IsEven()(p)) ? acc + area(p) : acc;
     }
 };
 
@@ -180,13 +171,13 @@ struct AreaIfVertexCount {
     {}
 
     double operator()(double acc, const Polygon& p) const {
-        return (p.points.size() == n) ? acc + AreaCalculator()(p) : acc;
+        return (p.points.size() == n) ? acc + area(p) : acc;
     }
 };
 
 struct AreaCompare {
     bool operator()(const Polygon &a, const Polygon &b) const {
-        return AreaCalculator()(a) < AreaCalculator()(b);
+        return area(a) < area(b);
     }
 };
 
@@ -213,31 +204,31 @@ struct Frame {
     bool initialized = false;
 };
 
-struct PointsCompareX {
-    bool operator()(const Point &a, const Point &b) const {
-        return a.x < b.x;
-    }
-};
-
-struct PointsCompareY {
-    bool operator()(const Point &a, const Point &b) const {
-        return a.y < b.y;
-    }
-};
-
 Frame get_local_frame(const Polygon& p) {
     const auto& points = p.points;
+
+    auto compare_x = std::bind(
+        std::less<int>(),
+        std::bind(&Point::x, _1),
+        std::bind(&Point::x, _2)
+    );
+
+    auto compare_y = std::bind(
+        std::less<int>(),
+        std::bind(&Point::y, _1),
+        std::bind(&Point::y, _2)
+    );
 
     auto x = std::minmax_element(
         points.begin(),
         points.end(),
-        PointsCompareX()
+        compare_x
     );
 
     auto y = std::minmax_element(
         points.begin(),
         points.end(),
-        PointsCompareY()
+        compare_y
     );
 
     return { x.first->x, x.second->x, y.first->y, y.second->y, true };
@@ -368,41 +359,45 @@ int main(int argc, char* argv[]) {
             }
 
             if (sub_cmd == "EVEN") {
-                double area = std::accumulate(
+                double result = std::accumulate(
                     polygons.begin(),
                     polygons.end(),
                     0.0,
                     SumIfEven()
                 );
 
-                std::cout << area << "\n";
+                std::cout << result << "\n";
             } else if (sub_cmd == "ODD") {
-                double area = std::accumulate(
+                double result = std::accumulate(
                     polygons.begin(),
                     polygons.end(),
                     0.0,
                     SumIfOdd()
                 );
 
-                std::cout << area << "\n";
+                std::cout << result << "\n";
             } else if (sub_cmd == "MEAN") {
                 if (polygons.empty()) {
                     std::cout << "<INVALID COMMAND>\n";
                     continue;
                 }
 
-                double area = std::accumulate(
+                double result = std::accumulate(
                     polygons.begin(),
                     polygons.end(),
                     0.0,
                     SumArea()
                 );
 
-                std::cout << area / polygons.size() << "\n";
+                std::cout << result / polygons.size() << "\n";
             } else {
                 try {
                     std::size_t pos = 0;
                     std::size_t num_of_vertexes = std::stoul(sub_cmd, &pos);
+
+                    if (sub_cmd[0] == '-') {
+                        throw std::invalid_argument("ERROR: number of vertexes can't be negative");
+                    }
 
                     if (pos != sub_cmd.size()) {
                         throw std::invalid_argument("ERROR: not pure number");
@@ -446,8 +441,7 @@ int main(int argc, char* argv[]) {
                     AreaCompare()
                 );
 
-                // надо ли проверить итератор перед разыменованием?
-                std::cout << AreaCalculator()(*max_element_it) << "\n";
+                std::cout << area(*max_element_it) << "\n";
             } else if (sub_cmd == "VERTEXES") {
                 auto max_element_it = std::max_element(
                     polygons.begin(),
@@ -481,7 +475,7 @@ int main(int argc, char* argv[]) {
                     AreaCompare()
                 );
 
-                std::cout << AreaCalculator()(*min_element_it) << "\n";
+                std::cout << area(*min_element_it) << "\n";
             } else if (sub_cmd == "VERTEXES") {
                 auto min_element_it = std::min_element(
                     polygons.begin(),
@@ -515,7 +509,7 @@ int main(int argc, char* argv[]) {
                 std::size_t cnt = std::count_if(
                     polygons.begin(),
                     polygons.end(),
-                    IsOdd()
+                    std::bind(std::logical_not<bool>(), std::bind(IsEven(), _1))
                 );
 
                 std::cout << cnt << "\n";
@@ -596,7 +590,6 @@ int main(int argc, char* argv[]) {
             std::cout << res.best << "\n";
         } else {
             std::cout << "<INVALID COMMAND>\n";
-            continue;
         }
     }
 
