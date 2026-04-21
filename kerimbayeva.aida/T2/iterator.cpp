@@ -12,12 +12,25 @@ struct DataStruct {
     std::string key3;
 };
 
+std::string trim(const std::string& s) {
+    size_t start = 0;
+    while (start < s.length() && (s[start] == ' ' || s[start] == '\t')) {
+        start++;
+    }
+    size_t end = s.length();
+    while (end > start && (s[end - 1] == ' ' || s[end - 1] == '\t')) {
+        end--;
+    }
+    return s.substr(start, end - start);
+}
+
 bool checkULLLit(const std::string& s) {
-    if (s.length() < 3) return false;
-    std::string suffix = s.substr(s.length() - 3);
+    std::string str = trim(s);
+    if (str.length() < 3) return false;
+    std::string suffix = str.substr(str.length() - 3);
     if (suffix == "ull" || suffix == "ULL") {
-        for (size_t i = 0; i < s.length() - 3; i++) {
-            if (!std::isdigit(s[i])) return false;
+        for (size_t i = 0; i < str.length() - 3; i++) {
+            if (!std::isdigit(str[i])) return false;
         }
         return true;
     }
@@ -25,11 +38,12 @@ bool checkULLLit(const std::string& s) {
 }
 
 bool checkULLBin(const std::string& s) {
-    if (s.length() < 3) return false;
-    if (s[0] != '0') return false;
-    if (s[1] != 'b' && s[1] != 'B') return false;
-    for (size_t i = 2; i < s.length(); i++) {
-        if (s[i] != '0' && s[i] != '1') return false;
+    std::string str = trim(s);
+    if (str.length() < 3) return false;
+    if (str[0] != '0') return false;
+    if (str[1] != 'b' && str[1] != 'B') return false;
+    for (size_t i = 2; i < str.length(); i++) {
+        if (str[i] != '0' && str[i] != '1') return false;
     }
     return true;
 }
@@ -39,16 +53,15 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
     if (!std::getline(in, line)) {
         return in;
     }
-
-    if (line.find('(') == std::string::npos || line.find(')') == std::string::npos) {
+    line = trim(line);
+    if (line.empty() || line.front() != '(' || line.back() != ')') {
         in.setstate(std::ios::failbit);
         return in;
     }
-
+    line = line.substr(1, line.length() - 2);
     dest.key1 = 0;
     dest.key2 = 0;
     dest.key3 = "";
-
     bool key1Valid = false;
     bool key2Valid = false;
     bool key3Valid = false;
@@ -60,13 +73,12 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
             start++;
         }
         std::string token;
-        while (start < line.size() && line[start] != ':' && line[start] != ')') {
+        while (start < line.size() && line[start] != ':'
+            && line[start] != ')') {
             token += line[start];
             start++;
         }
-        while (!token.empty() && std::isspace(token.back())) {
-            token.pop_back();
-        }
+        token = trim(token);
         if (checkULLLit(token)) {
             std::string numStr;
             for (char c : token) {
@@ -85,13 +97,12 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
             start++;
         }
         std::string token;
-        while (start < line.size() && line[start] != ':' && line[start] != ')') {
+        while (start < line.size() && line[start] != ':'
+            && line[start] != ')') {
             token += line[start];
             start++;
         }
-        while (!token.empty() && std::isspace(token.back())) {
-            token.pop_back();
-        }
+        token = trim(token);
         if (checkULLBin(token)) {
             std::string binStr = token.substr(2);
             dest.key2 = std::stoull(binStr, nullptr, 2);
@@ -114,12 +125,11 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
     if (!key1Valid || !key2Valid || !key3Valid) {
         in.setstate(std::ios::failbit);
     }
-
     return in;
 }
 
 std::ostream& operator<<(std::ostream& out, const DataStruct& src) {
-    out << "(:key1 " << src.key1 << "u11";
+    out << "(:key1 " << src.key1 << "ull";
     out << ":key2 0b";
     if (src.key2 == 0) {
         out << "0";
@@ -145,21 +155,11 @@ bool compare(const DataStruct& a, const DataStruct& b) {
 
 int main() {
     std::vector<DataStruct> data;
-    std::string line;
-
-    while (std::getline(std::cin, line)) {
-        if (line.empty()) continue;
-        std::istringstream iss(line);
-        DataStruct ds;
-        if (iss >> ds) {
-            data.push_back(ds);
-        }
-    }
-
+    std::istream_iterator<DataStruct> it(std::cin);
+    std::istream_iterator<DataStruct> end;
+    std::copy(it, end, std::back_inserter(data));
     std::sort(data.begin(), data.end(), compare);
-
     std::copy(data.begin(), data.end(),
         std::ostream_iterator<DataStruct>(std::cout, "\n"));
-
     return 0;
 }
