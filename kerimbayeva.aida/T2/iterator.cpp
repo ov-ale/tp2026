@@ -8,7 +8,7 @@
 
 struct DataStruct {
     unsigned long long key1;
-    unsigned long long key2;
+    std::string key2;
     std::string key3;
 };
 
@@ -48,6 +48,14 @@ bool checkULLBin(const std::string& s) {
     return true;
 }
 
+unsigned long long binStrToULL(const std::string& s) {
+    unsigned long long val = 0;
+    for (size_t i = 2; i < s.length(); i++) {
+        val = (val << 1) | (s[i] - '0');
+    }
+    return val;
+}
+
 std::istream& operator>>(std::istream& in, DataStruct& dest) {
     std::string line;
     if (!std::getline(in, line)) {
@@ -60,7 +68,7 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
     }
     line = line.substr(1, line.length() - 2);
     dest.key1 = 0;
-    dest.key2 = 0;
+    dest.key2 = "";
     dest.key3 = "";
     bool key1Valid = false;
     bool key2Valid = false;
@@ -104,8 +112,7 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
         }
         token = trim(token);
         if (checkULLBin(token)) {
-            std::string binStr = token.substr(2);
-            dest.key2 = std::stoull(binStr, nullptr, 2);
+            dest.key2 = token;
             key2Valid = true;
         }
     }
@@ -128,26 +135,18 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
     return in;
 }
 
-std::string toBinaryString(unsigned long long n) {
-    if (n == 0) return "0";
-    std::string bin;
-    while (n > 0) {
-        bin = (n & 1 ? '1' : '0') + bin;
-        n >>= 1;
-    }
-    return bin;
-}
-
 std::ostream& operator<<(std::ostream& out, const DataStruct& src) {
     out << "(:key1 " << src.key1 << "ull";
-    out << ":key2 0b" << toBinaryString(src.key2);
+    out << ":key2 " << src.key2;
     out << ":key3 \"" << src.key3 << "\":)";
     return out;
 }
 
 bool compare(const DataStruct& a, const DataStruct& b) {
     if (a.key1 != b.key1) return a.key1 < b.key1;
-    if (a.key2 != b.key2) return a.key2 < b.key2;
+    unsigned long long valA = binStrToULL(a.key2);
+    unsigned long long valB = binStrToULL(b.key2);
+    if (valA != valB) return valA < valB;
     return a.key3.length() < b.key3.length();
 }
 
