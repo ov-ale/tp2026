@@ -152,9 +152,17 @@ bool compare(const DataStruct& a, const DataStruct& b) {
 
 int main() {
     std::vector<DataStruct> data;
-    std::istream_iterator<DataStruct> it(std::cin);
-    std::istream_iterator<DataStruct> end;
-    std::copy(it, end, std::back_inserter(data));
+    std::string line;
+
+    while (std::getline(std::cin, line)) {
+        if (line.empty()) continue;
+        std::istringstream iss(line);
+        DataStruct ds;
+        if (iss >> ds) {
+            data.push_back(ds);
+        }
+    }
+
     std::sort(data.begin(), data.end(), compare);
     std::copy(data.begin(), data.end(),
         std::ostream_iterator<DataStruct>(std::cout, "\n"));
