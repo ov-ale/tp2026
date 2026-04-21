@@ -104,7 +104,6 @@ int main(int argc, char* argv[]) {
     Polygon p;
     if (parsePolygon(line, p)) data.push_back(p);
   }
-  std::cout << std::fixed << std::setprecision(1);
   std::string cmd;
   while (std::cin >> cmd) {
     if (cmd == "AREA") {
@@ -113,26 +112,28 @@ int main(int argc, char* argv[]) {
       if (arg == "EVEN") {
         for (size_t i = 0; i < data.size(); ++i)
           if (isSizeEven(data[i])) sum += getArea(data[i]);
-        std::cout << sum << "\n";
+        std::cout << std::fixed << std::setprecision(1) << sum << "\n";
       }
       else if (arg == "ODD") {
         for (size_t i = 0; i < data.size(); ++i)
           if (isSizeOdd(data[i])) sum += getArea(data[i]);
-        std::cout << sum << "\n";
+        std::cout << std::fixed << std::setprecision(1) << sum << "\n";
       }
       else if (arg == "MEAN") {
         if (data.empty()) std::cout << "<INVALID COMMAND>\n";
         else {
           for (size_t i = 0; i < data.size(); ++i) sum += getArea(data[i]);
-          std::cout << sum / static_cast<double>(data.size()) << "\n";
+          std::cout << std::fixed << std::setprecision(1)
+            << (sum / static_cast<double>(data.size())) << "\n";
         }
       }
       else {
         try {
           size_t n = std::stoul(arg);
+          if (n < 3) throw std::invalid_argument("");
           for (size_t i = 0; i < data.size(); ++i)
             if (isSizeN(data[i], n)) sum += getArea(data[i]);
-          std::cout << sum << "\n";
+          std::cout << std::fixed << std::setprecision(1) << sum << "\n";
         }
         catch (...) { std::cout << "<INVALID COMMAND>\n"; }
       }
@@ -144,13 +145,13 @@ int main(int argc, char* argv[]) {
         double maxA = 0;
         for (size_t i = 0; i < data.size(); ++i)
           maxA = std::max(maxA, getArea(data[i]));
-        std::cout << maxA << "\n";
+        std::cout << std::fixed << std::setprecision(1) << maxA << "\n";
       }
       else if (arg == "VERTEXES") {
         size_t maxV = 0;
         for (size_t i = 0; i < data.size(); ++i)
           maxV = std::max(maxV, data[i].points.size());
-        std::cout << static_cast<double>(maxV) << "\n";
+        std::cout << std::defaultfloat << maxV << "\n";
       }
       else std::cout << "<INVALID COMMAND>\n";
     }
@@ -163,6 +164,7 @@ int main(int argc, char* argv[]) {
       else {
         try {
           size_t n = std::stoul(arg);
+          if (n < 3) throw std::invalid_argument("");
           std::cout << std::count_if(data.begin(), data.end(),
             std::bind(isSizeN, std::placeholders::_1, n)) << "\n";
         }
