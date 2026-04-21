@@ -128,21 +128,19 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
     return in;
 }
 
+std::string toBinaryString(unsigned long long n) {
+    if (n == 0) return "0";
+    std::string bin;
+    while (n > 0) {
+        bin = (n & 1 ? '1' : '0') + bin;
+        n >>= 1;
+    }
+    return bin;
+}
+
 std::ostream& operator<<(std::ostream& out, const DataStruct& src) {
     out << "(:key1 " << src.key1 << "ull";
-    out << ":key2 0b";
-    if (src.key2 == 0) {
-        out << "0";
-    }
-    else {
-        std::string bin;
-        unsigned long long n = src.key2;
-        while (n > 0) {
-            bin = (n & 1 ? '1' : '0') + bin;
-            n >>= 1;
-        }
-        out << bin;
-    }
+    out << ":key2 0b" << toBinaryString(src.key2);
     out << ":key3 \"" << src.key3 << "\":)";
     return out;
 }
