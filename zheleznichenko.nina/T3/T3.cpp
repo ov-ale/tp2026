@@ -128,7 +128,7 @@ int main(int argc, char* argv[]) {
         if (data.empty()) { std::cout << "<INVALID COMMAND>\n"; }
         else {
           for (size_t i = 0; i < data.size(); ++i) sum += getArea(data[i]);
-          std::cout << sum / data.size() << "\n";
+          std::cout << sum / static_cast<double>(data.size()) << "\n";
         }
       }
       else {
@@ -155,7 +155,7 @@ int main(int argc, char* argv[]) {
         size_t maxV = 0;
         for (size_t i = 0; i < data.size(); ++i)
           maxV = std::max(maxV, data[i].points.size());
-        std::cout << (double)maxV << "\n";
+        std::cout << static_cast<double>(maxV) << "\n";
       }
       else std::cout << "<INVALID COMMAND>\n";
     }
