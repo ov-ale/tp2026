@@ -27,6 +27,10 @@ struct Polygon {
     }
 };
 
+bool isValidPolygon(const Polygon& p) {
+    return p.points.size() >= 3;
+}
+
 struct AreaCalculator {
     double operator()(const Polygon& p) const {
         double area = 0.0;
@@ -134,6 +138,7 @@ void processCommand(const std::string& line, std::vector<Polygon>& polygons) {
     std::string cmd;
     iss >> cmd;
     if (cmd.empty()) return;
+
     if (cmd == "AREA") {
         std::string arg;
         iss >> arg;
@@ -147,40 +152,57 @@ void processCommand(const std::string& line, std::vector<Polygon>& polygons) {
                 std::cout << "<INVALID COMMAND>" << '\n';
                 return;
             }
-            double total = std::accumulate(polygons.begin(), polygons.end(), 0.0, SumArea());
-            double mean = total / polygons.size();
+            double total = 0.0;
+            int validCount = 0;
+            for (const auto& p : polygons) {
+                if (isValidPolygon(p)) {
+                    total += AreaCalculator()(p);
+                    validCount++;
+                }
+            }
+            if (validCount == 0) {
+                std::cout << "<INVALID COMMAND>" << '\n';
+                return;
+            }
+            double mean = total / validCount;
             std::cout << std::fixed << std::setprecision(1) << mean << '\n';
             return;
         }
 
         if (arg == "EVEN") {
-            auto pred = std::bind(std::equal_to<int>(),
-                std::bind(std::modulus<int>(),
-                    std::bind(VertexCount(), std::placeholders::_1),
-                    2),
-                0);
-            double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0, SumAreaIf(pred));
+            double sum = 0.0;
+            for (const auto& p : polygons) {
+                if (isValidPolygon(p) && VertexCount()(p) % 2 == 0) {
+                    sum += AreaCalculator()(p);
+                }
+            }
             std::cout << std::fixed << std::setprecision(1) << sum << '\n';
             return;
         }
+
         if (arg == "ODD") {
-            auto pred = std::bind(std::equal_to<int>(),
-                std::bind(std::modulus<int>(),
-                    std::bind(VertexCount(), std::placeholders::_1),
-                    2),
-                1);
-            double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0, SumAreaIf(pred));
+            double sum = 0.0;
+            for (const auto& p : polygons) {
+                if (isValidPolygon(p) && VertexCount()(p) % 2 == 1) {
+                    sum += AreaCalculator()(p);
+                }
+            }
             std::cout << std::fixed << std::setprecision(1) << sum << '\n';
             return;
         }
 
         try {
             int num = std::stoi(arg);
-            if (num <= 0) throw std::invalid_argument("");
-            auto pred = std::bind(std::equal_to<int>(),
-                std::bind(VertexCount(), std::placeholders::_1),
-                num);
-            double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0, SumAreaIf(pred));
+            if (num < 3) {
+                std::cout << "<INVALID COMMAND>" << '\n';
+                return;
+            }
+            double sum = 0.0;
+            for (const auto& p : polygons) {
+                if (isValidPolygon(p) && VertexCount()(p) == num) {
+                    sum += AreaCalculator()(p);
+                }
+            }
             std::cout << std::fixed << std::setprecision(1) << sum << '\n';
             return;
         }
@@ -272,32 +294,31 @@ void processCommand(const std::string& line, std::vector<Polygon>& polygons) {
             return;
         }
         if (arg == "EVEN") {
-            auto pred = std::bind(std::equal_to<int>(),
-                std::bind(std::modulus<int>(),
-                    std::bind(VertexCount(), std::placeholders::_1),
-                    2),
-                0);
-            int cnt = std::count_if(polygons.begin(), polygons.end(), pred);
+            int cnt = 0;
+            for (const auto& p : polygons) {
+                if (isValidPolygon(p) && VertexCount()(p) % 2 == 0) cnt++;
+            }
             std::cout << cnt << '\n';
             return;
         }
         if (arg == "ODD") {
-            auto pred = std::bind(std::equal_to<int>(),
-                std::bind(std::modulus<int>(),
-                    std::bind(VertexCount(), std::placeholders::_1),
-                    2),
-                1);
-            int cnt = std::count_if(polygons.begin(), polygons.end(), pred);
+            int cnt = 0;
+            for (const auto& p : polygons) {
+                if (isValidPolygon(p) && VertexCount()(p) % 2 == 1) cnt++;
+            }
             std::cout << cnt << '\n';
             return;
         }
         try {
             int num = std::stoi(arg);
-            if (num <= 0) throw std::invalid_argument("");
-            auto pred = std::bind(std::equal_to<int>(),
-                std::bind(VertexCount(), std::placeholders::_1),
-                num);
-            int cnt = std::count_if(polygons.begin(), polygons.end(), pred);
+            if (num < 3) {
+                std::cout << "<INVALID COMMAND>" << '\n';
+                return;
+            }
+            int cnt = 0;
+            for (const auto& p : polygons) {
+                if (isValidPolygon(p) && VertexCount()(p) == num) cnt++;
+            }
             std::cout << cnt << '\n';
             return;
         }
@@ -347,15 +368,19 @@ void processCommand(const std::string& line, std::vector<Polygon>& polygons) {
             std::cout << "<INVALID COMMAND>" << '\n';
             return;
         }
+        if (!isValidPolygon(target)) {
+            std::cout << "<INVALID COMMAND>" << '\n';
+            return;
+        }
         int cnt = std::count_if(polygons.begin(), polygons.end(), IsCompatibleWith(target));
         std::cout << cnt << '\n';
         return;
     }
+
     std::cout << "<INVALID COMMAND>" << '\n';
 }
 
 int main(int argc, char* argv[]) {
-    setlocale(LC_ALL, "RUS");
     if (argc < 2) {
         std::cerr << "Error: file name not specified " << '\n';
         return 1;
