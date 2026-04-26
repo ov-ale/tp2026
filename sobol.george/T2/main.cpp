@@ -11,6 +11,7 @@
 #include <cmath>
 #include <limits>
 
+//comment for pull
 struct DataStruct
 {
     unsigned long long key1;
@@ -176,7 +177,7 @@ std::istream& operator>>(std::istream& in, StrIO&& dest)
 
     in >> std::ws;
 
-    if (!(in >> DelimiterIO{ '"' })) 
+    if (!(in >> DelimiterIO{ '"' }))
     {
         return in;
     }
@@ -194,7 +195,7 @@ std::istream& operator>>(std::istream& in, StrIO&& dest)
             {
                 dest.ref += c;
             }
-            else 
+            else
             {
                 in.setstate(std::ios::failbit);
                 return in;
