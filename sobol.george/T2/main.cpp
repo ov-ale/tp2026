@@ -64,17 +64,15 @@ int main()
 {
     std::vector<DataStruct> data;
 
-    while (!std::cin.eof())
+    std::string line;
+    while (std::getline(std::cin, line))
     {
-            std::copy(std::istream_iterator<DataStruct>(std::cin),
-                std::istream_iterator<DataStruct>(),
-                std::back_inserter(data));
+        if (line.empty()) continue;
 
-        if (std::cin.fail() && !std::cin.eof())
-        {
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        }
+        std::istringstream iss(line);
+        DataStruct temp;
+
+        if (iss >> temp) data.push_back(temp);
     }
 
     std::sort(data.begin(), data.end(), compareDataStruct);
@@ -122,24 +120,20 @@ std::istream& operator>>(std::istream& in, UllIO&& dest)
     std::istream::sentry sentry(in);
     if (!sentry) return in;
 
-    if (!(in >> dest.ref))
-    {
-        return in;
-    }
+    unsigned long long value;
+    std::string suffix;
 
-    char c1, c2, c3;
-    if (!in.get(c1) || !in.get(c2) || !in.get(c3))
-    {
+    if (!(in >> value >> suffix)) {
         in.setstate(std::ios::failbit);
         return in;
     }
 
-    bool valid = ((c1 == 'u' && c2 == 'l' && c3 == 'l') || (c1 == 'U' && c2 == 'L' && c3 == 'L'));
-    if (!valid)
-    {
+    if (suffix != "ull" && suffix != "ULL") {
         in.setstate(std::ios::failbit);
+        return in;
     }
 
+    dest.ref = value;
     return in;
 }
 
@@ -184,69 +178,80 @@ std::istream& operator>>(std::istream& in, DataStruct& dest)
     std::istream::sentry sentry(in);
     if (!sentry) return in;
 
-    DataStruct input;
-    bool hasKey1 = false, hasKey2 = false, hasKey3 = false;
-
     if (!(in >> DelimiterIO{ '(' } >> DelimiterIO{ ':' })) {
         in.setstate(std::ios::failbit);
         return in;
     }
 
-    for (size_t i = 0; i < 3; ++i) {
-        std::string key;
+    DataStruct input;
+    bool hasKey1 = false, hasKey2 = false, hasKey3 = false;
+    int fieldsRead = 0;
+    std::string key;
+
+    while (fieldsRead < 3 && in) {
+        in >> std::ws;
+
+        if (in.peek() == ':') {
+            in.get();
+            if (in.peek() == ')') {
+                in.get();
+                break;
+            }
+            else {
+                in.setstate(std::ios::failbit);
+                return in;
+            }
+        }
+
         if (!(in >> key)) {
             in.setstate(std::ios::failbit);
             return in;
         }
 
-        if (key == "key1")
-        {
-            if (hasKey1)
-            {
+        if (key == "key1") {
+            if (hasKey1) {
                 in.setstate(std::ios::failbit);
                 return in;
             }
             if (!(in >> UllIO{ input.key1 })) return in;
             hasKey1 = true;
+            fieldsRead++;
         }
         else if (key == "key2") {
-            if (hasKey2)
-            {
+            if (hasKey2) {
                 in.setstate(std::ios::failbit);
                 return in;
             }
             if (!(in >> CmpIO{ input.key2 })) return in;
             hasKey2 = true;
+            fieldsRead++;
         }
-        else if (key == "key3")
-        {
-            if (hasKey3)
-            {
+        else if (key == "key3") {
+            if (hasKey3) {
                 in.setstate(std::ios::failbit);
                 return in;
             }
             if (!(in >> StrIO{ input.key3 })) return in;
             hasKey3 = true;
+            fieldsRead++;
         }
-        else
-        {
+        else {
             in.setstate(std::ios::failbit);
             return in;
         }
-
-        if (i < 2)
-        {
-            if (!(in >> DelimiterIO{ ':' })) {
-                in.setstate(std::ios::failbit);
-                return in;
-            }
-        }
     }
 
-    if (!(in >> DelimiterIO{ ':' } >> DelimiterIO{ ')' }) || (!hasKey1 || !hasKey2 || !hasKey3))
-    {
+    if (!hasKey1 || !hasKey2 || !hasKey3) {
         in.setstate(std::ios::failbit);
         return in;
+    }
+
+    if (fieldsRead == 3) {
+        in >> std::ws;
+        if (!(in >> DelimiterIO{ ':' } >> DelimiterIO{ ')' })) {
+            in.setstate(std::ios::failbit);
+            return in;
+        }
     }
 
     dest = std::move(input);
