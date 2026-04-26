@@ -4,6 +4,7 @@
 #include <iterator>
 #include <string>
 #include <sstream>
+#include <cctype>
 
 struct DataStruct {
     unsigned long long key1;
@@ -11,87 +12,111 @@ struct DataStruct {
     std::string key3;
 };
 
+bool isULLLit(const std::string& s) {
+    if (s.length() < 4) return false;
+    for (size_t i = 0; i < s.length() - 3; i++) {
+        if (!std::isdigit(s[i])) return false;
+    }
+    std::string suf = s.substr(s.length() - 3);
+    return (suf == "ull" || suf == "ULL");
+}
+
+bool isULLBin(const std::string& s) {
+    if (s.length() < 3) return false;
+    if (s[0] != '0') return false;
+    if (s[1] != 'b' && s[1] != 'B') return false;
+    for (size_t i = 2; i < s.length(); i++) {
+        if (s[i] != '0' && s[i] != '1') return false;
+    }
+    return true;
+}
+
 std::istream& operator>>(std::istream& in, DataStruct& d) {
     std::string line;
     if (!std::getline(in, line)) return in;
 
-    std::istringstream iss(line);
-    char c;
-    iss >> c;
-    if (c != '(') {
+    size_t l = line.find('(');
+    size_t r = line.find(')');
+    if (l == std::string::npos || r == std::string::npos) {
         in.setstate(std::ios::failbit);
         return in;
     }
 
-    std::string token;
+    std::string s = line.substr(l + 1, r - l - 1);
+    std::istringstream iss(s);
+
+    d.key1 = 0;
+    d.key2 = 0;
+    d.key3 = "";
+
     bool k1 = false, k2 = false, k3 = false;
+    std::string token;
 
     while (iss >> token) {
         if (token == ":key1") {
-            std::string v;
-            iss >> v;
-            if (v.size() > 3) {
-                d.key1 = std::stoull(v.substr(0, v.size() - 3));
+            std::string val;
+            if (!(iss >> val)) break;
+            if (isULLLit(val)) {
+                d.key1 = std::stoull(val.substr(0, val.size() - 3));
                 k1 = true;
             }
         }
         else if (token == ":key2") {
-            std::string v;
-            iss >> v;
-            if (v.size() > 2 && v[0] == '0' && v[1] == 'b') {
-                d.key2 = std::stoull(v.substr(2), nullptr, 2);
+            std::string val;
+            if (!(iss >> val)) break;
+            if (isULLBin(val)) {
+                d.key2 = std::stoull(val.substr(2), nullptr, 2);
                 k2 = true;
             }
         }
         else if (token == ":key3") {
-            std::string v;
-            iss >> v;
-            if (v.size() > 1 && v[0] == '"') {
-                d.key3 = v.substr(1, v.size() - 2);
+            std::string val;
+            if (!(iss >> val)) break;
+            if (val.size() >= 2 && val.front() == '"' && val.back() == '"') {
+                d.key3 = val.substr(1, val.size() - 2);
                 k3 = true;
             }
         }
-        else if (token == ":)") break;
     }
 
-    if (!k1 || !k2 || !k3) in.setstate(std::ios::failbit);
+    if (!k1 || !k2 || !k3) {
+        in.setstate(std::ios::failbit);
+    }
     return in;
 }
 
 std::ostream& operator<<(std::ostream& out, const DataStruct& d) {
     out << "(:key1 " << d.key1 << "ull";
     out << ":key2 0b";
-
     if (d.key2 == 0) {
         out << "0";
     }
     else {
         std::string bin;
         unsigned long long n = d.key2;
-        while (n) {
-            bin = char('0' + (n & 1)) + bin;
+        while (n > 0) {
+            bin = (n & 1 ? '1' : '0') + bin;
             n >>= 1;
         }
         out << bin;
     }
-
     out << ":key3 \"" << d.key3 << "\":)";
     return out;
 }
 
-bool cmp(const DataStruct& a, const DataStruct& b) {
+bool compare(const DataStruct& a, const DataStruct& b) {
     if (a.key1 != b.key1) return a.key1 < b.key1;
     if (a.key2 != b.key2) return a.key2 < b.key2;
-    return a.key3.size() < b.key3.size();
+    return a.key3.length() < b.key3.length();
 }
 
 int main() {
-    std::vector<DataStruct> v;
-    std::copy(std::istream_iterator<DataStruct>(std::cin),
-        std::istream_iterator<DataStruct>(),
-        std::back_inserter(v));
-    std::sort(v.begin(), v.end(), cmp);
-    std::copy(v.begin(), v.end(),
+    std::vector<DataStruct> data;
+    std::istream_iterator<DataStruct> it(std::cin);
+    std::istream_iterator<DataStruct> end;
+    std::copy(it, end, std::back_inserter(data));
+    std::sort(data.begin(), data.end(), compare);
+    std::copy(data.begin(), data.end(),
         std::ostream_iterator<DataStruct>(std::cout, "\n"));
     return 0;
 }
