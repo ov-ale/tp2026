@@ -33,7 +33,8 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
             std::string val;
             iss >> val;
             size_t len = val.length();
-            if (len >= 3 && (val.substr(len - 3) == "ull" || val.substr(len - 3) == "ULL")) {
+            if (len >= 3 && (val.substr(len - 3) == "ull" ||
+                val.substr(len - 3) == "ULL")) {
                 dest.key1 = std::stoull(val.substr(0, len - 3));
             }
             else {
@@ -44,7 +45,8 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
         else if (field == ":key2") {
             std::string val;
             iss >> val;
-            if (val.length() >= 3 && val[0] == '0' && (val[1] == 'b' || val[1] == 'B')) {
+            if (val.length() >= 3 && val[0] == '0' &&
+                (val[1] == 'b' || val[1] == 'B')) {
                 dest.key2 = std::stoull(val.substr(2), nullptr, 2);
             }
             else {
@@ -55,7 +57,8 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
         else if (field == ":key3") {
             std::string val;
             iss >> val;
-            if (val.length() >= 2 && val.front() == '"' && val.back() == '"') {
+            if (val.length() >= 2 && val.front() == '"' &&
+                val.back() == '"') {
                 dest.key3 = val.substr(1, val.length() - 2);
             }
             else {
