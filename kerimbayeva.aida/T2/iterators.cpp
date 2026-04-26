@@ -18,61 +18,65 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
         return in;
     }
 
-    std::istringstream iss(line);
+    dest.key1 = 0;
+    dest.key2 = 0;
+    dest.key3 = "";
 
-    char ch;
-    iss >> ch;
-    if (ch != '(') {
+    while (!line.empty() && std::isspace(line.front())) {
+        line.erase(0, 1);
+    }
+    while (!line.empty() && std::isspace(line.back())) {
+        line.pop_back();
+    }
+
+    if (line.empty() || line.front() != '(' || line.back() != ')') {
         in.setstate(std::ios::failbit);
         return in;
     }
 
-    std::string field;
-    while (iss >> field) {
-        if (field == ":key1") {
-            std::string val;
-            iss >> val;
-            size_t len = val.length();
-            if (len >= 3 && (val.substr(len - 3) == "ull" ||
-                val.substr(len - 3) == "ULL")) {
-                dest.key1 = std::stoull(val.substr(0, len - 3));
-            }
-            else {
-                in.setstate(std::ios::failbit);
-                return in;
-            }
-        }
-        else if (field == ":key2") {
-            std::string val;
-            iss >> val;
-            if (val.length() >= 3 && val[0] == '0' &&
-                (val[1] == 'b' || val[1] == 'B')) {
-                dest.key2 = std::stoull(val.substr(2), nullptr, 2);
-            }
-            else {
-                in.setstate(std::ios::failbit);
-                return in;
+    line = line.substr(1, line.size() - 2);
+
+    for (char& c : line) {
+        if (c == ':') c = ' ';
+    }
+
+    std::istringstream iss(line);
+    std::string name;
+    std::string value;
+
+    bool key1Ok = false;
+    bool key2Ok = false;
+    bool key3Ok = false;
+
+    while (iss >> name >> value) {
+        if (name == "key1") {
+            if (value.size() >= 3) {
+                std::string suffix = value.substr(value.size() - 3);
+                if (suffix == "ull" || suffix == "ULL") {
+                    dest.key1 = std::stoull(
+                        value.substr(0, value.size() - 3));
+                    key1Ok = true;
+                }
             }
         }
-        else if (field == ":key3") {
-            std::string val;
-            iss >> val;
-            if (val.length() >= 2 && val.front() == '"' &&
-                val.back() == '"') {
-                dest.key3 = val.substr(1, val.length() - 2);
-            }
-            else {
-                in.setstate(std::ios::failbit);
-                return in;
+        else if (name == "key2") {
+            if (value.size() >= 3 && value[0] == '0' &&
+                (value[1] == 'b' || value[1] == 'B')) {
+                dest.key2 = std::stoull(value.substr(2), nullptr, 2);
+                key2Ok = true;
             }
         }
-        else if (field == ":)") {
-            break;
+        else if (name == "key3") {
+            if (value.size() >= 2 && value.front() == '"' &&
+                value.back() == '"') {
+                dest.key3 = value.substr(1, value.size() - 2);
+                key3Ok = true;
+            }
         }
-        else {
-            in.setstate(std::ios::failbit);
-            return in;
-        }
+    }
+
+    if (!key1Ok || !key2Ok || !key3Ok) {
+        in.setstate(std::ios::failbit);
     }
 
     return in;
