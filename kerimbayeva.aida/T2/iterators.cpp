@@ -4,6 +4,7 @@
 #include <iterator>
 #include <string>
 #include <sstream>
+#include <map>
 
 struct DataStruct {
     unsigned long long key1;
@@ -99,18 +100,50 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
     std::istream::sentry sentry(in);
     if (!sentry) return in;
 
-    DataStruct tmp;
     in >> DelimiterIO{ '(' };
-    in >> LabelIO{ "key1" } >> DelimiterIO{ ' ' } >> ULLLitIO{ tmp.key1 };
-    in >> DelimiterIO{ ':' };
-    in >> LabelIO{ "key2" } >> DelimiterIO{ ' ' } >> ULLBinIO{ tmp.key2 };
-    in >> DelimiterIO{ ':' };
-    in >> LabelIO{ "key3" } >> DelimiterIO{ ' ' } >> StringIO{ tmp.key3 };
-    in >> DelimiterIO{ ')' };
 
-    if (in) {
+    DataStruct tmp;
+    tmp.key1 = 0;
+    tmp.key2 = 0;
+    tmp.key3 = "";
+
+    bool k1 = false, k2 = false, k3 = false;
+    std::string token;
+
+    while (in >> token) {
+        if (token == ":key1" && !k1) {
+            in >> ULLLitIO{ tmp.key1 };
+            k1 = true;
+        }
+        else if (token == ":key2" && !k2) {
+            in >> ULLBinIO{ tmp.key2 };
+            k2 = true;
+        }
+        else if (token == ":key3" && !k3) {
+            in >> StringIO{ tmp.key3 };
+            k3 = true;
+        }
+        else if (token == ":)") {
+            break;
+        }
+        else {
+            in.setstate(std::ios::failbit);
+            return in;
+        }
+
+        char next;
+        if (in.peek() == ':') {
+            continue;
+        }
+    }
+
+    if (k1 && k2 && k3) {
         dest = tmp;
     }
+    else {
+        in.setstate(std::ios::failbit);
+    }
+
     return in;
 }
 
