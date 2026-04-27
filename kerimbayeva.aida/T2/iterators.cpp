@@ -4,7 +4,6 @@
 #include <iterator>
 #include <string>
 #include <sstream>
-#include <map>
 
 struct DataStruct {
     unsigned long long key1;
@@ -129,11 +128,6 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
         else {
             in.setstate(std::ios::failbit);
             return in;
-        }
-
-        char next;
-        if (in.peek() == ':') {
-            continue;
         }
     }
 
