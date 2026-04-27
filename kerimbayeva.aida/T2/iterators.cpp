@@ -4,7 +4,6 @@
 #include <iterator>
 #include <string>
 #include <sstream>
-#include <cctype>
 
 struct DataStruct {
     unsigned long long key1;
@@ -12,95 +11,125 @@ struct DataStruct {
     std::string key3;
 };
 
-bool isULLLit(const std::string& s) {
-    if (s.length() < 4) return false;
-    for (size_t i = 0; i < s.length() - 3; i++) {
-        if (!std::isdigit(s[i])) return false;
-    }
-    std::string suf = s.substr(s.length() - 3);
-    return (suf == "ull" || suf == "ULL");
-}
+struct DelimiterIO {
+    char exp;
+};
 
-bool isULLBin(const std::string& s) {
-    if (s.length() < 3) return false;
-    if (s[0] != '0') return false;
-    if (s[1] != 'b' && s[1] != 'B') return false;
-    for (size_t i = 2; i < s.length(); i++) {
-        if (s[i] != '0' && s[i] != '1') return false;
-    }
-    return true;
-}
+struct ULLLitIO {
+    unsigned long long& ref;
+};
 
-std::istream& operator>>(std::istream& in, DataStruct& d) {
-    std::string line;
-    if (!std::getline(in, line)) return in;
+struct ULLBinIO {
+    unsigned long long& ref;
+};
 
-    size_t l = line.find('(');
-    size_t r = line.find(')');
-    if (l == std::string::npos || r == std::string::npos) {
-        in.setstate(std::ios::failbit);
-        return in;
-    }
+struct StringIO {
+    std::string& ref;
+};
 
-    std::string s = line.substr(l + 1, r - l - 1);
-    std::istringstream iss(s);
+struct LabelIO {
+    std::string exp;
+};
 
-    d.key1 = 0;
-    d.key2 = 0;
-    d.key3 = "";
-
-    bool k1 = false, k2 = false, k3 = false;
-    std::string token;
-
-    while (iss >> token) {
-        if (token == ":key1") {
-            std::string val;
-            if (!(iss >> val)) break;
-            if (isULLLit(val)) {
-                d.key1 = std::stoull(val.substr(0, val.size() - 3));
-                k1 = true;
-            }
-        }
-        else if (token == ":key2") {
-            std::string val;
-            if (!(iss >> val)) break;
-            if (isULLBin(val)) {
-                d.key2 = std::stoull(val.substr(2), nullptr, 2);
-                k2 = true;
-            }
-        }
-        else if (token == ":key3") {
-            std::string val;
-            if (!(iss >> val)) break;
-            if (val.size() >= 2 && val.front() == '"' && val.back() == '"') {
-                d.key3 = val.substr(1, val.size() - 2);
-                k3 = true;
-            }
-        }
-    }
-
-    if (!k1 || !k2 || !k3) {
+std::istream& operator>>(std::istream& in, DelimiterIO&& dest) {
+    std::istream::sentry sentry(in);
+    if (!sentry) return in;
+    char c;
+    in >> c;
+    if (in && c != dest.exp) {
         in.setstate(std::ios::failbit);
     }
     return in;
 }
 
-std::ostream& operator<<(std::ostream& out, const DataStruct& d) {
-    out << "(:key1 " << d.key1 << "ull";
+std::istream& operator>>(std::istream& in, ULLLitIO&& dest) {
+    std::istream::sentry sentry(in);
+    if (!sentry) return in;
+    unsigned long long val;
+    in >> val;
+    if (in) {
+        std::string suffix;
+        for (int i = 0; i < 3; ++i) {
+            char c;
+            in >> c;
+            suffix += c;
+        }
+        if (suffix == "ull" || suffix == "ULL") {
+            dest.ref = val;
+        }
+        else {
+            in.setstate(std::ios::failbit);
+        }
+    }
+    return in;
+}
+
+std::istream& operator>>(std::istream& in, ULLBinIO&& dest) {
+    std::istream::sentry sentry(in);
+    if (!sentry) return in;
+    std::string bin;
+    in >> bin;
+    if (in && bin.size() >= 3 && bin[0] == '0' &&
+        (bin[1] == 'b' || bin[1] == 'B')) {
+        dest.ref = std::stoull(bin.substr(2), nullptr, 2);
+    }
+    else {
+        in.setstate(std::ios::failbit);
+    }
+    return in;
+}
+
+std::istream& operator>>(std::istream& in, StringIO&& dest) {
+    std::istream::sentry sentry(in);
+    if (!sentry) return in;
+    return std::getline(in >> DelimiterIO{ '"' }, dest.ref, '"');
+}
+
+std::istream& operator>>(std::istream& in, LabelIO&& dest) {
+    std::istream::sentry sentry(in);
+    if (!sentry) return in;
+    std::string str;
+    if ((in >> StringIO{ str }) && str != dest.exp) {
+        in.setstate(std::ios::failbit);
+    }
+    return in;
+}
+
+std::istream& operator>>(std::istream& in, DataStruct& dest) {
+    std::istream::sentry sentry(in);
+    if (!sentry) return in;
+
+    DataStruct tmp;
+    in >> DelimiterIO{ '(' };
+    in >> LabelIO{ "key1" } >> DelimiterIO{ ' ' } >> ULLLitIO{ tmp.key1 };
+    in >> DelimiterIO{ ':' };
+    in >> LabelIO{ "key2" } >> DelimiterIO{ ' ' } >> ULLBinIO{ tmp.key2 };
+    in >> DelimiterIO{ ':' };
+    in >> LabelIO{ "key3" } >> DelimiterIO{ ' ' } >> StringIO{ tmp.key3 };
+    in >> DelimiterIO{ ')' };
+
+    if (in) {
+        dest = tmp;
+    }
+    return in;
+}
+
+std::ostream& operator<<(std::ostream& out, const DataStruct& src) {
+    out << "(:key1 " << src.key1 << "ull";
     out << ":key2 0b";
-    if (d.key2 == 0) {
+    if (src.key2 == 0) {
         out << "0";
     }
     else {
         std::string bin;
-        unsigned long long n = d.key2;
+        unsigned long long n = src.key2;
         while (n > 0) {
             bin = (n & 1 ? '1' : '0') + bin;
             n >>= 1;
         }
         out << bin;
     }
-    out << ":key3 \"" << d.key3 << "\":)";
+    out << ":key3 \"" << src.key3 << "\":)";
     return out;
 }
 
@@ -112,11 +141,16 @@ bool compare(const DataStruct& a, const DataStruct& b) {
 
 int main() {
     std::vector<DataStruct> data;
-    std::istream_iterator<DataStruct> it(std::cin);
-    std::istream_iterator<DataStruct> end;
-    std::copy(it, end, std::back_inserter(data));
+    std::copy(
+        std::istream_iterator<DataStruct>(std::cin),
+        std::istream_iterator<DataStruct>(),
+        std::back_inserter(data)
+    );
     std::sort(data.begin(), data.end(), compare);
-    std::copy(data.begin(), data.end(),
-        std::ostream_iterator<DataStruct>(std::cout, "\n"));
+    std::copy(
+        data.begin(),
+        data.end(),
+        std::ostream_iterator<DataStruct>(std::cout, "\n")
+    );
     return 0;
 }
