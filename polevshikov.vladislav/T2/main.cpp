@@ -6,6 +6,7 @@
 #include <string>
 #include <cmath>
 #include <iomanip>
+#include <sstream>
 
 struct DataStruct {
     unsigned long long key1;
@@ -161,12 +162,20 @@ std::ostream& operator<<(std::ostream& out, const DataStruct& dest) {
 
 int main() {
     std::vector<DataStruct> data;
+    std::string line;
 
-    std::copy(
-        std::istream_iterator<DataStruct>(std::cin),
+    while (std::getline(std::cin, line)) {
+        if (line.empty()) {
+            continue;
+        }
+        std::istringstream iss(line);
+
+        std::copy(
+        std::istream_iterator<DataStruct>(iss),
         std::istream_iterator<DataStruct>(),
         std::back_inserter(data)
-    );
+        );
+    }
 
     std::sort(data.begin(), data.end());
 
@@ -175,6 +184,5 @@ int main() {
         data.end(),
         std::ostream_iterator<DataStruct>(std::cout, "\n")
     );
-
     return 0;
 }
