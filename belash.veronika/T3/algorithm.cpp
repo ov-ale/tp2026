@@ -9,6 +9,7 @@
 #include <string>
 #include <cmath>
 #include <cstdlib>
+#include <iterator>
 
 struct Point {
     int x, y;
@@ -92,96 +93,130 @@ struct VertexCountLess {
     }
 };
 
+struct MinX {
+    int operator()(int acc, const Point& p) const {
+        return std::min(acc, p.x);
+    }
+};
+
+struct MinY {
+    int operator()(int acc, const Point& p) const {
+        return std::min(acc, p.y);
+    }
+};
+
+struct NormalizePointX {
+    int min_x;
+    NormalizePointX(int mx) : min_x(mx) {}
+    Point operator()(const Point& p) const {
+        return { p.x - min_x, p.y };
+    }
+};
+
+struct NormalizePointY {
+    int min_y;
+    NormalizePointY(int my) : min_y(my) {}
+    Point operator()(const Point& p) const {
+        return { p.x, p.y - min_y };
+    }
+};
+\
 struct NormalizePolygon {
     Polygon operator()(const Polygon& p) const {
         if (p.points.empty()) return Polygon{};
-        int min_x = p.points[0].x;
-        int min_y = p.points[0].y;
-        for (const auto& pt : p.points) {
-            if (pt.x < min_x) min_x = pt.x;
-            if (pt.y < min_y) min_y = pt.y;
-        }
+        int min_x = std::accumulate(p.points.begin(), p.points.end(), p.points[0].x, MinX());
+        int min_y = std::accumulate(p.points.begin(), p.points.end(), p.points[0].y, MinY());
         Polygon result;
-        result.points.reserve(p.points.size());
-        for (const auto& pt : p.points) {
-            result.points.push_back({ pt.x - min_x, pt.y - min_y });
+        result.points.resize(p.points.size());
+        std::transform(p.points.begin(), p.points.end(), result.points.begin(), NormalizePointX(min_x));
+        std::transform(result.points.begin(), result.points.end(), result.points.begin(), NormalizePointY(min_y));
+        return result;
+    }
+};
+
+struct ShiftedPolygon {
+    size_t shift;
+    ShiftedPolygon(size_t s) : shift(s) {}
+    Polygon operator()(const Polygon& p) const {
+        Polygon result;
+        result.points.resize(p.points.size());
+        for (size_t i = 0; i < p.points.size(); ++i) {
+            result.points[i] = p.points[(i + shift) % p.points.size()];
         }
         return result;
     }
 };
 
-struct IsSameWithShift {
-    Polygon target;
-    Polygon target_norm;
-
-    IsSameWithShift(const Polygon& t) : target(t) {
-        target_norm = NormalizePolygon()(target);
+struct CompareShifted {
+    const Polygon& target;
+    size_t shift;
+    CompareShifted(const Polygon& t, size_t s) : target(t), shift(s) {}
+    bool operator()(const Polygon& other) const {
+        Polygon shifted;
+        shifted.points.resize(other.points.size());
+        std::transform(other.points.begin(), other.points.end(), shifted.points.begin(),
+            [this, &other](const Point&) -> Point {
+                static size_t idx = 0;
+                return other.points[(idx++ + shift) % other.points.size()];
+            });
+        return target == shifted;
     }
-    Polygon rotate(const Polygon& p, size_t shift) const {
-        Polygon result;
-        size_t n = p.points.size();
-        result.points.reserve(n);
-        for (size_t i = 0; i < n; ++i) {
-            result.points.push_back(p.points[(i + shift) % n]);
+};
+
+struct IsSameWithShift {
+    Polygon target_norm;
+    size_t target_size;
+
+    IsSameWithShift(const Polygon& t) : target_size(t.points.size()) {
+        if (!t.points.empty()) {
+            target_norm = NormalizePolygon()(t);
         }
-        return result;
     }
 
     bool operator()(const Polygon& other) const {
-        if (target.points.size() != other.points.size()) return false;
-        if (target.points.empty()) return true;
+        if (target_size != other.points.size()) return false;
+        if (target_size == 0) return true;
 
         Polygon other_norm = NormalizePolygon()(other);
-        for (size_t shift = 0; shift < other_norm.points.size(); ++shift) {
-            Polygon rotated = rotate(other_norm, shift);
-            if (std::equal(target_norm.points.begin(), target_norm.points.end(),
-                rotated.points.begin())) {
-                return true;
-            }
-        }
-        return false;
+
+        std::vector<size_t> shifts(target_size);
+        std::iota(shifts.begin(), shifts.end(), 0);
+
+        return std::any_of(shifts.begin(), shifts.end(),
+            [this, &other_norm](size_t shift) -> bool {
+                Polygon shifted;
+                shifted.points.resize(other_norm.points.size());
+                std::transform(other_norm.points.begin(), other_norm.points.end(),
+                    shifted.points.begin(),
+                    [&other_norm, shift](const Point&) -> Point {
+                        static size_t idx = 0;
+                        return other_norm.points[(idx++ + shift) % other_norm.points.size()];
+                    });
+                std::equal(target_norm.points.begin(), target_norm.points.end(),
+                    shifted.points.begin());
+                return target_norm == shifted;
+            });
     }
 };
 
 struct RemoveConsecutiveTarget {
     Polygon target;
-    mutable bool last_was_target_and_removed;
+    mutable bool last_was_target_and_kept;
 
-    RemoveConsecutiveTarget(const Polygon& t) : target(t), last_was_target_and_removed(false) {}
+    RemoveConsecutiveTarget(const Polygon& t) : target(t), last_was_target_and_kept(false) {}
 
     bool operator()(const Polygon& p) const {
         if (p == target) {
-            if (last_was_target_and_removed) {
+            if (last_was_target_and_kept) {
                 return false;
             }
-            last_was_target_and_removed = true;
+            last_was_target_and_kept = true;
             return true;
         }
-        last_was_target_and_removed = false;
+        last_was_target_and_kept = false;
         return true;
     }
 };
-
-bool parsePolygon(const std::string& str, Polygon& out) {
-    std::istringstream iss(str);
-    size_t n;
-    if (!(iss >> n)) return false;
-    if (n < 3) return false;
-
-    std::vector<Point> pts;
-    pts.reserve(n);
-    for (size_t i = 0; i < n; ++i) {
-        char c1, c2, c3;
-        int x, y;
-        if (!(iss >> c1 >> x >> c2 >> y >> c3)) return false;
-        if (c1 != '(' || c2 != ';' || c3 != ')') return false;
-        pts.push_back({ x, y });
-    }
-    std::string extra;
-    if (iss >> extra) return false;
-    out.points = pts;
-    return true;
-}
 
 std::istream& operator>>(std::istream& in, Point& dest) {
     char c1, c2, c3;
@@ -291,21 +326,11 @@ int main(int argc, char* argv[]) {
             }
             else if (arg == "AREA") {
                 auto it = std::max_element(polygons.begin(), polygons.end(), AreaLess());
-                if (it != polygons.end()) {
-                    std::cout << AreaCalculator()(*it) << '\n';
-                }
-                else {
-                    std::cout << "<INVALID COMMAND>" << '\n';
-                }
+                std::cout << AreaCalculator()(*it) << '\n';
             }
             else if (arg == "VERTEXES") {
                 auto it = std::max_element(polygons.begin(), polygons.end(), VertexCountLess());
-                if (it != polygons.end()) {
-                    std::cout << it->points.size() << '\n';
-                }
-                else {
-                    std::cout << "<INVALID COMMAND>" << '\n';
-                }
+                std::cout << it->points.size() << '\n';
             }
             else {
                 std::cout << "<INVALID COMMAND>" << '\n';
@@ -320,21 +345,11 @@ int main(int argc, char* argv[]) {
             }
             else if (arg == "AREA") {
                 auto it = std::min_element(polygons.begin(), polygons.end(), AreaLess());
-                if (it != polygons.end()) {
-                    std::cout << AreaCalculator()(*it) << '\n';
-                }
-                else {
-                    std::cout << "<INVALID COMMAND>" << '\n';
-                }
+                std::cout << AreaCalculator()(*it) << '\n';
             }
             else if (arg == "VERTEXES") {
                 auto it = std::min_element(polygons.begin(), polygons.end(), VertexCountLess());
-                if (it != polygons.end()) {
-                    std::cout << it->points.size() << '\n';
-                }
-                else {
-                    std::cout << "<INVALID COMMAND>" << '\n';
-                }
+                std::cout << it->points.size() << '\n';
             }
             else {
                 std::cout << "<INVALID COMMAND>" << '\n';
