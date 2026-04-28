@@ -189,7 +189,7 @@ bool isTgtPair(const Polygon& a, const Polygon& b, const Polygon& t) {
 size_t parseSize(const std::string& str) {
     size_t pos = 0;
     size_t val = std::stoull(str, &pos);
-    if (pos != str.length() || val < 3) throw std::invalid_argument("");
+    if (pos != str.length() || val < 3) throw 1;
     return val;
 }
 
@@ -218,7 +218,7 @@ int main(int argc, char* argv[]) {
         if (!(iss >> cmd)) continue;
         try {
             if (cmd == "AREA") {
-                iss >> arg;
+                if (!(iss >> arg) || !(iss >> std::ws).eof()) throw 1;
                 if (arg == "EVEN") {
                     double s = std::accumulate(polygons.begin(),
                                                polygons.end(), 0.0, addEven);
@@ -228,7 +228,7 @@ int main(int argc, char* argv[]) {
                                                polygons.end(), 0.0, addOdd);
                     std::cout << s << '\n';
                 } else if (arg == "MEAN") {
-                    if (polygons.empty()) throw std::invalid_argument("");
+                    if (polygons.empty()) throw 1;
                     double s = std::accumulate(polygons.begin(),
                                                polygons.end(), 0.0, addA);
                     std::cout << (s / polygons.size()) << '\n';
@@ -241,8 +241,8 @@ int main(int argc, char* argv[]) {
                     std::cout << s << '\n';
                 }
             } else if (cmd == "MAX") {
-                iss >> arg;
-                if (polygons.empty()) throw std::invalid_argument("");
+                if (!(iss >> arg) || !(iss >> std::ws).eof()) throw 1;
+                if (polygons.empty()) throw 1;
                 if (arg == "AREA") {
                     auto it = std::max_element(polygons.begin(),
                                                polygons.end(), cmpA);
@@ -251,10 +251,10 @@ int main(int argc, char* argv[]) {
                     auto it = std::max_element(polygons.begin(),
                                                polygons.end(), cmpV);
                     std::cout << it->points.size() << '\n';
-                } else throw std::invalid_argument("");
+                } else throw 1;
             } else if (cmd == "MIN") {
-                iss >> arg;
-                if (polygons.empty()) throw std::invalid_argument("");
+                if (!(iss >> arg) || !(iss >> std::ws).eof()) throw 1;
+                if (polygons.empty()) throw 1;
                 if (arg == "AREA") {
                     auto it = std::min_element(polygons.begin(),
                                                polygons.end(), cmpA);
@@ -263,9 +263,9 @@ int main(int argc, char* argv[]) {
                     auto it = std::min_element(polygons.begin(),
                                                polygons.end(), cmpV);
                     std::cout << it->points.size() << '\n';
-                } else throw std::invalid_argument("");
+                } else throw 1;
             } else if (cmd == "COUNT") {
-                iss >> arg;
+                if (!(iss >> arg) || !(iss >> std::ws).eof()) throw 1;
                 if (arg == "EVEN") {
                     size_t c = std::count_if(polygons.begin(),
                                              polygons.end(), isEven);
@@ -284,7 +284,7 @@ int main(int argc, char* argv[]) {
                 }
             } else if (cmd == "RMECHO") {
                 Polygon t;
-                if (!(iss >> t)) throw std::invalid_argument("");
+                if (!(iss >> t) || !(iss >> std::ws).eof()) throw 1;
                 size_t old_s = polygons.size();
                 using namespace std::placeholders;
                 auto f = std::bind(isTgtPair, _1, _2, t);
@@ -293,15 +293,13 @@ int main(int argc, char* argv[]) {
                 std::cout << old_s - polygons.size() << '\n';
             } else if (cmd == "INTERSECTIONS") {
                 Polygon t;
-                if (!(iss >> t)) throw std::invalid_argument("");
+                if (!(iss >> t) || !(iss >> std::ws).eof()) throw 1;
                 using namespace std::placeholders;
                 auto f = std::bind(intersectPoly, _1, t);
                 size_t c = std::count_if(polygons.begin(),
                                          polygons.end(), f);
                 std::cout << c << '\n';
-            } else throw std::invalid_argument("");
-
-            if (!(iss >> std::ws).eof()) throw std::invalid_argument("");
+            } else throw 1;
         } catch (...) { std::cout << "<INVALID COMMAND>\n"; }
     }
     return 0;
