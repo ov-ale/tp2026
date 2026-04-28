@@ -120,7 +120,7 @@ struct NormalizePointY {
         return { p.x, p.y - min_y };
     }
 };
-\
+
 struct NormalizePolygon {
     Polygon operator()(const Polygon& p) const {
         if (p.points.empty()) return Polygon{};
@@ -134,9 +134,18 @@ struct NormalizePolygon {
     }
 };
 
-struct ShiftedPolygon {
+struct GetPointAtIndex {
+    const std::vector<Point>& points;
+    size_t index;
+    GetPointAtIndex(const std::vector<Point>& p, size_t i) : points(p), index(i) {}
+    Point operator()(const Point&) const {
+        return points[index];
+    }
+};
+
+struct CreateShiftedPolygon {
     size_t shift;
-    ShiftedPolygon(size_t s) : shift(s) {}
+    CreateShiftedPolygon(size_t s) : shift(s) {}
     Polygon operator()(const Polygon& p) const {
         Polygon result;
         result.points.resize(p.points.size());
@@ -147,18 +156,25 @@ struct ShiftedPolygon {
     }
 };
 
-struct CompareShifted {
+struct ComparePolygons {
     const Polygon& target;
-    size_t shift;
-    CompareShifted(const Polygon& t, size_t s) : target(t), shift(s) {}
+    ComparePolygons(const Polygon& t) : target(t) {}
     bool operator()(const Polygon& other) const {
+        return target == other;
+    }
+};
+
+struct CheckShift {
+    const Polygon& target;
+    const Polygon& other;
+    size_t shift;
+    CheckShift(const Polygon& t, const Polygon& o, size_t s) : target(t), other(o), shift(s) {}
+    bool operator()() const {
         Polygon shifted;
         shifted.points.resize(other.points.size());
-        std::transform(other.points.begin(), other.points.end(), shifted.points.begin(),
-            [this, &other](const Point&) -> Point {
-                static size_t idx = 0;
-                return other.points[(idx++ + shift) % other.points.size()];
-            });
+        for (size_t i = 0; i < other.points.size(); ++i) {
+            shifted.points[i] = other.points[(i + shift) % other.points.size()];
+        }
         return target == shifted;
     }
 };
@@ -179,23 +195,17 @@ struct IsSameWithShift {
 
         Polygon other_norm = NormalizePolygon()(other);
 
-        std::vector<size_t> shifts(target_size);
-        std::iota(shifts.begin(), shifts.end(), 0);
-
-        return std::any_of(shifts.begin(), shifts.end(),
-            [this, &other_norm](size_t shift) -> bool {
-                Polygon shifted;
-                shifted.points.resize(other_norm.points.size());
-                std::transform(other_norm.points.begin(), other_norm.points.end(),
-                    shifted.points.begin(),
-                    [&other_norm, shift](const Point&) -> Point {
-                        static size_t idx = 0;
-                        return other_norm.points[(idx++ + shift) % other_norm.points.size()];
-                    });
-                std::equal(target_norm.points.begin(), target_norm.points.end(),
-                    shifted.points.begin());
-                return target_norm == shifted;
-            });
+        for (size_t shift = 0; shift < target_size; ++shift) {
+            bool match = true;
+            for (size_t i = 0; i < target_size; ++i) {
+                if (!(target_norm.points[i] == other_norm.points[(i + shift) % target_size])) {
+                    match = false;
+                    break;
+                }
+            }
+            if (match) return true;
+        }
+        return false;
     }
 };
 
@@ -245,13 +255,13 @@ std::istream& operator>>(std::istream& in, Polygon& dest) {
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
-        std::cerr << "Usage: " << argv[0] << " <filename>" << '\n';
+        std::cerr << "Usage: " << argv[0] << " <filename>\n";
         return 1;
     }
 
     std::ifstream file(argv[1]);
     if (!file.is_open()) {
-        std::cerr << "Error: cannot open file " << argv[1] << '\n';
+        std::cerr << "Error: cannot open file " << argv[1] << "\n";
         return 1;
     }
 
@@ -285,24 +295,24 @@ int main(int argc, char* argv[]) {
 
             if (arg == "MEAN") {
                 if (polygons.empty()) {
-                    std::cout << "<INVALID COMMAND>" << '\n';
+                    std::cout << "<INVALID COMMAND>\n";
                 }
                 else {
                     double total = std::accumulate(polygons.begin(), polygons.end(), 0.0, SumArea());
-                    std::cout << total / polygons.size() << '\n';
+                    std::cout << total / polygons.size() << "\n";
                 }
             }
             else if (arg == "EVEN") {
                 double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
                     SumAreaIf(IsEvenVertexCount()));
-                std::cout << sum << '\n';
+                std::cout << sum << "\n";
             }
             else if (arg == "ODD") {
                 auto odd_pred = std::bind(std::logical_not<bool>(),
                     std::bind(IsEvenVertexCount(), std::placeholders::_1));
                 double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
                     SumAreaIf(odd_pred));
-                std::cout << sum << '\n';
+                std::cout << sum << "\n";
             }
             else {
                 std::istringstream num_stream(arg);
@@ -310,10 +320,10 @@ int main(int argc, char* argv[]) {
                 if (num_stream >> n && num_stream.eof()) {
                     double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
                         SumAreaIf(VertexCountEquals(n)));
-                    std::cout << sum << '\n';
+                    std::cout << sum << "\n";
                 }
                 else {
-                    std::cout << "<INVALID COMMAND>" << '\n';
+                    std::cout << "<INVALID COMMAND>\n";
                 }
             }
         }
@@ -322,18 +332,18 @@ int main(int argc, char* argv[]) {
             iss >> arg;
 
             if (polygons.empty()) {
-                std::cout << "<INVALID COMMAND>" << '\n';
+                std::cout << "<INVALID COMMAND>\n";
             }
             else if (arg == "AREA") {
                 auto it = std::max_element(polygons.begin(), polygons.end(), AreaLess());
-                std::cout << AreaCalculator()(*it) << '\n';
+                std::cout << AreaCalculator()(*it) << "\n";
             }
             else if (arg == "VERTEXES") {
                 auto it = std::max_element(polygons.begin(), polygons.end(), VertexCountLess());
-                std::cout << it->points.size() << '\n';
+                std::cout << it->points.size() << "\n";
             }
             else {
-                std::cout << "<INVALID COMMAND>" << '\n';
+                std::cout << "<INVALID COMMAND>\n";
             }
         }
         else if (cmd == "MIN") {
@@ -341,18 +351,18 @@ int main(int argc, char* argv[]) {
             iss >> arg;
 
             if (polygons.empty()) {
-                std::cout << "<INVALID COMMAND>" << '\n';
+                std::cout << "<INVALID COMMAND>\n";
             }
             else if (arg == "AREA") {
                 auto it = std::min_element(polygons.begin(), polygons.end(), AreaLess());
-                std::cout << AreaCalculator()(*it) << '\n';
+                std::cout << AreaCalculator()(*it) << "\n";
             }
             else if (arg == "VERTEXES") {
                 auto it = std::min_element(polygons.begin(), polygons.end(), VertexCountLess());
-                std::cout << it->points.size() << '\n';
+                std::cout << it->points.size() << "\n";
             }
             else {
-                std::cout << "<INVALID COMMAND>" << '\n';
+                std::cout << "<INVALID COMMAND>\n";
             }
         }
         else if (cmd == "COUNT") {
@@ -360,21 +370,21 @@ int main(int argc, char* argv[]) {
             iss >> arg;
 
             if (arg == "EVEN") {
-                std::cout << std::count_if(polygons.begin(), polygons.end(), IsEvenVertexCount()) << '\n';
+                std::cout << std::count_if(polygons.begin(), polygons.end(), IsEvenVertexCount()) << "\n";
             }
             else if (arg == "ODD") {
                 auto odd_pred = std::bind(std::logical_not<bool>(),
                     std::bind(IsEvenVertexCount(), std::placeholders::_1));
-                std::cout << std::count_if(polygons.begin(), polygons.end(), odd_pred) << '\n';
+                std::cout << std::count_if(polygons.begin(), polygons.end(), odd_pred) << "\n";
             }
             else {
                 std::istringstream num_stream(arg);
                 size_t n;
                 if (num_stream >> n && num_stream.eof()) {
-                    std::cout << std::count_if(polygons.begin(), polygons.end(), VertexCountEquals(n)) << '\n';
+                    std::cout << std::count_if(polygons.begin(), polygons.end(), VertexCountEquals(n)) << "\n";
                 }
                 else {
-                    std::cout << "<INVALID COMMAND>" << '\n';
+                    std::cout << "<INVALID COMMAND>\n";
                 }
             }
         }
@@ -384,11 +394,11 @@ int main(int argc, char* argv[]) {
             std::getline(iss, rest);
             std::istringstream rest_iss(rest);
             if (!(rest_iss >> target)) {
-                std::cout << "<INVALID COMMAND>" << '\n';
+                std::cout << "<INVALID COMMAND>\n";
             }
             else {
                 int count = std::count_if(polygons.begin(), polygons.end(), IsSameWithShift(target));
-                std::cout << count << '\n';
+                std::cout << count << "\n";
             }
         }
         else if (cmd == "RMECHO") {
@@ -397,7 +407,7 @@ int main(int argc, char* argv[]) {
             std::getline(iss, rest);
             std::istringstream rest_iss(rest);
             if (!(rest_iss >> target)) {
-                std::cout << "<INVALID COMMAND>" << '\n';
+                std::cout << "<INVALID COMMAND>\n";
             }
             else {
                 std::vector<Polygon> new_polygons;
@@ -407,11 +417,11 @@ int main(int argc, char* argv[]) {
                     remover);
                 size_t removed = polygons.size() - new_polygons.size();
                 polygons.swap(new_polygons);
-                std::cout << removed << '\n';
+                std::cout << removed << "\n";
             }
         }
         else {
-            std::cout << "<INVALID COMMAND>" << '\n';
+            std::cout << "<INVALID COMMAND>\n";
         }
     }
 
