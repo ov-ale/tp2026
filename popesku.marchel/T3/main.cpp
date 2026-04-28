@@ -27,7 +27,7 @@ bool operator==(const Polygon& lhs, const Polygon& rhs)
     return lhs.points == rhs.points;
 }
 
-std::istream& operator>>(std::istream& in, Point& point) { // (x;y) - читать вот это
+std::istream& operator>>(std::istream& in, Point& point) { 
     char leftBracket = 0;
     char semicolon = 0;
     char rightBracket = 0;
