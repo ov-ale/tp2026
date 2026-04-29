@@ -7,6 +7,7 @@
 #include <cmath>
 #include <iomanip>
 #include <sstream>
+#include <limits>
 
 struct DataStruct {
     unsigned long long key1;
@@ -24,7 +25,8 @@ bool DataStruct::operator<(const DataStruct& other) const {
         return key1 < other.key1;
     }
 
-    if (std::abs(key2) != std::abs(other.key2)) {
+    double diff = std::abs(key2) - std::abs(other.key2);
+    if (std::abs(diff) > std::numeric_limits<double>::epsilon()) {
         return std::abs(key2) < std::abs(other.key2);
     }
 
@@ -65,6 +67,11 @@ std::istream& operator>>(std::istream& in, Delimiter&& dest) {
 std::istream& operator>>(std::istream& in, OctDataIO&& dest) {
     std::istream::sentry sentry(in);
     if (!sentry) {
+        return in;
+    }
+
+    if (in.peek() != '0') {
+        in.setstate(std::ios::failbit);
         return in;
     }
 
@@ -135,13 +142,10 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
             in.setstate(std::ios::failbit);
             return in;
         }
-
-        if (i < 2) {
-            in >> Delimiter{':'};
-        }
+        in >> Delimiter{':'};
     }
 
-    in >> Delimiter{':'} >> Delimiter{')'};
+    in >> Delimiter{')'};
     return in;
 }
 
