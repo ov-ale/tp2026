@@ -8,6 +8,7 @@
 #include <iterator>
 #include <iomanip>
 #include <cmath>
+#include <numeric>
 
 struct Point {
   int x, y;
@@ -21,19 +22,17 @@ struct AreaPartSum {
   const std::vector<Point>& pts;
   double& sum_ref;
   AreaPartSum(const std::vector<Point>& p, double& s) : pts(p), sum_ref(s) {}
-  bool operator()(const Point& p1) {
+  double operator()(double current, const Point& p1) {
     size_t i = &p1 - &pts[0];
     const Point& p2 = pts[(i + 1) % pts.size()];
-    sum_ref += (static_cast<double>(p1.x) * p2.y -
+    return current + (static_cast<double>(p1.x) * p2.y -
       static_cast<double>(p2.x) * p1.y);
-    return true;
   }
 };
 
 double getArea(const Polygon& p) {
   if (p.points.size() < 3) return 0.0;
-  double total = 0.0;
-  (void)std::count_if(p.points.begin(), p.points.end(),
+  double total = std::accumulate(p.points.begin(), p.points.end(), 0.0,
     AreaPartSum(p.points, total));
   return std::abs(total) / 2.0;
 }
@@ -73,9 +72,8 @@ struct IsSizeN {
 struct SumArea {
   double& total;
   SumArea(double& t) : total(t) {}
-  bool operator()(const Polygon& p) {
-    total += getArea(p);
-    return true;
+  double operator()(double current, const Polygon& p) {
+    return current + getArea(p);
   }
 };
 
@@ -182,8 +180,7 @@ int main(int argc, char* argv[]) {
         }
         catch (...) { std::cout << "<INVALID COMMAND>\n"; continue; }
       }
-      double sum = 0;
-      (void)std::count_if(sel.begin(), sel.end(), SumArea(sum));
+      double sum = std::accumulate(sel.begin(), sel.end(), 0.0, SumArea(sum));
       std::cout << std::fixed << std::setprecision(1);
       std::cout << (arg == "MEAN" ? sum / data.size() : sum) << "\n";
     }
