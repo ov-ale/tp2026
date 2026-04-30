@@ -191,8 +191,7 @@ int main(int argc, char* argv[]) {
                 std::cout << "<INVALID COMMAND>" << std::endl;
                 continue;
             }
-            iss >> std::ws;
-            if (!iss.eof()) {
+            if (polygons.empty()) {
                 std::cout << "<INVALID COMMAND>" << std::endl;
                 continue;
             }
@@ -207,8 +206,7 @@ int main(int argc, char* argv[]) {
                 std::cout << "<INVALID COMMAND>" << std::endl;
                 continue;
             }
-            iss >> std::ws;
-            if (!iss.eof()) {
+            if (polygons.empty()) {
                 std::cout << "<INVALID COMMAND>" << std::endl;
                 continue;
             }
