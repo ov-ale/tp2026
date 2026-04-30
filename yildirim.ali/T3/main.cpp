@@ -48,7 +48,14 @@ std::istream& operator>>(std::istream& in, Polygon& dest) {
     Polygon tmp;
     tmp.points.resize(n);
     std::copy_n(std::istream_iterator<Point>(in), n, tmp.points.begin());
-    if (in) dest = tmp;
+    if (in) {
+        in >> std::ws;
+        if (in.eof()) {
+            dest = tmp;
+        } else {
+            in.setstate(std::ios::failbit);
+        }
+    }
     return in;
 }
 struct GaussSum {
