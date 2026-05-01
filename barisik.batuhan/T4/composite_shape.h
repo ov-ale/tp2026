@@ -17,7 +17,9 @@ public:
     CompositeShape& operator=(CompositeShape&& other) noexcept = default;
     ~CompositeShape() = default;
     void addShape(std::unique_ptr<Shape> shape);
-    const std::vector<std::unique_ptr<Shape>>& getShapes() const { return shapes; }
+    const std::vector<std::unique_ptr<Shape>>& getShapes() const {
+        return shapes;
+    }
     double getArea() const override;
     Point getCenter() const override;
     void move(double dx, double dy) override;
@@ -29,3 +31,4 @@ public:
 };
 
 #endif
+//

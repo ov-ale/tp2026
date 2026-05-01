@@ -58,3 +58,4 @@ void IsoscelesTrapezoid::getBoundingBox(Point& min, Point& max) const {
     min = bottomLeft;
     max = Point(bottomLeft.x + bottomBase, bottomLeft.y + height);
 }
+//
