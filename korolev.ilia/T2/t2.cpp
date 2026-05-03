@@ -164,17 +164,14 @@ int main() {
     }
 
     if (data.empty()) {
-        std::cout << "Looks like there is no supported record. Cannot determine input. Test skipped" << std::endl;
+        std::cout<< "Atleast one supported record type" << std::endl;
+        std::sort(data.begin(), data.end(), Comparator());
+        std::copy(
+            data.begin(),
+            data.end(),
+            std::ostream_iterator<DataStruct>(std::cout, "\n")
+        );
         return 0;
     }
-    std::cout<< "Atleast one supported record type" << std::endl;
-    std::sort(data.begin(), data.end(), Comparator());
-
-    std::copy(
-        data.begin(),
-        data.end(),
-        std::ostream_iterator<DataStruct>(std::cout, "\n")
-    );
-
     return 0;
 }
