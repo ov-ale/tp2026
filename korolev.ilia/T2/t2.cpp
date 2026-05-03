@@ -78,9 +78,9 @@ std::istream& operator>>(std::istream& is, DataStruct& obj) {
                     return is;
                 }
                 unsigned long long d;
-                if (!(is >> d) || d==0) {
+                    if (!(is >> d) || d==0) {
                     valid = false;
-                    skipToRecordEnd(is);
+                     skipToRecordEnd(is);
                     return is;
                 }
                 char c1, c2;
