@@ -56,7 +56,7 @@ double computeArea(const Polygon& p) {
     if (p.points.size() < 3) return 0.0;
 
     double area = 0.0;
-    size_t n = p.points.size();
+    int n = p.points.size();
 
     for (int i = 0; i < n; ++i) {
         area += p.points[i].x * p.points[(i + 1) % n].y - p.points[(i + 1) % n].x * p.points[i].y;
@@ -75,12 +75,6 @@ struct isVertexCountOdd {
 struct isVertexCountEven {
     bool operator()(const Polygon& p) const {
         return p.points.size() % 2 == 0;
-    }
-};
-
-struct meanCount {
-    bool operator()(const Polygon& p) {
-        return true;
     }
 };
 
@@ -200,7 +194,7 @@ int main(int argc, char* argv[]) {
                         continue;
                     }
                     double res = std::accumulate(polygons.begin(), polygons.end(), 0.0,
-                    AreaSummator(meanCount()));
+                    AreaSummator([](const Polygon& p){ return true; }));
                     std::cout << res / polygons.size() << std::endl;
                 }
 
