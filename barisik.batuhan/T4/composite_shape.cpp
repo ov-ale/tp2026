@@ -4,78 +4,61 @@
 #include <stdexcept>
 
 void CompositeShape::addShape(std::unique_ptr<Shape> shape) {
-    shapes.push_back(std::move(shape));
-}
-void CompositeShape::getBoundingBox(Point& min, Point& max) const {
-    if (shapes.empty()) {
-        min = Point(0, 0);
-        max = Point(0, 0);
-        return;
+    if (shape) {
+        shapes_.push_back(std::move(shape));
     }
-    double minX = std::numeric_limits<double>::max();
-    double minY = std::numeric_limits<double>::max();
-    double maxX = std::numeric_limits<double>::lowest();
-    double maxY = std::numeric_limits<double>::lowest();
-
-    for (const auto& shape : shapes) {
-        Point shapeMin, shapeMax;
-        shape->getBoundingBox(shapeMin, shapeMax);
-        minX = std::min(minX, shapeMin.x);
-        minY = std::min(minY, shapeMin.y);
-        maxX = std::max(maxX, shapeMax.x);
-        maxY = std::max(maxY, shapeMax.y);
-    }
-    min = Point(minX, minY);
-    max = Point(maxX, maxY);
 }
 double CompositeShape::getArea() const {
     double total = 0.0;
-    for (const auto& shape : shapes) {
-        total += shape->getArea();
+    for (const auto& s : shapes_) {
+        total += s->getArea();
     }
     return total;
 }
 Point CompositeShape::getCenter() const {
-    if (shapes.empty()) {
+    if (shapes_.empty()) {
         return Point(0, 0);
     }
-    Point min, max;
-    getBoundingBox(min, max);
-    return Point((min.x + max.x) / 2.0, (min.y + max.y) / 2.0);
+    double minX = std::numeric_limits<double>::max();
+    double minY = std::numeric_limits<double>::max();
+    double maxX = -std::numeric_limits<double>::max();
+    double maxY = -std::numeric_limits<double>::max();
+    for (const auto& s : shapes_) {
+        Point c = s->getCenter();
+        minX = std::min(minX, c.x);
+        minY = std::min(minY, c.y);
+        maxX = std::max(maxX, c.x);
+        maxY = std::max(maxY, c.y);
+    }
+    return Point((minX + maxX) / 2.0, (minY + maxY) / 2.0);
 }
 void CompositeShape::move(double dx, double dy) {
-    for (auto& shape : shapes) {
-        shape->move(dx, dy);
+    for (auto& s : shapes_) {
+        s->move(dx, dy);
     }
 }
 void CompositeShape::scale(double factor) {
-    if (factor <= 0) {
+    if (factor <= 0.0) {
         throw std::invalid_argument("scale factor must be positive");
     }
-    if (shapes.empty()) {
+    if (shapes_.empty()) {
         return;
     }
-    Point compositeCenter = getCenter();
-    for (auto& shape : shapes) {
-        Point shapeCenter = shape->getCenter();
-        double dx = shapeCenter.x - compositeCenter.x;
-        double dy = shapeCenter.y - compositeCenter.y;
-        double newDx = dx * factor;
-        double newDy = dy * factor;
-        Point newShapeCenter(compositeCenter.x + newDx,
-                             compositeCenter.y + newDy);
-        double moveX = newShapeCenter.x - shapeCenter.x;
-        double moveY = newShapeCenter.y - shapeCenter.y;
-        shape->move(moveX, moveY);
-        shape->scale(factor);
+    Point center = getCenter();
+    for (auto& s : shapes_) {
+        Point c = s->getCenter();
+        double dx = c.x - center.x;
+        double dy = c.y - center.y;
+        s->move(dx * (factor - 1.0), dy * (factor - 1.0));
+        s->scale(factor);
     }
 }
 std::string CompositeShape::getName() const {
     return "COMPOSITE";
 }
 bool CompositeShape::containsPoint(const Point& p) const {
-    for (const auto& shape : shapes) {
-        if (shape->containsPoint(p)) {
+    for (const auto& s : shapes_) {
+        if (s->containsPoint(p)) {
             return true;
         }
     }
@@ -83,9 +66,26 @@ bool CompositeShape::containsPoint(const Point& p) const {
 }
 double CompositeShape::getPerimeter() const {
     double total = 0.0;
-    for (const auto& shape : shapes) {
-        total += shape->getPerimeter();
+    for (const auto& s : shapes_) {
+        total += s->getPerimeter();
     }
     return total;
 }
+void CompositeShape::getBoundingBox(Point& min, Point& max) const {
+    if (shapes_.empty()) {
+        min = Point(0, 0);
+        max = Point(0, 0);
+        return;
+    }
+    Point shapeMin, shapeMax;
+    shapes_[0]->getBoundingBox(min, max);
+    for (size_t i = 1; i < shapes_.size(); ++i) {
+        shapes_[i]->getBoundingBox(shapeMin, shapeMax);
+        min.x = std::min(min.x, shapeMin.x);
+        min.y = std::min(min.y, shapeMin.y);
+        max.x = std::max(max.x, shapeMax.x);
+        max.y = std::max(max.y, shapeMax.y);
+    }
+}
 //
+

@@ -3,8 +3,8 @@
 #include <cmath>
 #include <stdexcept>
 
-Circle::Circle(const Point& c, double r) : center(c), radius(r) {
-    if (r <= 0) {
+Circle::Circle(const Point& c, double radius) : center(c), radius(radius) {
+    if (radius <= 0.0) {
         throw std::invalid_argument("Error: radius must be positive");
     }
 }
@@ -19,7 +19,7 @@ void Circle::move(double dx, double dy) {
     center.y += dy;
 }
 void Circle::scale(double factor) {
-    if (factor <= 0) {
+    if (factor <= 0.0) {
         throw std::invalid_argument("scale factor must be positive");
     }
     radius *= factor;

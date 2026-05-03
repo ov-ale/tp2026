@@ -1,15 +1,15 @@
-#ifndef CIRCLE_H
-#define CIRCLE_H
+#ifndef RECTANGLE_H
+#define RECTANGLE_H
 
 #include "shape.h"
 
-class Circle : public Shape {
+class Rectangle : public Shape {
 private:
-    Point center;
-    double radius;
+    Point bottomLeft;
+    Point topRight;
 
 public:
-    Circle(const Point& c, double radius);
+    Rectangle(const Point& bl, const Point& tr);
     double getArea() const override;
     Point getCenter() const override;
     void move(double dx, double dy) override;

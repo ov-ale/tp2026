@@ -2,24 +2,21 @@
 #define COMPOSITE_SHAPE_H
 
 #include "shape.h"
-#include <vector>
 #include <memory>
+#include <vector>
 
 class CompositeShape : public Shape {
 private:
-    std::vector<std::unique_ptr<Shape>> shapes;
+    std::vector<std::unique_ptr<Shape>> shapes_;
 
 public:
     CompositeShape() = default;
-    CompositeShape(const CompositeShape& other) = delete;
-    CompositeShape(CompositeShape&& other) noexcept = default;
-    CompositeShape& operator=(const CompositeShape& other) = delete;
-    CompositeShape& operator=(CompositeShape&& other) noexcept = default;
-    ~CompositeShape() = default;
+    CompositeShape(const CompositeShape&) = delete;
+    CompositeShape& operator=(const CompositeShape&) = delete;
+    CompositeShape(CompositeShape&&) = default;
+    CompositeShape& operator=(CompositeShape&&) = default;
+
     void addShape(std::unique_ptr<Shape> shape);
-    const std::vector<std::unique_ptr<Shape>>& getShapes() const {
-        return shapes;
-    }
     double getArea() const override;
     Point getCenter() const override;
     void move(double dx, double dy) override;
@@ -32,3 +29,4 @@ public:
 
 #endif
 //
+
