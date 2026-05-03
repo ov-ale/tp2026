@@ -78,17 +78,17 @@ std::istream& operator>>(std::istream& is, DataStruct& obj) {
                     return is;
                 }
                 unsigned long long d;
-                if (!(is >> d)) {
+                if (!(is >> d) || d==0) {
                     valid = false;
                     skipToRecordEnd(is);
                     return is;
                 }
-                std::string end_tag;
-                if (!(is >> end_tag) || end_tag != ":)") {
-                    valid = false;
-                    skipToRecordEnd(is);
-                    return is;
-                }
+                char c1, c2;
+				if (!(is >> c1 >> c2) || c1 != ':' || c2 != ')') {
+    				valid = false;
+					skipToRecordEnd(is);
+					return is;
+				}
                 if (!(is >> ch) || ch != ':') {
                     valid = false;
                     skipToRecordEnd(is);
@@ -165,7 +165,7 @@ int main() {
         std::cout << "Looks like there is no supported record. Cannot determine input. Test skipped" << std::endl;
         return 0;
     }
-    std::cerr<< "Atleast one supported record type" << std::endl;
+    std::cout<< "Atleast one supported record type" << std::endl;
     std::sort(data.begin(), data.end(), Comparator());
 
     std::copy(
