@@ -3,6 +3,7 @@
 #include <string>
 #include <algorithm>
 #include <iterator>
+#include <limits>
 #include <utility>
 
 struct DataStruct {
@@ -149,17 +150,18 @@ struct Comparator {
 
 int main() {
     std::vector<DataStruct> data;
-
-    std::copy(
-        std::istream_iterator<DataStruct>(std::cin),
-        std::istream_iterator<DataStruct>(),
-        std::back_inserter(data)
-    );
-    data.erase(
-        std::remove_if(data.begin(), data.end(),
-            [](const DataStruct& ds) { return ds.key1 == '\0'; }),
-        data.end()
-    );
+    while (!std::cin.eof())
+    {
+        std::copy(
+            std::istream_iterator<DataStruct>(std::cin),
+            std::istream_iterator<DataStruct>(),
+            std::back_inserter(data)
+        );
+        if (!std::cin.eof()){
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        }
+    }
 
     if (data.empty()) {
         std::cout << "Looks like there is no supported record. Cannot determine input. Test skipped" << std::endl;
