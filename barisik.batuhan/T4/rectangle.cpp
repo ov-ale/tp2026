@@ -8,7 +8,8 @@ Rectangle::Rectangle(const Point& bl, const Point& tr) {
     double y1 = std::min(bl.y, tr.y);
     double y2 = std::max(bl.y, tr.y);
     if (x2 - x1 <= 0.0 || y2 - y1 <= 0.0) {
-        throw std::invalid_argument("Rectangle: width and height must be positive");
+        throw std::invalid_argument(
+            "Rectangle: width and height must be positive");
     }
     bottomLeft = Point(x1, y1);
     topRight = Point(x2, y2);

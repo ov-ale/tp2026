@@ -17,6 +17,10 @@ public:
     CompositeShape& operator=(CompositeShape&&) = default;
 
     void addShape(std::unique_ptr<Shape> shape);
+    
+    const std::vector<std::unique_ptr<Shape>>& getShapes() const {
+        return shapes_;
+    }
     double getArea() const override;
     Point getCenter() const override;
     void move(double dx, double dy) override;

@@ -25,10 +25,10 @@ Point CompositeShape::getCenter() const {
     double maxY = -std::numeric_limits<double>::max();
     for (const auto& s : shapes_) {
         Point c = s->getCenter();
-        minX = std::min(minX, c.x);
-        minY = std::min(minY, c.y);
-        maxX = std::max(maxX, c.x);
-        maxY = std::max(maxY, c.y);
+        if (c.x < minX) minX = c.x;
+        if (c.y < minY) minY = c.y;
+        if (c.x > maxX) maxX = c.x;
+        if (c.y > maxY) maxY = c.y;
     }
     return Point((minX + maxX) / 2.0, (minY + maxY) / 2.0);
 }

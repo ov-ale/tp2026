@@ -40,3 +40,4 @@ void Circle::getBoundingBox(Point& min, Point& max) const {
     max = Point(center.x + radius, center.y + radius);
 }
 //
+

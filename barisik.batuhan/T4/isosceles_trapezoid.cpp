@@ -7,7 +7,8 @@ IsoscelesTrapezoid::IsoscelesTrapezoid(const Point& bl, double bottomBase,
                                        double topBase, double height)
     : bottomLeft(bl), bottomBase(bottomBase), topBase(topBase), height(height) {
     if (bottomBase <= 0.0 || topBase <= 0.0 || height <= 0.0) {
-        throw std::invalid_argument("Error: bases and height must be positive");
+        throw std::invalid_argument(
+            "Error: bases and height must be positive");
     }
     if (topBase > bottomBase) {
         throw std::invalid_argument(
@@ -36,12 +37,14 @@ void IsoscelesTrapezoid::scale(double factor) {
     double xTl = bottomLeft.x + offset;
     double xTr = xTl + topBase;
     double yTop = bottomLeft.y + height;
+
     bottomLeft.x = center.x + (bottomLeft.x - center.x) * factor;
     bottomLeft.y = center.y + (bottomLeft.y - center.y) * factor;
     xBr = center.x + (xBr - center.x) * factor;
     xTl = center.x + (xTl - center.x) * factor;
     xTr = center.x + (xTr - center.x) * factor;
     yTop = center.y + (yTop - center.y) * factor;
+
     bottomBase = std::abs(xBr - bottomLeft.x);
     topBase = std::abs(xTr - xTl);
     height = std::abs(yTop - bottomLeft.y);
