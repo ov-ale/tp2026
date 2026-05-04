@@ -61,7 +61,7 @@ std::istream& operator>>(std::istream& is, DataStruct& obj) {
                     break;
                 }
                 char c1, c2;
-                if (!(is >> c1 >> c2) || c1 != ":" || c2!= "N") {
+                if (!(is >> c1 >> c2) || c1 != ':' || c2!= 'N') {
                     valid = false;
                     skipToRecordEnd(is);
                     break;
@@ -72,8 +72,7 @@ std::istream& operator>>(std::istream& is, DataStruct& obj) {
                     skipToRecordEnd(is);
                     break;
                 }
-                char c1, c2;
-                if (!(is >> c1 >> c2) || c1!= ":" || c2!="D") {
+                if (!(is >> c1 >> c2) || c1!= ':' || c2!='D') {
                     valid = false;
                     skipToRecordEnd(is);
                     break;
@@ -84,7 +83,6 @@ std::istream& operator>>(std::istream& is, DataStruct& obj) {
                      skipToRecordEnd(is);
                     break;
                 }
-                char c1, c2;
                 if (!(is >> c1 >> c2) || c1 != ':' || c2 != ')') {
                     valid = false;
                     skipToRecordEnd(is);
