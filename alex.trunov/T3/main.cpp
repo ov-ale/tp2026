@@ -399,19 +399,23 @@ int main(int argc, char* argv[]) {
 
         else if (mainСmd == "INFRAME") {
             Polygon target;
-
             if (!(iss >> target)) {
                 std::cout << "<INVALID COMMAND>\n";
             }
-            else if (polygons.empty()) {
-                std::cout << "<FALSE>\n";
-            }
             else {
-                BBox bb = constructBB(polygons);
-                bool inside = std::all_of(target.points.begin(),
-                    target.points.end(),
-                    PointInFrame(bb));
-                std::cout << (inside ? "<TRUE>" : "<FALSE>") << "\n";
+                iss >> std::ws;
+                if (!iss.eof()) {          // ← лишние данные после фигуры
+                    std::cout << "<INVALID COMMAND>\n";
+                }
+                else if (polygons.empty()) {
+                    std::cout << "<FALSE>\n";
+                }
+                else {
+                    BBox bb = constructBB(polygons);
+                    bool inside = std::all_of(target.points.begin(),
+                        target.points.end(), PointInFrame(bb));
+                    std::cout << (inside ? "<TRUE>" : "<FALSE>") << "\n";
+                }
             }
         }
 
