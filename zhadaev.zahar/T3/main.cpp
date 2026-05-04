@@ -66,17 +66,20 @@ std::istream& operator>>(std::istream& in, Point& p) {
 
 std::istream& operator>>(std::istream& in, Polygon& poly) {
     size_t n;
-    if (!(in >> n)) return in;
-    std::vector<Point> temp_points;
+    if (!(in >> n) || n < 3) {
+        in.setstate(std::ios::failbit);
+        return in;
+    }
+    std::vector<Point> temp;
     for (size_t i = 0; i < n; ++i) {
         Point p;
         if (!(in >> p)) {
             in.setstate(std::ios::failbit);
             return in;
         }
-        temp_points.push_back(p);
+        temp.push_back(p);
     }
-    poly.points = std::move(temp_points);
+    poly.points = std::move(temp);
     return in;
 }
 
@@ -120,18 +123,13 @@ void handleArea(const std::vector<Polygon>& shapes) {
             });
         std::cout << std::fixed << std::setprecision(1) << res << "\n";
     }
-    else {
-        std::cout << "<INVALID COMMAND>\n";
-    }
+    else { std::cout << "<INVALID COMMAND>\n"; }
 }
 
 void handleMax(const std::vector<Polygon>& shapes) {
     std::string arg;
     if (!(std::cin >> arg)) return;
-    if (shapes.empty()) {
-        std::cout << "<INVALID COMMAND>\n";
-        return;
-    }
+    if (shapes.empty()) { std::cout << "<INVALID COMMAND>\n"; return; }
     if (arg == "AREA") {
         auto it = std::max_element(shapes.begin(), shapes.end(),
             [](const Polygon& a, const Polygon& b) {
@@ -146,9 +144,7 @@ void handleMax(const std::vector<Polygon>& shapes) {
             });
         std::cout << it->points.size() << "\n";
     }
-    else {
-        std::cout << "<INVALID COMMAND>\n";
-    }
+    else { std::cout << "<INVALID COMMAND>\n"; }
 }
 
 void handleCount(const std::vector<Polygon>& shapes) {
@@ -168,9 +164,7 @@ void handleCount(const std::vector<Polygon>& shapes) {
         std::cout << std::count_if(shapes.begin(), shapes.end(),
             [n](const Polygon& p) { return p.points.size() == n; }) << "\n";
     }
-    else {
-        std::cout << "<INVALID COMMAND>\n";
-    }
+    else { std::cout << "<INVALID COMMAND>\n"; }
 }
 
 int main(int argc, char* argv[]) {
@@ -187,7 +181,6 @@ int main(int argc, char* argv[]) {
             if (!(ss >> extra)) shapes.push_back(p);
         }
     }
-
     std::string cmd;
     while (std::cin >> cmd) {
         if (cmd == "AREA") handleArea(shapes);
