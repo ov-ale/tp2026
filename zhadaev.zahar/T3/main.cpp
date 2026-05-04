@@ -9,6 +9,7 @@
 #include <iterator>
 #include <iomanip>
 #include <cmath>
+#include <limits>
 
 using namespace std::placeholders;
 
@@ -22,41 +23,58 @@ struct Polygon {
 
 double getArea(const Polygon& poly) {
     if (poly.points.size() < 3) return 0.0;
+    auto begin = poly.points.begin();
+    auto end_prev = std::prev(poly.points.end());
+    
     double area = std::accumulate(
-        poly.points.begin(),
-        std::prev(poly.points.end()),
+        begin,
+        end_prev,
         0.0,
         [](double sum, const Point& curr) {
             const Point& next = *(&curr + 1);
-            return sum + (static_cast<double>(curr.x) * next.y - static_cast<double>(next.x) * curr.y);
+            double dx = static_cast<double>(curr.x) * next.y;
+            double dy = static_cast<double>(next.x) * curr.y;
+            return sum + (dx - dy);
         }
     );
-    area += (static_cast<double>(poly.points.back().x) * poly.points.front().y - static_cast<double>(poly.points.front().x) * poly.points.back().y);
+    
+    double last_x = static_cast<double>(poly.points.back().x);
+    double last_y = static_cast<double>(poly.points.front().y);
+    double first_x = static_cast<double>(poly.points.front().x);
+    double first_y = static_cast<double>(poly.points.back().y);
+    
+    area += (last_x * last_y - first_x * first_y);
     return std::abs(area) / 2.0;
 }
 
 bool areEqual(const Polygon& a, const Polygon& b) {
     if (a.points.size() != b.points.size()) return false;
-    return std::equal(a.points.begin(), a.points.end(), b.points.begin(),
-        [](const Point& p1, const Point& p2) {
-            return p1.x == p2.x && p1.y == p2.y;
-        });
+    auto check = [](const Point& p1, const Point& p2) {
+        return p1.x == p2.x && p1.y == p2.y;
+    };
+    return std::equal(a.points.begin(), a.points.end(), b.points.begin(), check);
 }
 
 bool intersect(const Polygon& a, const Polygon& b) {
     auto getBounds = [](const Polygon& p) {
-        auto minMaxX = std::minmax_element(p.points.begin(), p.points.end(), [](const Point& a, const Point& b) { return a.x < b.x; });
-        auto minMaxY = std::minmax_element(p.points.begin(), p.points.end(), [](const Point& a, const Point& b) { return a.y < b.y; });
-        return std::make_pair(std::make_pair(minMaxX.first->x, minMaxX.second->x), std::make_pair(minMaxY.first->y, minMaxY.second->y));
+        auto cmpX = [](const Point& p1, const Point& p2) { return p1.x < p2.x; };
+        auto cmpY = [](const Point& p1, const Point& p2) { return p1.y < p2.y; };
+        auto mmX = std::minmax_element(p.points.begin(), p.points.end(), cmpX);
+        auto mmY = std::minmax_element(p.points.begin(), p.points.end(), cmpY);
+        return std::make_pair(
+            std::make_pair(mmX.first->x, mmX.second->x),
+            std::make_pair(mmY.first->y, mmY.second->y)
+        );
     };
     auto b1 = getBounds(a), b2 = getBounds(b);
-    return !(b1.first.second < b2.first.first || b2.first.second < b1.first.first ||
-             b1.second.second < b2.second.first || b2.second.second < b1.second.first);
+    bool noX = b1.first.second < b2.first.first || b2.first.second < b1.first.first;
+    bool noY = b1.second.second < b2.second.first || b2.second.second < b1.second.first;
+    return !(noX || noY);
 }
 
 std::istream& operator>>(std::istream& in, Point& p) {
-    char ignore;
-    if (in >> ignore && ignore == '(' && in >> p.x >> ignore && ignore == ';' && in >> p.y >> ignore && ignore == ')') {
+    char c1, c2, c3;
+    if (in >> c1 >> p.x >> c2 >> p.y >> c3 && c1 == '(' && c2 == ';' && c3 == ')') {
         return in;
     }
     in.setstate(std::ios::failbit);
@@ -67,7 +85,8 @@ std::istream& operator>>(std::istream& in, Polygon& poly) {
     size_t n;
     if (!(in >> n)) return in;
     poly.points.clear();
-    std::copy_n(std::istream_iterator<Point>(in), n, std::back_inserter(poly.points));
+    auto it = std::back_inserter(poly.points);
+    std::copy_n(std::istream_iterator<Point>(in), n, it);
     return in;
 }
 
@@ -76,22 +95,27 @@ void handleArea(const std::vector<Polygon>& shapes) {
     std::cin >> arg;
     double result = 0;
     if (arg == "EVEN") {
-        result = std::accumulate(shapes.begin(), shapes.end(), 0.0, [](double sum, const Polygon& p) {
-            return (p.points.size() % 2 == 0) ? sum + getArea(p) : sum;
-        });
+        result = std::accumulate(shapes.begin(), shapes.end(), 0.0, 
+            [](double sum, const Polygon& p) {
+                return (p.points.size() % 2 == 0) ? sum + getArea(p) : sum;
+            });
     } else if (arg == "ODD") {
-        result = std::accumulate(shapes.begin(), shapes.end(), 0.0, [](double sum, const Polygon& p) {
-            return (p.points.size() % 2 != 0) ? sum + getArea(p) : sum;
-        });
+        result = std::accumulate(shapes.begin(), shapes.end(), 0.0, 
+            [](double sum, const Polygon& p) {
+                return (p.points.size() % 2 != 0) ? sum + getArea(p) : sum;
+            });
     } else if (arg == "MEAN" && !shapes.empty()) {
-        result = std::accumulate(shapes.begin(), shapes.end(), 0.0, [](double sum, const Polygon& p) {
-            return sum + getArea(p);
-        }) / static_cast<double>(shapes.size());
+        double total = std::accumulate(shapes.begin(), shapes.end(), 0.0, 
+            [](double sum, const Polygon& p) {
+                return sum + getArea(p);
+            });
+        result = total / static_cast<double>(shapes.size());
     } else if (!arg.empty() && std::isdigit(arg[0])) {
         size_t n = std::stoul(arg);
-        result = std::accumulate(shapes.begin(), shapes.end(), 0.0, [n](double sum, const Polygon& p) {
-            return (p.points.size() == n) ? sum + getArea(p) : sum;
-        });
+        result = std::accumulate(shapes.begin(), shapes.end(), 0.0, 
+            [n](double sum, const Polygon& p) {
+                return (p.points.size() == n) ? sum + getArea(p) : sum;
+            });
     } else {
         std::cout << "<INVALID COMMAND>" << std::endl;
         return;
@@ -103,9 +127,10 @@ void handleRmEcho(std::vector<Polygon>& shapes) {
     Polygon target;
     if (!(std::cin >> target)) return;
     size_t oldSize = shapes.size();
-    auto it = std::unique(shapes.begin(), shapes.end(), [&target](const Polygon& a, const Polygon& b) {
+    auto pred = [&target](const Polygon& a, const Polygon& b) {
         return areEqual(a, target) && areEqual(b, target);
-    });
+    };
+    auto it = std::unique(shapes.begin(), shapes.end(), pred);
     shapes.erase(it, shapes.end());
     std::cout << oldSize - shapes.size() << std::endl;
 }
@@ -113,7 +138,8 @@ void handleRmEcho(std::vector<Polygon>& shapes) {
 void handleIntersections(const std::vector<Polygon>& shapes) {
     Polygon target;
     if (!(std::cin >> target)) return;
-    auto count = std::count_if(shapes.begin(), shapes.end(), std::bind(intersect, _1, std::cref(target)));
+    auto fn = std::bind(intersect, _1, std::cref(target));
+    auto count = std::count_if(shapes.begin(), shapes.end(), fn);
     std::cout << count << std::endl;
 }
 
@@ -135,7 +161,8 @@ int main(int argc, char* argv[]) {
         else if (cmd == "INTERSECTIONS") handleIntersections(shapes);
         else {
             std::cout << "<INVALID COMMAND>" << std::endl;
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            auto max_s = std::numeric_limits<std::streamsize>::max();
+            std::cin.ignore(max_s, '\n');
         }
     }
     return 0;
