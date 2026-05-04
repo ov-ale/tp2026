@@ -287,7 +287,7 @@ int main(int argc, char* argv[]) {
         }
         else if (cmd == "RMECHO") {
             Polygon target;
-            if (!(std::cin >> target)) {
+            if (!(std::cin >> target) || (std::cin.peek() != '\n' && std::cin >> std::ws && !std::cin.eof())) {
                 std::cout << "<INVALID COMMAND>\n";
                 std::cin.clear();
                 std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -300,7 +300,7 @@ int main(int argc, char* argv[]) {
         }
         else if (cmd == "INTERSECTIONS") {
             Polygon target;
-            if (!(std::cin >> target)) {
+            if (!(std::cin >> target) || (std::cin.peek() != '\n' && std::cin >> std::ws && !std::cin.eof())) {
                 std::cout << "<INVALID COMMAND>\n";
                 std::cin.clear();
                 std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
