@@ -32,6 +32,10 @@ std::istream& operator>>(std::istream& is, DataStruct& obj) {
 
     while (is >> ch && ch != ')') {
         if (ch == ':') {
+            is >>std::ws;
+            if (is.peak()==')'){
+                continue;
+            }
             std::string field;
             if (!(is >> field)) {
                 skipToRecordEnd(is);
@@ -41,11 +45,6 @@ std::istream& operator>>(std::istream& is, DataStruct& obj) {
             if (field == "key1") {
                 char q1, val, q2;
                 if (!(is >> q1 >> val >> q2) || q1 != '\'' || q2 != '\'') {
-                    valid = false;
-                    skipToRecordEnd(is);
-                    break;
-                }
-                if (!(is >> ch) || ch != ':') {
                     valid = false;
                     skipToRecordEnd(is);
                     break;
@@ -88,11 +87,6 @@ std::istream& operator>>(std::istream& is, DataStruct& obj) {
                     skipToRecordEnd(is);
                     break;
                 }
-                if (!(is >> ch) || ch != ':') {
-                    valid = false;
-                    skipToRecordEnd(is);
-                    break;
-                }
                 obj.key2 = {n, d};
                 has_key2 = true;
             }
@@ -104,11 +98,6 @@ std::istream& operator>>(std::istream& is, DataStruct& obj) {
                     break;
                 }
                 if (!std::getline(is, obj.key3, '"')) {
-                    valid = false;
-                    skipToRecordEnd(is);
-                    break;
-                }
-                if (!(is >> ch) || ch != ':') {
                     valid = false;
                     skipToRecordEnd(is);
                     break;
