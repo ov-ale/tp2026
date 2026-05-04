@@ -83,14 +83,9 @@ std::istream& operator>>(std::istream& in, Polygon& poly) {
     return in;
 }
 
-void skipUntilNewline() {
-    std::cin.clear();
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-}
-
 void handleArea(const std::vector<Polygon>& shapes) {
     std::string arg;
-    if (!(std::cin >> arg)) return;
+    std::cin >> arg;
     if (arg == "EVEN") {
         double res = std::accumulate(shapes.begin(), shapes.end(), 0.0,
             [](double s, const Polygon& p) {
@@ -106,10 +101,7 @@ void handleArea(const std::vector<Polygon>& shapes) {
         std::cout << std::fixed << std::setprecision(1) << res << "\n";
     }
     else if (arg == "MEAN") {
-        if (shapes.empty()) {
-            std::cout << "<INVALID COMMAND>\n";
-            return;
-        }
+        if (shapes.empty()) { std::cout << "<INVALID COMMAND>\n"; return; }
         double total = std::accumulate(shapes.begin(), shapes.end(), 0.0,
             [](double s, const Polygon& p) { return s + getArea(p); });
         std::cout << std::fixed << std::setprecision(1) << total / shapes.size() << "\n";
@@ -128,20 +120,16 @@ void handleArea(const std::vector<Polygon>& shapes) {
 
 void handleMax(const std::vector<Polygon>& shapes) {
     std::string arg;
-    if (!(std::cin >> arg)) return;
+    std::cin >> arg;
     if (shapes.empty()) { std::cout << "<INVALID COMMAND>\n"; return; }
     if (arg == "AREA") {
         auto it = std::max_element(shapes.begin(), shapes.end(),
-            [](const Polygon& a, const Polygon& b) {
-                return getArea(a) < getArea(b);
-            });
+            [](const Polygon& a, const Polygon& b) { return getArea(a) < getArea(b); });
         std::cout << std::fixed << std::setprecision(1) << getArea(*it) << "\n";
     }
     else if (arg == "VERTEXES") {
         auto it = std::max_element(shapes.begin(), shapes.end(),
-            [](const Polygon& a, const Polygon& b) {
-                return a.points.size() < b.points.size();
-            });
+            [](const Polygon& a, const Polygon& b) { return a.points.size() < b.points.size(); });
         std::cout << it->points.size() << "\n";
     }
     else { std::cout << "<INVALID COMMAND>\n"; }
@@ -149,7 +137,7 @@ void handleMax(const std::vector<Polygon>& shapes) {
 
 void handleCount(const std::vector<Polygon>& shapes) {
     std::string arg;
-    if (!(std::cin >> arg)) return;
+    std::cin >> arg;
     if (arg == "EVEN") {
         std::cout << std::count_if(shapes.begin(), shapes.end(),
             [](const Polygon& p) { return p.points.size() % 2 == 0; }) << "\n";
@@ -181,26 +169,30 @@ int main(int argc, char* argv[]) {
             if (!(ss >> extra)) shapes.push_back(p);
         }
     }
-    std::string cmd;
-    while (std::cin >> cmd) {
+
+    std::string input_line;
+    while (std::getline(std::cin, input_line)) {
+        if (input_line.empty()) continue;
+        std::stringstream ss(input_line);
+        std::string cmd;
+        if (!(ss >> cmd)) continue;
+
         if (cmd == "AREA") handleArea(shapes);
         else if (cmd == "MAX") handleMax(shapes);
         else if (cmd == "COUNT") handleCount(shapes);
         else if (cmd == "INTERSECTIONS") {
             Polygon target;
-            if (std::cin >> target) {
-                auto pred = std::bind(intersect, _1, std::cref(target));
-                std::cout << std::count_if(shapes.begin(), shapes.end(), pred) << "\n";
+            if (ss >> target) {
+                std::string extra;
+                if (ss >> extra) std::cout << "<INVALID COMMAND>\n";
+                else {
+                    auto pred = std::bind(intersect, _1, std::cref(target));
+                    std::cout << std::count_if(shapes.begin(), shapes.end(), pred) << "\n";
+                }
             }
-            else {
-                std::cout << "<INVALID COMMAND>\n";
-                skipUntilNewline();
-            }
+            else std::cout << "<INVALID COMMAND>\n";
         }
-        else {
-            std::cout << "<INVALID COMMAND>\n";
-            skipUntilNewline();
-        }
+        else std::cout << "<INVALID COMMAND>\n";
     }
     return 0;
 }
