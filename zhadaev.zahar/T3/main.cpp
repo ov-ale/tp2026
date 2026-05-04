@@ -83,9 +83,9 @@ std::istream& operator>>(std::istream& in, Polygon& poly) {
     return in;
 }
 
-void handleArea(const std::vector<Polygon>& shapes) {
+void handleArea(const std::vector<Polygon>& shapes, std::stringstream& ss) {
     std::string arg;
-    std::cin >> arg;
+    if (!(ss >> arg)) { std::cout << "<INVALID COMMAND>\n"; return; }
     if (arg == "EVEN") {
         double res = std::accumulate(shapes.begin(), shapes.end(), 0.0,
             [](double s, const Polygon& p) {
@@ -101,7 +101,10 @@ void handleArea(const std::vector<Polygon>& shapes) {
         std::cout << std::fixed << std::setprecision(1) << res << "\n";
     }
     else if (arg == "MEAN") {
-        if (shapes.empty()) { std::cout << "<INVALID COMMAND>\n"; return; }
+        if (shapes.empty()) {
+            std::cout << (shapes.empty() ? "0.0\n" : "<INVALID COMMAND>\n"); // Corrected MEAN behavior
+            return;
+        }
         double total = std::accumulate(shapes.begin(), shapes.end(), 0.0,
             [](double s, const Polygon& p) { return s + getArea(p); });
         std::cout << std::fixed << std::setprecision(1) << total / shapes.size() << "\n";
@@ -118,9 +121,9 @@ void handleArea(const std::vector<Polygon>& shapes) {
     else { std::cout << "<INVALID COMMAND>\n"; }
 }
 
-void handleMax(const std::vector<Polygon>& shapes) {
+void handleMax(const std::vector<Polygon>& shapes, std::stringstream& ss) {
     std::string arg;
-    std::cin >> arg;
+    if (!(ss >> arg)) { std::cout << "<INVALID COMMAND>\n"; return; }
     if (shapes.empty()) { std::cout << "<INVALID COMMAND>\n"; return; }
     if (arg == "AREA") {
         auto it = std::max_element(shapes.begin(), shapes.end(),
@@ -135,9 +138,9 @@ void handleMax(const std::vector<Polygon>& shapes) {
     else { std::cout << "<INVALID COMMAND>\n"; }
 }
 
-void handleCount(const std::vector<Polygon>& shapes) {
+void handleCount(const std::vector<Polygon>& shapes, std::stringstream& ss) {
     std::string arg;
-    std::cin >> arg;
+    if (!(ss >> arg)) { std::cout << "<INVALID COMMAND>\n"; return; }
     if (arg == "EVEN") {
         std::cout << std::count_if(shapes.begin(), shapes.end(),
             [](const Polygon& p) { return p.points.size() % 2 == 0; }) << "\n";
@@ -177,9 +180,9 @@ int main(int argc, char* argv[]) {
         std::string cmd;
         if (!(ss >> cmd)) continue;
 
-        if (cmd == "AREA") handleArea(shapes);
-        else if (cmd == "MAX") handleMax(shapes);
-        else if (cmd == "COUNT") handleCount(shapes);
+        if (cmd == "AREA") handleArea(shapes, ss);
+        else if (cmd == "MAX") handleMax(shapes, ss);
+        else if (cmd == "COUNT") handleCount(shapes, ss);
         else if (cmd == "INTERSECTIONS") {
             Polygon target;
             if (ss >> target) {
@@ -192,7 +195,9 @@ int main(int argc, char* argv[]) {
             }
             else std::cout << "<INVALID COMMAND>\n";
         }
-        else std::cout << "<INVALID COMMAND>\n";
+        else {
+            std::cout << "<INVALID COMMAND>\n";
+        }
     }
     return 0;
 }
