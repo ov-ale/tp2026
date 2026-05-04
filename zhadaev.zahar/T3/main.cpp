@@ -25,7 +25,6 @@ double getArea(const Polygon& poly) {
     if (poly.points.size() < 3) return 0.0;
     auto begin = poly.points.begin();
     auto end_prev = std::prev(poly.points.end());
-    
     double area = std::accumulate(
         begin,
         end_prev,
@@ -37,12 +36,10 @@ double getArea(const Polygon& poly) {
             return sum + (dx - dy);
         }
     );
-    
     double last_x = static_cast<double>(poly.points.back().x);
     double last_y = static_cast<double>(poly.points.front().y);
     double first_x = static_cast<double>(poly.points.front().x);
     double first_y = static_cast<double>(poly.points.back().y);
-    
     area += (last_x * last_y - first_x * first_y);
     return std::abs(area) / 2.0;
 }
@@ -51,7 +48,7 @@ bool areEqual(const Polygon& a, const Polygon& b) {
     if (a.points.size() != b.points.size()) return false;
     auto check = [](const Point& p1, const Point& p2) {
         return p1.x == p2.x && p1.y == p2.y;
-    };
+        };
     return std::equal(a.points.begin(), a.points.end(), b.points.begin(), check);
 }
 
@@ -65,7 +62,7 @@ bool intersect(const Polygon& a, const Polygon& b) {
             std::make_pair(mmX.first->x, mmX.second->x),
             std::make_pair(mmY.first->y, mmY.second->y)
         );
-    };
+        };
     auto b1 = getBounds(a), b2 = getBounds(b);
     bool noX = b1.first.second < b2.first.first || b2.first.second < b1.first.first;
     bool noY = b1.second.second < b2.second.first || b2.second.second < b1.second.first;
@@ -95,28 +92,32 @@ void handleArea(const std::vector<Polygon>& shapes) {
     std::cin >> arg;
     double result = 0;
     if (arg == "EVEN") {
-        result = std::accumulate(shapes.begin(), shapes.end(), 0.0, 
+        result = std::accumulate(shapes.begin(), shapes.end(), 0.0,
             [](double sum, const Polygon& p) {
                 return (p.points.size() % 2 == 0) ? sum + getArea(p) : sum;
             });
-    } else if (arg == "ODD") {
-        result = std::accumulate(shapes.begin(), shapes.end(), 0.0, 
+    }
+    else if (arg == "ODD") {
+        result = std::accumulate(shapes.begin(), shapes.end(), 0.0,
             [](double sum, const Polygon& p) {
                 return (p.points.size() % 2 != 0) ? sum + getArea(p) : sum;
             });
-    } else if (arg == "MEAN" && !shapes.empty()) {
-        double total = std::accumulate(shapes.begin(), shapes.end(), 0.0, 
+    }
+    else if (arg == "MEAN" && !shapes.empty()) {
+        double total = std::accumulate(shapes.begin(), shapes.end(), 0.0,
             [](double sum, const Polygon& p) {
                 return sum + getArea(p);
             });
         result = total / static_cast<double>(shapes.size());
-    } else if (!arg.empty() && std::isdigit(arg[0])) {
+    }
+    else if (!arg.empty() && std::isdigit(arg[0])) {
         size_t n = std::stoul(arg);
-        result = std::accumulate(shapes.begin(), shapes.end(), 0.0, 
+        result = std::accumulate(shapes.begin(), shapes.end(), 0.0,
             [n](double sum, const Polygon& p) {
                 return (p.points.size() == n) ? sum + getArea(p) : sum;
             });
-    } else {
+    }
+    else {
         std::cout << "<INVALID COMMAND>" << std::endl;
         return;
     }
@@ -129,7 +130,7 @@ void handleRmEcho(std::vector<Polygon>& shapes) {
     size_t oldSize = shapes.size();
     auto pred = [&target](const Polygon& a, const Polygon& b) {
         return areEqual(a, target) && areEqual(b, target);
-    };
+        };
     auto it = std::unique(shapes.begin(), shapes.end(), pred);
     shapes.erase(it, shapes.end());
     std::cout << oldSize - shapes.size() << std::endl;
