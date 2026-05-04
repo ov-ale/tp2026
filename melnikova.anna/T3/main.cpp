@@ -193,12 +193,10 @@ bool polygonsIntersect(const Polygon& p1, const Polygon& p2, int max_x) {
     }
     return false;
 }
-
 int getGlobalMaxX(const std::vector<Polygon>& polys) {
     if (polys.empty()) return 0;
     return getPolygonMaxX(*std::max_element(polys.begin(), polys.end(), comparePolygonMaxX));
 }
-
 int main(int argc, char* argv[]) {
     if (argc != 2) {
         std::cerr << "Usage: " << argv[0] << " <filename>\n";
@@ -280,7 +278,7 @@ int main(int argc, char* argv[]) {
                     if (n < 3) throw std::invalid_argument("n < 3");
                     std::cout << std::count_if(polys.begin(), polys.end(), std::bind(hasNumVertices, _1, n)) << "\n";
                 }
-                catch (...) { 
+                catch (...) {
                     std::cout << "<INVALID COMMAND>\n";
                     std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                     continue;
@@ -291,7 +289,8 @@ int main(int argc, char* argv[]) {
             Polygon target;
             if (!(std::cin >> target)) {
                 std::cout << "<INVALID COMMAND>\n";
-                std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                std::cin.clear();
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                 continue;
             }
             auto it = std::unique(polys.begin(), polys.end(), std::bind(checkDuplicateTarget, _1, _2, target));
@@ -303,7 +302,8 @@ int main(int argc, char* argv[]) {
             Polygon target;
             if (!(std::cin >> target)) {
                 std::cout << "<INVALID COMMAND>\n";
-                std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                std::cin.clear();
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                 continue;
             }
             int currentMaxX = std::max(globalMaxX, getPolygonMaxX(target));
