@@ -15,7 +15,7 @@
 
 using namespace std::placeholders;
 
-// --- data structs --- 
+// --- data structs ---
 
 struct Point {
     int x, y;
@@ -35,11 +35,11 @@ struct BBox {
     int minX, minY, maxX, maxY;
 };
 
-// --- ios operators --- 
+// --- ios operators ---
 
 std::istream& operator>>(std::istream& is, Point& dest) {
     std::istream::sentry sentry(is);
-    if (!sentry)	return is;
+    if (!sentry)    return is;
 
     char c1, c2, c3;
     int x, y;
@@ -56,7 +56,7 @@ std::istream& operator>>(std::istream& is, Point& dest) {
 
 std::istream& operator>>(std::istream& is, Polygon& dest) {
     std::istream::sentry sentry(is);
-    if (!sentry)	return is;
+    if (!sentry)    return is;
 
     size_t n;
     if (!(is >> n) || n < 3) {
@@ -67,7 +67,7 @@ std::istream& operator>>(std::istream& is, Polygon& dest) {
     Polygon tmp(n);
     std::copy_n(std::istream_iterator<Point>(is), n, tmp.points.begin());
 
-    if (is)			dest = std::move(tmp);
+    if (is)            dest = std::move(tmp);
     return is;
 }
 
@@ -77,7 +77,7 @@ struct CrossProduct {
     const std::vector<Point>& p;
     mutable size_t i;
     explicit CrossProduct(const std::vector<Point>& points) :
-        p(points), i(0) 
+        p(points), i(0)
     { }
 
     long long operator()(long long acc, const Point& cur) {
@@ -152,7 +152,7 @@ struct IsNumOfVertexes {
     }
 };
 
-// --- PERMS functors --- 
+// --- PERMS functors ---
 
 struct PointLess {
     bool operator()(const Point& a, const Point& b) {
@@ -178,7 +178,7 @@ struct IsPermutation {
 
     bool operator()(const Polygon& pol) {
         std::vector<Point> pts = pol.points;
-        if (pts.size() != p.size())	
+        if (pts.size() != p.size())
             return false;
 
         std::sort(pts.begin(), pts.end(), PointLess());
@@ -201,7 +201,7 @@ struct ExpandingBBoxPoints {
 struct ExpandingBBoxPolygons {
     BBox operator()(BBox b, const Polygon& p) const {
         std::vector<Point> pnt = p.points;
-        return std::accumulate(pnt.begin(), pnt.end(), 
+        return std::accumulate(pnt.begin(), pnt.end(),
             b, ExpandingBBoxPoints());
     }
 };
@@ -221,7 +221,7 @@ BBox constructBB(const std::vector<Polygon>& pol) {
     std::numeric_limits<int>::max(),
     std::numeric_limits<int>::min(),
     std::numeric_limits<int>::min() };
-    return std::accumulate(pol.begin(), pol.end(), 
+    return std::accumulate(pol.begin(), pol.end(),
         init, ExpandingBBoxPolygons());
 }
 
@@ -419,6 +419,6 @@ int main(int argc, char* argv[]) {
             std::cout << "<INVALID COMMAND>\n";
         }
     }
-    
+
     return 0;
 }
