@@ -85,7 +85,7 @@ struct CrossProduct {
         long long res = static_cast<long long>(cur.x) * next.y
             - static_cast<long long>(next.x) * cur.y;
         i++;
-        return res;
+        return acc + res;
     }
 };
 
