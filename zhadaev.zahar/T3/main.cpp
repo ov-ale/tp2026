@@ -102,7 +102,7 @@ void handleArea(const std::vector<Polygon>& shapes, std::stringstream& ss) {
     }
     else if (arg == "MEAN") {
         if (shapes.empty()) {
-            std::cout << (shapes.empty() ? "0.0\n" : "<INVALID COMMAND>\n"); // Corrected MEAN behavior
+            std::cout << "<INVALID COMMAND>\n";
             return;
         }
         double total = std::accumulate(shapes.begin(), shapes.end(), 0.0,
