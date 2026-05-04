@@ -10,6 +10,7 @@
 #include <utility>
 #include <limits>
 #include <iterator>
+#include <exception>
 
 const int MAX_CRD = std::numeric_limits<int>::max();
 //9. RMECHO INTERSECTIONS
@@ -208,7 +209,16 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     std::vector<Polygon> polys;
-    std::copy(std::istream_iterator<Polygon>(file), std::istream_iterator<Polygon>(), std::back_inserter(polys));
+    while (file) {
+        Polygon p;
+        if (file >> p) {
+            polys.push_back(p);
+        }
+        else if (!file.eof()) {
+            file.clear();
+            file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        }
+    }
     int globalMaxX = getGlobalMaxX(polys);
     std::string cmd;
     while (std::cin >> cmd) {
@@ -226,9 +236,10 @@ int main(int argc, char* argv[]) {
             else {
                 try {
                     size_t n = std::stoull(subcmd);
+                    if (n < 3) throw std::invalid_argument("n < 3");
                     res = std::accumulate(polys.begin(), polys.end(), 0.0, std::bind(addAreaIfNum, _1, _2, n));
                 }
-                catch (...) { std::cout << "<INVALID COMMAND>\n"; continue; }
+                catch (...) { std::cout << "<INVALID COMMAND>\n"; std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); continue; }
             }
             std::cout << std::fixed << std::setprecision(1) << res << "\n";
         }
@@ -263,14 +274,15 @@ int main(int argc, char* argv[]) {
             else {
                 try {
                     size_t n = std::stoull(subcmd);
+                    if (n < 3) throw std::invalid_argument("n < 3");
                     std::cout << std::count_if(polys.begin(), polys.end(), std::bind(hasNumVertices, _1, n)) << "\n";
                 }
-                catch (...) { std::cout << "<INVALID COMMAND>\n"; continue; }
+                catch (...) { std::cout << "<INVALID COMMAND>\n"; std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); continue; }
             }
         }
         else if (cmd == "RMECHO") {
             Polygon target;
-            if (!(std::cin >> target)) { std::cout << "<INVALID COMMAND>\n"; std::cin.clear(); continue; }
+            if (!(std::cin >> target)) { std::cout << "<INVALID COMMAND>\n"; std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); continue; }
 
             auto it = std::unique(polys.begin(), polys.end(), std::bind(checkDuplicateTarget, _1, _2, target));
             int removed = std::distance(it, polys.end());
@@ -279,7 +291,7 @@ int main(int argc, char* argv[]) {
         }
         else if (cmd == "INTERSECTIONS") {
             Polygon target;
-            if (!(std::cin >> target)) { std::cout << "<INVALID COMMAND>\n"; std::cin.clear(); continue; }
+            if (!(std::cin >> target)) { std::cout << "<INVALID COMMAND>\n"; std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); continue; }
 
             int currentMaxX = std::max(globalMaxX, getPolygonMaxX(target));
             std::cout << std::count_if(polys.begin(), polys.end(), std::bind(polygonsIntersect, _1, target, currentMaxX)) << "\n";
