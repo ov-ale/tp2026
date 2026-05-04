@@ -46,10 +46,10 @@ double getArea(const Polygon& poly) {
 
 bool areEqual(const Polygon& a, const Polygon& b) {
     if (a.points.size() != b.points.size()) return false;
-    auto check = [](const Point& p1, const Point& p2) {
-        return p1.x == p2.x && p1.y == p2.y;
-        };
-    return std::equal(a.points.begin(), a.points.end(), b.points.begin(), check);
+    return std::equal(a.points.begin(), a.points.end(), b.points.begin(), 
+        [](const Point& p1, const Point& p2) {
+            return p1.x == p2.x && p1.y == p2.y;
+        });
 }
 
 bool intersect(const Polygon& a, const Polygon& b) {
@@ -58,11 +58,9 @@ bool intersect(const Polygon& a, const Polygon& b) {
         auto cmpY = [](const Point& p1, const Point& p2) { return p1.y < p2.y; };
         auto mmX = std::minmax_element(p.points.begin(), p.points.end(), cmpX);
         auto mmY = std::minmax_element(p.points.begin(), p.points.end(), cmpY);
-        return std::make_pair(
-            std::make_pair(mmX.first->x, mmX.second->x),
-            std::make_pair(mmY.first->y, mmY.second->y)
-        );
-        };
+        return std::make_pair(std::make_pair(mmX.first->x, mmX.second->x),
+                              std::make_pair(mmY.first->y, mmY.second->y));
+    };
     auto b1 = getBounds(a), b2 = getBounds(b);
     bool noX = b1.first.second < b2.first.first || b2.first.second < b1.first.first;
     bool noY = b1.second.second < b2.second.first || b2.second.second < b1.second.first;
@@ -71,86 +69,93 @@ bool intersect(const Polygon& a, const Polygon& b) {
 
 std::istream& operator>>(std::istream& in, Point& p) {
     char c1, c2, c3;
-    if (in >> c1 >> p.x >> c2 >> p.y >> c3 && c1 == '(' && c2 == ';' && c3 == ')') {
-        return in;
-    }
+    if (in >> c1 >> p.x >> c2 >> p.y >> c3 && c1 == '(' && c2 == ';' && c3 == ')') return in;
     in.setstate(std::ios::failbit);
     return in;
 }
 
 std::istream& operator>>(std::istream& in, Polygon& poly) {
     size_t n;
-    if (!(in >> n)) return in;
+    if (!(in >> n) || n < 3) {
+        in.setstate(std::ios::failbit);
+        return in;
+    }
     poly.points.clear();
-    auto it = std::back_inserter(poly.points);
-    std::copy_n(std::istream_iterator<Point>(in), n, it);
+    std::copy_n(std::istream_iterator<Point>(in), n, std::back_inserter(poly.points));
     return in;
+}
+
+void handleCount(const std::vector<Polygon>& shapes) {
+    std::string arg;
+    std::cin >> arg;
+    if (arg == "EVEN") {
+        std::cout << std::count_if(shapes.begin(), shapes.end(), 
+            [](const Polygon& p) { return p.points.size() % 2 == 0; }) << std::endl;
+    } else if (arg == "ODD") {
+        std::cout << std::count_if(shapes.begin(), shapes.end(), 
+            [](const Polygon& p) { return p.points.size() % 2 != 0; }) << std::endl;
+    } else if (std::isdigit(arg[0])) {
+        size_t n = std::stoul(arg);
+        if (n < 3) { std::cout << "<INVALID COMMAND>" << std::endl; return; }
+        std::cout << std::count_if(shapes.begin(), shapes.end(), 
+            [n](const Polygon& p) { return p.points.size() == n; }) << std::endl;
+    } else std::cout << "<INVALID COMMAND>" << std::endl;
+}
+
+void handleMax(const std::vector<Polygon>& shapes) {
+    if (shapes.empty()) { std::cout << "<INVALID COMMAND>" << std::endl; return; }
+    std::string arg;
+    std::cin >> arg;
+    if (arg == "AREA") {
+        auto it = std::max_element(shapes.begin(), shapes.end(), 
+            [](const Polygon& a, const Polygon& b) { return getArea(a) < getArea(b); });
+        std::cout << std::fixed << std::setprecision(1) << getArea(*it) << std::endl;
+    } else if (arg == "VERTEXES") {
+        auto it = std::max_element(shapes.begin(), shapes.end(), 
+            [](const Polygon& a, const Polygon& b) { return a.points.size() < b.points.size(); });
+        std::cout << it->points.size() << std::endl;
+    } else std::cout << "<INVALID COMMAND>" << std::endl;
 }
 
 void handleArea(const std::vector<Polygon>& shapes) {
     std::string arg;
     std::cin >> arg;
-    double result = 0;
     if (arg == "EVEN") {
-        result = std::accumulate(shapes.begin(), shapes.end(), 0.0,
-            [](double sum, const Polygon& p) {
-                return (p.points.size() % 2 == 0) ? sum + getArea(p) : sum;
-            });
-    }
-    else if (arg == "ODD") {
-        result = std::accumulate(shapes.begin(), shapes.end(), 0.0,
-            [](double sum, const Polygon& p) {
-                return (p.points.size() % 2 != 0) ? sum + getArea(p) : sum;
-            });
-    }
-    else if (arg == "MEAN" && !shapes.empty()) {
-        double total = std::accumulate(shapes.begin(), shapes.end(), 0.0,
-            [](double sum, const Polygon& p) {
-                return sum + getArea(p);
-            });
-        result = total / static_cast<double>(shapes.size());
-    }
-    else if (!arg.empty() && std::isdigit(arg[0])) {
+        std::cout << std::fixed << std::setprecision(1) << std::accumulate(shapes.begin(), shapes.end(), 0.0, 
+            [](double s, const Polygon& p) { return p.points.size() % 2 == 0 ? s + getArea(p) : s; }) << std::endl;
+    } else if (arg == "ODD") {
+        std::cout << std::fixed << std::setprecision(1) << std::accumulate(shapes.begin(), shapes.end(), 0.0, 
+            [](double s, const Polygon& p) { return p.points.size() % 2 != 0 ? s + getArea(p) : s; }) << std::endl;
+    } else if (arg == "MEAN" && !shapes.empty()) {
+        double total = std::accumulate(shapes.begin(), shapes.end(), 0.0, 
+            [](double s, const Polygon& p) { return s + getArea(p); });
+        std::cout << std::fixed << std::setprecision(1) << total / shapes.size() << std::endl;
+    } else if (std::isdigit(arg[0])) {
         size_t n = std::stoul(arg);
-        result = std::accumulate(shapes.begin(), shapes.end(), 0.0,
-            [n](double sum, const Polygon& p) {
-                return (p.points.size() == n) ? sum + getArea(p) : sum;
-            });
-    }
-    else {
-        std::cout << "<INVALID COMMAND>" << std::endl;
-        return;
-    }
-    std::cout << std::fixed << std::setprecision(1) << result << std::endl;
-}
-
-void handleRmEcho(std::vector<Polygon>& shapes) {
-    Polygon target;
-    if (!(std::cin >> target)) return;
-    size_t oldSize = shapes.size();
-    auto pred = [&target](const Polygon& a, const Polygon& b) {
-        return areEqual(a, target) && areEqual(b, target);
-        };
-    auto it = std::unique(shapes.begin(), shapes.end(), pred);
-    shapes.erase(it, shapes.end());
-    std::cout << oldSize - shapes.size() << std::endl;
+        if (n < 3) { std::cout << "<INVALID COMMAND>" << std::endl; return; }
+        std::cout << std::fixed << std::setprecision(1) << std::accumulate(shapes.begin(), shapes.end(), 0.0, 
+            [n](double s, const Polygon& p) { return p.points.size() == n ? s + getArea(p) : s; }) << std::endl;
+    } else std::cout << "<INVALID COMMAND>" << std::endl;
 }
 
 void handleIntersections(const std::vector<Polygon>& shapes) {
     Polygon target;
-    if (!(std::cin >> target)) return;
-    auto fn = std::bind(intersect, _1, std::cref(target));
-    auto count = std::count_if(shapes.begin(), shapes.end(), fn);
-    std::cout << count << std::endl;
+    if (!(std::cin >> target)) {
+        std::cout << "<INVALID COMMAND>" << std::endl;
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        return;
+    }
+    std::cout << std::count_if(shapes.begin(), shapes.end(), 
+        std::bind(intersect, _1, std::cref(target))) << std::endl;
 }
 
 int main(int argc, char* argv[]) {
-    if (argc < 2) return 1;
+    if (argc != 2) { std::cerr << "Usage: " << argv[0] << " <file>" << std::endl; return 1; }
     std::ifstream file(argv[1]);
     std::vector<Polygon> shapes;
     std::string line;
     while (std::getline(file, line)) {
-        if (line.empty()) continue;
         std::stringstream ss(line);
         Polygon p;
         if (ss >> p) shapes.push_back(p);
@@ -158,12 +163,21 @@ int main(int argc, char* argv[]) {
     std::string cmd;
     while (std::cin >> cmd) {
         if (cmd == "AREA") handleArea(shapes);
-        else if (cmd == "RMECHO") handleRmEcho(shapes);
+        else if (cmd == "COUNT") handleCount(shapes);
+        else if (cmd == "MAX") handleMax(shapes);
         else if (cmd == "INTERSECTIONS") handleIntersections(shapes);
-        else {
+        else if (cmd == "RMECHO") {
+            Polygon t;
+            if (std::cin >> t) {
+                size_t s = shapes.size();
+                auto it = std::unique(shapes.begin(), shapes.end(), 
+                    [&t](const Polygon& a, const Polygon& b) { return areEqual(a, t) && areEqual(b, t); });
+                shapes.erase(it, shapes.end());
+                std::cout << s - shapes.size() << std::endl;
+            }
+        } else {
             std::cout << "<INVALID COMMAND>" << std::endl;
-            auto max_s = std::numeric_limits<std::streamsize>::max();
-            std::cin.ignore(max_s, '\n');
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
     }
     return 0;
