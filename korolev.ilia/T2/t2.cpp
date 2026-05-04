@@ -160,10 +160,8 @@ int main() {
         data.end()
     );
     if (data.empty()){
-        std::cout<<"Looks like there is no supported record. Cannot determine input. Test skipped" << std::endl;
     }else{
         std::sort(data.begin(), data.end(), Comparator());
-        std::cout<< "Atleast one supported record type" << std::endl;
         std::copy(
             data.begin(),
             data.end(),
