@@ -15,7 +15,7 @@ struct DataStruct {
 void skipToRecordEnd(std::istream& is) {
     char ch;
     int depth=1;
-    while (depth>0 && is>ch ){
+    while (depth>0 && is>>ch ){
         if (ch== '('){
             depth++;
         } else if (ch == ')'){
