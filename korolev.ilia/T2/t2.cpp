@@ -66,7 +66,7 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
     for (int i = 0; i < 3; ++i) {
         std::string key;
         char c;
-        while (in >> c && std::isalpha(c)) {
+        while (in >> c && std::isallnum(c)) {
             key += c;
         }
         if (in) {
