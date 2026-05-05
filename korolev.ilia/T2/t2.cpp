@@ -16,6 +16,12 @@ struct DataStruct {
 struct DelimiterIO {
     char exp;
 };
+struct RationalIO {
+    std::pair<long long, unsigned long long>& ref;
+};
+struct StringIO {
+    std::string& ref;
+};
 
 std::istream& operator>>(std::istream& in, DelimiterIO dest) {
     std::istream::sentry sentry(in);
@@ -27,10 +33,6 @@ std::istream& operator>>(std::istream& in, DelimiterIO dest) {
     }
     return in;
 }
-..
-struct RationalIO {
-    std::pair<long long, unsigned long long>& ref;
-};
 
 std::istream& operator>>(std::istream& in, RationalIO dest) {
     std::istream::sentry sentry(in);
@@ -47,10 +49,6 @@ std::istream& operator>>(std::istream& in, RationalIO dest) {
     }
     return in;
 }
-
-struct StringIO {
-    std::string& ref;
-};
 
 std::istream& operator>>(std::istream& in, StringIO dest) {
     std::istream::sentry sentry(in);
