@@ -1,3 +1,5 @@
+// VAR 8: RMECHO and INFRAME
+
 #include <algorithm>
 #include <iostream>
 #include <iterator>
