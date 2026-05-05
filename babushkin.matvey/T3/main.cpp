@@ -9,6 +9,7 @@
 #include <limits>
 #include <iterator>
 #include <string>
+#include <sstream>
 
 using namespace std::placeholders;
 
@@ -127,6 +128,24 @@ std::vector<Polygon> readPolygons(const std::string& filename) {
     return polys;
 }
 
+bool parsePolygon(const std::string& line, Polygon& poly) {
+    std::istringstream iss(line);
+    size_t count;
+    if (!(iss >> count) || count < 3) return false;
+    std::vector<Point> pts;
+    for (size_t i = 0; i < count; ++i) {
+        Point p;
+        char c1, c2, c3;
+        if (!(iss >> c1 >> p.x >> c2 >> p.y >> c3)) return false;
+        if (c1 != '(' || c2 != ';' || c3 != ')') return false;
+        pts.push_back(p);
+    }
+    std::string leftover;
+    if (iss >> leftover) return false;
+    poly.points = pts;
+    return true;
+}
+
 int main(int argc, char* argv[]) {
     if (argc != 2) {
         std::cerr << "Usage: " << argv[0] << " <filename>\n";
@@ -137,12 +156,20 @@ int main(int argc, char* argv[]) {
 
     std::cout << std::fixed << std::setprecision(1);
 
-    std::string cmd;
-    while (std::cin >> cmd) {
+    std::string line;
+    while (std::getline(std::cin, line)) {
+        if (line.empty()) continue;
+
+        std::istringstream iss(line);
+        std::string cmd;
+        iss >> cmd;
 
         if (cmd == "AREA") {
             std::string subcmd;
-            if (!(std::cin >> subcmd)) break;
+            if (!(iss >> subcmd)) {
+                std::cout << "<INVALID COMMAND>\n";
+                continue;
+            }
             double res = 0.0;
             if (subcmd == "EVEN") {
                 res = std::accumulate(polys.begin(), polys.end(), 0.0, addAreaIfEven);
@@ -159,8 +186,6 @@ int main(int argc, char* argv[]) {
                                           std::bind(addAreaIfNum, _1, _2, n));
                 } catch (...) {
                     std::cout << "<INVALID COMMAND>\n";
-                    std::cin.clear();
-                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                     continue;
                 }
             }
@@ -169,7 +194,7 @@ int main(int argc, char* argv[]) {
 
         else if (cmd == "MIN") {
             std::string subcmd;
-            if (!(std::cin >> subcmd) || polys.empty()) {
+            if (!(iss >> subcmd) || polys.empty()) {
                 std::cout << "<INVALID COMMAND>\n";
                 continue;
             }
@@ -186,7 +211,7 @@ int main(int argc, char* argv[]) {
 
         else if (cmd == "MAX") {
             std::string subcmd;
-            if (!(std::cin >> subcmd) || polys.empty()) {
+            if (!(iss >> subcmd) || polys.empty()) {
                 std::cout << "<INVALID COMMAND>\n";
                 continue;
             }
@@ -203,7 +228,10 @@ int main(int argc, char* argv[]) {
 
         else if (cmd == "COUNT") {
             std::string subcmd;
-            if (!(std::cin >> subcmd)) break;
+            if (!(iss >> subcmd)) {
+                std::cout << "<INVALID COMMAND>\n";
+                continue;
+            }
             if (subcmd == "EVEN") {
                 std::cout << std::count_if(polys.begin(), polys.end(), isEvenFunc) << "\n";
             } else if (subcmd == "ODD") {
@@ -216,16 +244,20 @@ int main(int argc, char* argv[]) {
                                                std::bind(hasNumVertices, _1, n)) << "\n";
                 } catch (...) {
                     std::cout << "<INVALID COMMAND>\n";
-                    std::cin.clear();
-                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                     continue;
                 }
             }
         }
 
         else if (cmd == "LESSAREA") {
+            std::string rest;
+            std::getline(iss, rest);
+            if (rest.empty()) {
+                std::cout << "<INVALID COMMAND>\n";
+                continue;
+            }
             Polygon target;
-            if (!(std::cin >> target)) {
+            if (!parsePolygon(rest, target)) {
                 std::cout << "<INVALID COMMAND>\n";
                 continue;
             }
@@ -236,30 +268,32 @@ int main(int argc, char* argv[]) {
         }
 
         else if (cmd == "MAXSEQ") {
-            Polygon target;
-            if (!(std::cin >> target)) {
+            std::string rest;
+            std::getline(iss, rest);
+            if (rest.empty()) {
                 std::cout << "<INVALID COMMAND>\n";
                 continue;
             }
-            auto it = polys.cbegin();
+            Polygon target;
+            if (!parsePolygon(rest, target)) {
+                std::cout << "<INVALID COMMAND>\n";
+                continue;
+            }
             size_t maxSeq = 0;
-            while (it != polys.cend()) {
-                auto start = std::find_if(it, polys.cend(),
-                    std::bind(isTargetPolygon, _1, target));
-                if (start == polys.cend()) break;
-                auto end = std::find_if_not(start, polys.cend(),
-                    std::bind(isTargetPolygon, _1, target));
-                size_t len = std::distance(start, end);
-                if (len > maxSeq) maxSeq = len;
-                it = end;
+            size_t curSeq = 0;
+            for (const auto& p : polys) {
+                if (p == target) {
+                    ++curSeq;
+                    if (curSeq > maxSeq) maxSeq = curSeq;
+                } else {
+                    curSeq = 0;
+                }
             }
             std::cout << maxSeq << "\n";
         }
 
         else {
             std::cout << "<INVALID COMMAND>\n";
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
     }
 
