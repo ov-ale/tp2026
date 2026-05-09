@@ -16,12 +16,12 @@
 using namespace std::placeholders;
 
 // --- data structs ---
-
 struct Point {
     int x, y;
     Point(int x = 0, int y = 0) :
         x(x), y(y)
-    { }
+    {
+    }
 };
 
 struct Polygon {
@@ -36,7 +36,6 @@ struct BBox {
 };
 
 // --- ios operators ---
-
 std::istream& operator>>(std::istream& is, Point& dest) {
     std::istream::sentry sentry(is);
     if (!sentry)    return is;
@@ -72,13 +71,13 @@ std::istream& operator>>(std::istream& is, Polygon& dest) {
 }
 
 // --- find area ---
-
 struct CrossProduct {
     const std::vector<Point>& p;
     mutable size_t i;
     explicit CrossProduct(const std::vector<Point>& points) :
         p(points), i(0)
-    { }
+    {
+    }
 
     long long operator()(long long acc, const Point& cur) {
         const Point& next = p[(i + 1) % p.size()];
@@ -97,7 +96,6 @@ double area(const Polygon& p) {
 }
 
 // --- common functors ---
-
 struct SumArea {
     double operator()(double acc, const Polygon& p) const {
         return acc + area(p);
@@ -124,7 +122,7 @@ struct SumIfOdd {
 
 struct AreaIfVertexCount {
     size_t n;
-    explicit AreaIfVertexCount(size_t n) : n(n) { }
+    explicit AreaIfVertexCount(size_t n) : n(n) {}
 
     double operator()(double acc, const Polygon& p) {
         return (p.points.size() == n) ? acc + area(p) : acc;
@@ -145,15 +143,14 @@ struct NumOfVertexesCompare {
 
 struct IsNumOfVertexes {
     size_t n;
-    explicit IsNumOfVertexes(size_t n) : n(n) { }
+    explicit IsNumOfVertexes(size_t n) : n(n) {}
 
     bool operator()(const Polygon& p) {
         return p.points.size() == n;
     }
 };
 
-// --- PERMS functors ---
-
+// --- LESSAREA functors ---
 struct PointLess {
     bool operator()(const Point& a, const Point& b) {
         return (a.x != b.x) ? (a.x < b.x) : (a.y < b.y);
@@ -166,64 +163,42 @@ struct PointEq {
     }
 };
 
-std::vector<Point> sortPoints(const Polygon& p) {
-    std::vector<Point> pts = p.points;
-    std::sort(pts.begin(), pts.end(), PointLess());
-    return pts;
+struct IsLessArea {
+    const Polygon& pol;
+    explicit IsLessArea(const Polygon& p) : pol(p) {}
+
+    bool operator()(const Polygon& p) {
+        return area(p) < area(pol);
+    }
+};
+
+// --- SAME functors ---
+struct PointDiff {
+    Point operator()(const Point& a, const Point& b) const {
+        return Point(a.x - b.x, a.y - b.y);
+    }
+};
+
+std::vector<Point> toCanonical(const Polygon& p) {
+    std::vector<Point> res(p.points.size());
+
+    std::transform(p.points.begin(), p.points.end(),
+        res.begin(),
+        std::bind(PointDiff(), _1, std::cref(p.points.front())));
+    return res;
 }
 
-struct IsPermutation {
-    const std::vector<Point>& p;
-    explicit IsPermutation(const std::vector<Point>& point) : p(point) { }
+struct IsSame {
+    const std::vector<Point>& normTarget;
+    explicit IsSame(const std::vector<Point>& nt) : normTarget(nt) {}
 
-    bool operator()(const Polygon& pol) {
-        std::vector<Point> pts = pol.points;
-        if (pts.size() != p.size())
-            return false;
-
-        std::sort(pts.begin(), pts.end(), PointLess());
-        return std::equal(pts.begin(), pts.end(), p.begin(), PointEq());
+    bool operator()(const Polygon& p) const {
+        if (p.points.size() != normTarget.size()) return false;
+        std::vector<Point> norm = toCanonical(p);
+        return std::equal(norm.begin(), norm.end(),
+            normTarget.begin(), PointEq());
     }
 };
-
-// --- INFRAME functors ---
-
-struct ExpandingBBoxPoints {
-    BBox operator()(BBox b, const Point& p) const {
-        b.minX = std::min(b.minX, p.x);
-        b.maxX = std::max(b.maxX, p.x);
-        b.minY = std::min(b.minY, p.y);
-        b.maxY = std::max(b.maxY, p.y);
-        return b;
-    }
-};
-
-struct ExpandingBBoxPolygons {
-    BBox operator()(BBox b, const Polygon& p) const {
-        std::vector<Point> pnt = p.points;
-        return std::accumulate(pnt.begin(), pnt.end(),
-            b, ExpandingBBoxPoints());
-    }
-};
-
-struct PointInFrame {
-    const BBox& b;
-    explicit PointInFrame(const BBox& bb) : b(bb) { }
-
-    bool operator()(const Point& p) const {
-        return p.x >= b.minX && p.x < b.maxX
-            && p.y >= b.minY && p.y < b.maxY;
-    }
-};
-
-BBox constructBB(const std::vector<Polygon>& pol) {
-    BBox init{ std::numeric_limits<int>::max(),
-    std::numeric_limits<int>::max(),
-    std::numeric_limits<int>::min(),
-    std::numeric_limits<int>::min() };
-    return std::accumulate(pol.begin(), pol.end(),
-        init, ExpandingBBoxPolygons());
-}
 
 // !!! --- main --- !!!
 
@@ -236,7 +211,7 @@ int main(int argc, char* argv[]) {
 
     std::ifstream file(argv[1]);
     if (!file) {
-        std::cerr << "Error: cannot open file " << argv[1] << "\n";
+        std::cerr << "Error: can not open file " << argv[1] << '\n';
         return 1;
     }
 
@@ -245,115 +220,117 @@ int main(int argc, char* argv[]) {
     while (std::getline(file, raw)) {
         if (raw.empty()) continue;
         std::istringstream iss(raw);
-        Polygon poly;
-        if (iss >> poly) {
+        Polygon pol;
+        if (iss >> pol) {
             iss >> std::ws;
-            if (iss.eof()) polygons.push_back(std::move(poly));
+            if (iss.eof())
+                polygons.push_back(std::move(pol));
         }
     }
+
+    // === inputing comands ===
 
     std::cout << std::fixed << std::setprecision(1);
 
     std::string command;
     while (std::getline(std::cin, command)) {
 
-        if (command.empty()) continue;
+        if (command.empty())
+            continue;
         std::istringstream iss(command);
-        std::string mainСmd;
-        iss >> mainСmd;
+        std::string mainCmd;
+        iss >> mainCmd;
 
         // === for AREA ===
-
-        if (mainСmd == "AREA") {
+        if (mainCmd == "AREA") {
             std::string sub;
             iss >> sub;
 
+            if (polygons.empty()) {
+                std::cout << "<INVALID COMMAND>\n";
+            }
+
             if (sub == "EVEN") {
                 std::cout << std::accumulate(polygons.begin(), polygons.end(),
-                    0.0, SumIfEven()) << "\n";
+                    0, SumIfEven()) << '\n';
             }
             else if (sub == "ODD") {
                 std::cout << std::accumulate(polygons.begin(), polygons.end(),
-                    0.0, SumIfOdd()) << "\n";
+                    0, SumIfOdd()) << '\n';
             }
             else if (sub == "MEAN") {
-                if (polygons.empty()) {
-                    std::cout << "<INVALID COMMAND>\n";
-                }
-                else {
+                if (!polygons.empty()) {
                     double total = std::accumulate(polygons.begin(),
-                        polygons.end(), 0.0,
-                        SumArea());
-                    std::cout << total / polygons.size() << "\n";
+                        polygons.end(), 0, SumArea());
+                    std::cout << total / polygons.size() << '\n';
                 }
+                else
+                    std::cout << "<INVALID COMMAND>\n";
             }
 
             else {
-                std::istringstream num_stream(sub);
-                std::size_t n;
-                if (num_stream >> n && num_stream.eof() && n >= 3) {
+                std::istringstream numStream(sub);
+                size_t n;
+                if (numStream >> n && numStream.eof() && n >= 3) {
                     std::cout << std::accumulate(polygons.begin(),
-                        polygons.end(), 0.0,
-                        AreaIfVertexCount(n)) << "\n";
+                        polygons.end(), 0, AreaIfVertexCount(n)) << '\n';
                 }
-                else {
+
+                else
                     std::cout << "<INVALID COMMAND>\n";
-                }
             }
         }
 
         // === for MAX ===
-
-        else if (mainСmd == "MAX") {
+        else if (mainCmd == "MAX") {
             std::string sub;
             iss >> sub;
+
             if (polygons.empty()) {
                 std::cout << "<INVALID COMMAND>\n";
             }
-            else if (sub == "AREA") {
+
+            if (sub == "AREA") {
                 auto it = std::max_element(polygons.begin(), polygons.end(),
                     AreaCompare());
-                std::cout << area(*it) << "\n";
+                std::cout << area(*it) << '\n';
             }
             else if (sub == "VERTEXES") {
                 auto it = std::max_element(polygons.begin(), polygons.end(),
                     NumOfVertexesCompare());
-                std::cout << it->points.size() << "\n";
+                std::cout << (*it).points.size() << '\n';
             }
 
-            else {
+            else
                 std::cout << "<INVALID COMMAND>\n";
-            }
         }
 
         // === for MIN ===
-
-        else if (mainСmd == "MIN") {
+        else if (mainCmd == "MIN") {
             std::string sub;
             iss >> sub;
 
             if (polygons.empty()) {
                 std::cout << "<INVALID COMMAND>\n";
             }
-            else if (sub == "AREA") {
+
+            if (sub == "AREA") {
                 auto it = std::min_element(polygons.begin(), polygons.end(),
                     AreaCompare());
-                std::cout << area(*it) << "\n";
+                std::cout << area(*it) << '\n';
             }
             else if (sub == "VERTEXES") {
                 auto it = std::min_element(polygons.begin(), polygons.end(),
                     NumOfVertexesCompare());
-                std::cout << it->points.size() << "\n";
+                std::cout << (*it).points.size() << '\n';
             }
 
-            else {
+            else
                 std::cout << "<INVALID COMMAND>\n";
-            }
         }
 
         // === for COUNT ===
-
-        else if (mainСmd == "COUNT") {
+        else if (mainCmd == "COUNT") {
             std::string sub;
             iss >> sub;
 
@@ -381,40 +358,39 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        // === for PERMS ===
-
-        else if (mainСmd == "PERMS") {
-            Polygon target;
-            if (!(iss >> target)) {
-                std::cout << "<INVALID COMMAND>\n";
-            }
-            else {
-                std::vector<Point> st = sortPoints(target);
-                std::cout << std::count_if(polygons.begin(), polygons.end(),
-                    IsPermutation(st)) << "\n";
-            }
-        }
-
-        // === for INFRAME ===
-
-        else if (mainСmd == "INFRAME") {
+        // === for LESSAREA ===
+        else if (mainCmd == "LESSAREA") {
             Polygon target;
             if (!(iss >> target)) {
                 std::cout << "<INVALID COMMAND>\n";
             }
             else {
                 iss >> std::ws;
-                if (!iss.eof()) {          // ← лишние данные после фигуры
+                if (!iss.eof()) {
                     std::cout << "<INVALID COMMAND>\n";
                 }
-                else if (polygons.empty()) {
-                    std::cout << "<FALSE>\n";
+                else {
+                    std::cout << std::count_if(polygons.begin(), polygons.end(),
+                        IsLessArea(target)) << "\n";
+                }
+            }
+        }
+
+        // === for SAME ===
+        else if (mainCmd == "SAME") {
+            Polygon target;
+            if (!(iss >> target)) {
+                std::cout << "<INVALID COMMAND>\n";
+            }
+            else {
+                iss >> std::ws;
+                if (!iss.eof()) {
+                    std::cout << "<INVALID COMMAND>\n";
                 }
                 else {
-                    BBox bb = constructBB(polygons);
-                    bool inside = std::all_of(target.points.begin(),
-                        target.points.end(), PointInFrame(bb));
-                    std::cout << (inside ? "<TRUE>" : "<FALSE>") << "\n";
+                    std::vector<Point> nt = toCanonical(target);
+                    std::cout << std::count_if(polygons.begin(), polygons.end(),
+                        IsSame(nt)) << "\n";
                 }
             }
         }
