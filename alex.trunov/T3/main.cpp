@@ -66,7 +66,7 @@ std::istream& operator>>(std::istream& is, Polygon& dest) {
     Polygon tmp(n);
     std::copy_n(std::istream_iterator<Point>(is), n, tmp.points.begin());
 
-    if (is)            dest = std::move(tmp);
+    if (is)         dest = std::move(tmp);
     return is;
 }
 
@@ -115,7 +115,7 @@ struct SumIfEven {
 };
 
 struct SumIfOdd {
-    double operator()(double acc, const Polygon& p) {
+    double operator()(double acc, const Polygon& p) const {
         return !IsEven()(p) ? acc + area(p) : acc;
     }
 };
@@ -124,19 +124,19 @@ struct AreaIfVertexCount {
     size_t n;
     explicit AreaIfVertexCount(size_t n) : n(n) {}
 
-    double operator()(double acc, const Polygon& p) {
+    double operator()(double acc, const Polygon& p) const {
         return (p.points.size() == n) ? acc + area(p) : acc;
     }
 };
 
 struct AreaCompare {
-    bool operator()(const Polygon& a, const Polygon& b) {
+    bool operator()(const Polygon& a, const Polygon& b) const {
         return area(a) < area(b);
     }
 };
 
 struct NumOfVertexesCompare {
-    bool operator()(const Polygon& a, const Polygon& b) {
+    bool operator()(const Polygon& a, const Polygon& b) const {
         return a.points.size() < b.points.size();
     }
 };
@@ -145,20 +145,14 @@ struct IsNumOfVertexes {
     size_t n;
     explicit IsNumOfVertexes(size_t n) : n(n) {}
 
-    bool operator()(const Polygon& p) {
+    bool operator()(const Polygon& p) const {
         return p.points.size() == n;
     }
 };
 
 // --- LESSAREA functors ---
-struct PointLess {
-    bool operator()(const Point& a, const Point& b) {
-        return (a.x != b.x) ? (a.x < b.x) : (a.y < b.y);
-    }
-};
-
 struct PointEq {
-    bool operator()(const Point& a, const Point& b) {
+    bool operator()(const Point& a, const Point& b) const {
         return a.x == b.x && a.y == b.y;
     }
 };
@@ -167,7 +161,7 @@ struct IsLessArea {
     const Polygon& pol;
     explicit IsLessArea(const Polygon& p) : pol(p) {}
 
-    bool operator()(const Polygon& p) {
+    bool operator()(const Polygon& p) const {
         return area(p) < area(pol);
     }
 };
@@ -229,7 +223,6 @@ int main(int argc, char* argv[]) {
     }
 
     // === inputing comands ===
-
     std::cout << std::fixed << std::setprecision(1);
 
     std::string command;
@@ -246,38 +239,34 @@ int main(int argc, char* argv[]) {
             std::string sub;
             iss >> sub;
 
-            if (polygons.empty()) {
-                std::cout << "<INVALID COMMAND>\n";
-            }
-
             if (sub == "EVEN") {
                 std::cout << std::accumulate(polygons.begin(), polygons.end(),
-                    0, SumIfEven()) << '\n';
+                    0.0, SumIfEven()) << '\n';
             }
             else if (sub == "ODD") {
                 std::cout << std::accumulate(polygons.begin(), polygons.end(),
-                    0, SumIfOdd()) << '\n';
+                    0.0, SumIfOdd()) << '\n';
             }
             else if (sub == "MEAN") {
                 if (!polygons.empty()) {
                     double total = std::accumulate(polygons.begin(),
-                        polygons.end(), 0, SumArea());
+                        polygons.end(), 0.0, SumArea());
                     std::cout << total / polygons.size() << '\n';
                 }
-                else
+                else {
                     std::cout << "<INVALID COMMAND>\n";
+                }
             }
-
             else {
                 std::istringstream numStream(sub);
                 size_t n;
                 if (numStream >> n && numStream.eof() && n >= 3) {
                     std::cout << std::accumulate(polygons.begin(),
-                        polygons.end(), 0, AreaIfVertexCount(n)) << '\n';
+                        polygons.end(), 0.0, AreaIfVertexCount(n)) << '\n';
                 }
-
-                else
+                else {
                     std::cout << "<INVALID COMMAND>\n";
+                }
             }
         }
 
@@ -289,8 +278,7 @@ int main(int argc, char* argv[]) {
             if (polygons.empty()) {
                 std::cout << "<INVALID COMMAND>\n";
             }
-
-            if (sub == "AREA") {
+            else if (sub == "AREA") {
                 auto it = std::max_element(polygons.begin(), polygons.end(),
                     AreaCompare());
                 std::cout << area(*it) << '\n';
@@ -300,9 +288,9 @@ int main(int argc, char* argv[]) {
                     NumOfVertexesCompare());
                 std::cout << (*it).points.size() << '\n';
             }
-
-            else
+            else {
                 std::cout << "<INVALID COMMAND>\n";
+            }
         }
 
         // === for MIN ===
@@ -313,8 +301,7 @@ int main(int argc, char* argv[]) {
             if (polygons.empty()) {
                 std::cout << "<INVALID COMMAND>\n";
             }
-
-            if (sub == "AREA") {
+            else if (sub == "AREA") {
                 auto it = std::min_element(polygons.begin(), polygons.end(),
                     AreaCompare());
                 std::cout << area(*it) << '\n';
@@ -324,9 +311,9 @@ int main(int argc, char* argv[]) {
                     NumOfVertexesCompare());
                 std::cout << (*it).points.size() << '\n';
             }
-
-            else
+            else {
                 std::cout << "<INVALID COMMAND>\n";
+            }
         }
 
         // === for COUNT ===
@@ -344,7 +331,6 @@ int main(int argc, char* argv[]) {
                 std::cout << std::count_if(polygons.begin(), polygons.end(),
                     odd_pred) << "\n";
             }
-
             else {
                 std::istringstream num_stream(sub);
                 std::size_t n;
