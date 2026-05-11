@@ -225,18 +225,26 @@ using namespace T3;
 int main()
 {
     std::vector<Polygon> shapes;
-    std::string line;
-    while (std::getline(std::cin, line))
+    while (!std::cin.eof())
     {
-        std::stringstream ss(line);
-        Polygon temp;
-        if (ss >> temp)
+        std::cin >> std::ws;
+        if (std::isdigit(std::cin.peek()))
         {
-            std::string extra;
-            if (!(ss >> extra))
+            Polygon temp;
+            if (std::cin >> temp)
             {
                 shapes.push_back(std::move(temp));
             }
+            else
+            {
+                std::cin.clear();
+                std::string skip;
+                std::getline(std::cin, skip);
+            }
+        }
+        else
+        {
+            break;
         }
     }
     std::cin.clear();
