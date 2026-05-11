@@ -57,18 +57,29 @@ std::istream& operator>>(std::istream& is, Polygon& poly) {
     std::istream::sentry sentry(is);
     if (!sentry) return is;
     size_t n;
-    if (!(is >> n) || n < 3) {
-        is.setstate(std::ios::failbit);
-        return is;
-    }
+    if (!(is >> n)) return is;
     std::vector<Point> tmp;
     for (size_t i = 0; i < n; ++i) {
         Point p;
         if (!(is >> p)) return is;
         tmp.push_back(p);
     }
+    if (n < 3) { // Проверка на валидность после вычитки n точек
+        is.setstate(std::ios::failbit);
+        return is;
+    }
     poly.points = std::move(tmp);
     return is;
+}
+
+// Вспомогательная функция для строгого чтения многоугольника из текущей строки
+void readTarget(Polygon& target) {
+    std::string line;
+    std::getline(std::cin, line);
+    std::stringstream ss(line);
+    if (!(ss >> target)) throw std::logic_error("");
+    std::string extra;
+    if (ss >> extra) throw std::logic_error(""); // Если в строке осталось что-то лишнее
 }
 
 void cmdArea(const std::vector<Polygon>& shapes) {
@@ -90,7 +101,6 @@ void cmdArea(const std::vector<Polygon>& shapes) {
         }) / shapes.size();
     } else if (std::isdigit(arg[0])) {
         size_t n = std::stoul(arg);
-        if (n < 3) throw std::logic_error("");
         res = std::accumulate(shapes.begin(), shapes.end(), 0.0, [n](double t, const Polygon& p) {
             return (p.points.size() == n) ? t + getArea(p) : t;
         });
@@ -142,7 +152,6 @@ void cmdCount(const std::vector<Polygon>& shapes) {
         res = std::count_if(shapes.begin(), shapes.end(), [](const Polygon& p) { return p.points.size() % 2 != 0; });
     } else if (std::isdigit(arg[0])) {
         size_t n = std::stoul(arg);
-        if (n < 3) throw std::logic_error("");
         res = std::count_if(shapes.begin(), shapes.end(), [n](const Polygon& p) { return p.points.size() == n; });
     } else throw std::logic_error("");
     std::cout << res << "\n";
@@ -150,7 +159,7 @@ void cmdCount(const std::vector<Polygon>& shapes) {
 
 void cmdEcho(std::vector<Polygon>& shapes) {
     Polygon target;
-    if (!(std::cin >> target)) throw std::logic_error("");
+    readTarget(target);
     std::vector<Polygon> result;
     size_t added = 0;
     for (const auto& p : shapes) {
@@ -166,7 +175,7 @@ void cmdEcho(std::vector<Polygon>& shapes) {
 
 void cmdMaxSeq(const std::vector<Polygon>& shapes) {
     Polygon target;
-    if (!(std::cin >> target)) throw std::logic_error("");
+    readTarget(target);
     int max_run = 0, current_run = 0;
     for (const auto& p : shapes) {
         if (areEqual(p, target)) {
@@ -201,13 +210,16 @@ int main(int argc, char* argv[]) {
             else if (cmd == "COUNT") cmdCount(shapes);
             else if (cmd == "ECHO") cmdEcho(shapes);
             else if (cmd == "MAXSEQ") cmdMaxSeq(shapes);
-            else throw std::logic_error("");
+            else {
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                throw std::logic_error("");
+            }
         } catch (...) {
             std::cout << "<INVALID COMMAND>\n";
             std::cin.clear();
             if (std::cin.eof()) break;
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
     }
     return 0;
 }
+```</INVALID>
