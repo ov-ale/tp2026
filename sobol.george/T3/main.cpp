@@ -33,7 +33,7 @@ struct Polygon
 
 struct AreaCalculator
 {
-    const std::vector<Point>&pts;
+    const std::vector<Point>& pts;
     std::size_t size;
     mutable std::size_t idx;
 
