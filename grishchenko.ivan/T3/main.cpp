@@ -91,6 +91,7 @@ void cmdArea(const std::vector<Polygon>& shapes) {
         }) / shapes.size();
     } else if (std::isdigit(arg[0])) {
         size_t n = std::stoul(arg);
+        if (n < 3) throw std::logic_error("");
         res = std::accumulate(shapes.begin(), shapes.end(), 0.0, [n](double t, const Polygon& p) {
             return (p.points.size() == n) ? t + getArea(p) : t;
         });
@@ -139,6 +140,7 @@ void cmdCount(const std::vector<Polygon>& shapes) {
         res = std::count_if(shapes.begin(), shapes.end(), [](const Polygon& p) { return p.points.size() % 2 != 0; });
     } else if (std::isdigit(arg[0])) {
         size_t n = std::stoul(arg);
+        if (n < 3) throw std::logic_error("");
         res = std::count_if(shapes.begin(), shapes.end(), [n](const Polygon& p) { return p.points.size() == n; });
     } else throw std::logic_error("");
     std::cout << res << "\n";
