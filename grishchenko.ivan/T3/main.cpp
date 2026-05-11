@@ -37,7 +37,8 @@ bool areEqual(const Polygon& a, const Polygon& b) {
 
 std::istream& consume(std::istream& is, char expected) {
     char ch;
-    if (!(is >> ch) || ch != expected) {
+    if (!(is >> ch)) return is;
+    if (ch != expected) {
         is.setstate(std::ios::failbit);
     }
     return is;
@@ -68,9 +69,19 @@ std::istream& operator>>(std::istream& is, Polygon& poly) {
     return is;
 }
 
+bool readTargetPolygon(Polygon& target) {
+    std::string line;
+    if (!(std::getline(std::cin >> std::ws, line))) return false;
+    std::stringstream ss(line);
+    if (!(ss >> target)) return false;
+    std::string extra;
+    if (ss >> extra) return false; 
+    return true;
+}
+
 void cmdArea(const std::vector<Polygon>& shapes) {
     std::string arg;
-    std::cin >> arg;
+    if (!(std::cin >> arg)) return;
     double res = 0;
     if (arg == "EVEN") {
         res = std::accumulate(shapes.begin(), shapes.end(), 0.0, [](double t, const Polygon& p) {
@@ -98,7 +109,7 @@ void cmdArea(const std::vector<Polygon>& shapes) {
 void cmdMax(const std::vector<Polygon>& shapes) {
     if (shapes.empty()) throw std::invalid_argument("");
     std::string arg;
-    std::cin >> arg;
+    if (!(std::cin >> arg)) return;
     if (arg == "AREA") {
         auto it = std::max_element(shapes.begin(), shapes.end(), [](const Polygon& a, const Polygon& b) {
             return getArea(a) < getArea(b);
@@ -115,7 +126,7 @@ void cmdMax(const std::vector<Polygon>& shapes) {
 void cmdMin(const std::vector<Polygon>& shapes) {
     if (shapes.empty()) throw std::invalid_argument("");
     std::string arg;
-    std::cin >> arg;
+    if (!(std::cin >> arg)) return;
     if (arg == "AREA") {
         auto it = std::min_element(shapes.begin(), shapes.end(), [](const Polygon& a, const Polygon& b) {
             return getArea(a) < getArea(b);
@@ -131,7 +142,7 @@ void cmdMin(const std::vector<Polygon>& shapes) {
 
 void cmdCount(const std::vector<Polygon>& shapes) {
     std::string arg;
-    std::cin >> arg;
+    if (!(std::cin >> arg)) return;
     size_t res = 0;
     if (arg == "EVEN") {
         res = std::count_if(shapes.begin(), shapes.end(), [](const Polygon& p) { return p.points.size() % 2 == 0; });
@@ -147,7 +158,7 @@ void cmdCount(const std::vector<Polygon>& shapes) {
 
 void cmdEcho(std::vector<Polygon>& shapes) {
     Polygon target;
-    if (!(std::cin >> target)) throw std::invalid_argument("");
+    if (!readTargetPolygon(target)) throw std::invalid_argument("");
     std::vector<Polygon> result;
     size_t added = 0;
     for (const auto& p : shapes) {
@@ -163,7 +174,7 @@ void cmdEcho(std::vector<Polygon>& shapes) {
 
 void cmdMaxSeq(const std::vector<Polygon>& shapes) {
     Polygon target;
-    if (!(std::cin >> target)) throw std::invalid_argument("");
+    if (!readTargetPolygon(target)) throw std::invalid_argument("");
     int max_run = 0, current_run = 0;
     for (const auto& p : shapes) {
         if (areEqual(p, target)) {
