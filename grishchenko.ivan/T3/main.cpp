@@ -75,7 +75,7 @@ bool readTargetPolygon(Polygon& target) {
     std::stringstream ss(line);
     if (!(ss >> target)) return false;
     std::string extra;
-    if (ss >> extra) return false; 
+    if (ss >> extra) return false;
     return true;
 }
 
