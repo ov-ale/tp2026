@@ -406,6 +406,8 @@ int main(int argc, char* argv[])
                                 return (p.points.size() == n) ? acc + 1 : acc;
                             }
                         );
+
+                        std::cout << count << '\n';
                     }
                     catch (...)
                     {
