@@ -99,9 +99,9 @@ void cmdArea(const std::vector<Polygon>& shapes) {
     std::cout << std::fixed << std::setprecision(1) << res << "\n";
 }
 void cmdMax(const std::vector<Polygon>& shapes) {
-    if (shapes.empty()) throw std::logic_error("");
     std::string arg;
-    std::cin >> arg;
+    if (!(std::cin >> arg)) throw std::logic_error("");
+    if (shapes.empty()) throw std::logic_error("");
     if (arg == "AREA") {
         auto it = std::max_element(shapes.begin(), shapes.end(), [](const Polygon& a, const Polygon& b) {
             return getArea(a) < getArea(b);
@@ -115,9 +115,9 @@ void cmdMax(const std::vector<Polygon>& shapes) {
     } else throw std::logic_error("");
 }
 void cmdMin(const std::vector<Polygon>& shapes) {
-    if (shapes.empty()) throw std::logic_error("");
     std::string arg;
-    std::cin >> arg;
+    if (!(std::cin >> arg)) throw std::logic_error("");
+    if (shapes.empty()) throw std::logic_error("");
     if (arg == "AREA") {
         auto it = std::min_element(shapes.begin(), shapes.end(), [](const Polygon& a, const Polygon& b) {
             return getArea(a) < getArea(b);
@@ -203,6 +203,7 @@ int main(int argc, char* argv[]) {
         } catch (...) {
             std::cout << "<INVALID COMMAND>\n";
             std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             if (std::cin.eof()) break;
         }
     }
