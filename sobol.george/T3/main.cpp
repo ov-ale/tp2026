@@ -488,4 +488,6 @@ int main(int argc, char* argv[])
             std::cout << "<INVALID COMMAND>\n";
         }
     }
+
+    return EXIT_SUCCESS;
 }
