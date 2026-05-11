@@ -222,7 +222,8 @@ int main()
             {
                 std::string sub; std::cin >> sub;
                 if (shapes.empty()) throw std::invalid_argument("");
-                if (sub == "AREA") std::cout << std::fixed << std::setprecision(1) << T3::getArea(*std::max_element(shapes.begin(), shapes.end(), T3::AreaComparator())) << "\n";
+                if (sub == "AREA") std::cout << std::fixed << std::setprecision(1)
+                    << T3::getArea(*std::max_element(shapes.begin(), shapes.end(), T3::AreaComparator())) << "\n";
                 else if (sub == "VERTICES") std::cout << std::max_element(shapes.begin(), shapes.end(), T3::VertexComparator())->poly.size() << "\n";
                 else throw std::invalid_argument("");
             }
@@ -230,7 +231,8 @@ int main()
             {
                 std::string sub; std::cin >> sub;
                 if (shapes.empty()) throw std::invalid_argument("");
-                if (sub == "AREA") std::cout << std::fixed << std::setprecision(1) << T3::getArea(*std::min_element(shapes.begin(), shapes.end(), T3::AreaComparator())) << "\n";
+                if (sub == "AREA") std::cout << std::fixed << std::setprecision(1)
+                    << T3::getArea(*std::min_element(shapes.begin(), shapes.end(), T3::AreaComparator())) << "\n";
                 else if (sub == "VERTICES") std::cout << std::min_element(shapes.begin(), shapes.end(), T3::VertexComparator())->poly.size() << "\n";
                 else throw std::invalid_argument("");
             }
