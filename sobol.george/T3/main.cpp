@@ -14,23 +14,22 @@
 struct Point
 {
     int x, y;
-
-    bool operator==(const Point& other) const
-    {
-        return (this->x == other.x) && (this->y == other.y);
-    }
 };
 
 struct Polygon
 {
     std::vector<Point> points;
-
-    bool operator==(const Polygon& other) const
-    {
-        return this->points == other.points;
-    }
 };
 
+bool operator==(const Point& a, const Point& b) const
+{
+    return (a.x == b.x) && (a.y == b.y);
+}
+
+bool operator==(const Polygon& a, const Polygon& b) const
+{
+    return a.points == b.points;
+}
 struct AreaCalculator
 {
     const std::vector<Point>& pts;
@@ -395,8 +394,9 @@ int main(int argc, char* argv[])
                     size_t result = std::accumulate(polygons.begin(), polygons.end(), 0,
                         [&target](int acc, const Polygon& p)
                         {
-                            std::sort(p.points.begin(), p.points.end(), SortPoints());
-                            return (p == target) ? acc + 1 : acc;
+                            Polygon copy = p;
+                            std::sort(copy.points.begin(), copy.points.end(), SortPoints());
+                            return (copy == target) ? acc + 1 : acc;
                         }
                     );
                     std::cout << result << "\n";
