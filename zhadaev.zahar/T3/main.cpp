@@ -4,6 +4,7 @@
 #include <string>
 #include <numeric>
 #include <iomanip>
+#include <iterator>
 #include <algorithm>
 
 namespace T3
