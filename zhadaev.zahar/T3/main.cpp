@@ -7,6 +7,7 @@
 #include <iterator>
 #include <algorithm>
 #include <cctype>
+#include <cmath>
 
 namespace T3
 {
@@ -30,7 +31,7 @@ namespace T3
     {
         char c;
         in >> c;
-        if (c != symbol.exp)
+        if (in && c != symbol.exp)
         {
             in.setstate(std::ios::failbit);
         }
@@ -46,114 +47,44 @@ namespace T3
     std::istream& operator>>(std::istream& in, Polygon& pol)
     {
         std::istream::sentry sentry(in);
-        if (!sentry)
-        {
-            return in;
-        }
-        int a;
-        in >> a;
-        if (a < 3)
+        if (!sentry) return in;
+
+        size_t vertexCount;
+        if (!(in >> vertexCount) || vertexCount < 3)
         {
             in.setstate(std::ios::failbit);
             return in;
         }
-        pol.poly.resize(a);
-        std::copy_n(std::istream_iterator<Point>(in), a, pol.poly.begin());
-        if (!in) {
-            in.setstate(std::ios::failbit);
+
+        std::vector<Point> tempPoints;
+        for (size_t i = 0; i < vertexCount; ++i)
+        {
+            Point p;
+            if (in >> p) tempPoints.push_back(p);
+            else
+            {
+                in.setstate(std::ios::failbit);
+                return in;
+            }
         }
+
+        pol.poly = std::move(tempPoints);
         return in;
     }
 
-    struct Area
-    {
-        double operator()(double current_sum, const Point& p1) const
-        {
-            const Point* p2 = &p1 + 1;
-            double res = static_cast<double>(p1.x) * p2->y - static_cast<double>(p2->x) * p1.y;
-            return current_sum + res;
-        }
-    };
 
     double getArea(const Polygon& pol)
     {
-        double area = std::accumulate(pol.poly.begin(), pol.poly.end() - 1, 0.0, Area());
-        const Point& last = pol.poly.back();
-        const Point& first = pol.poly.front();
-        area += (static_cast<double>(last.x) * first.y - static_cast<double>(first.x) * last.y);
+        const auto& pts = pol.poly;
+        double area = 0.0;
+        for (size_t i = 0; i < pts.size(); ++i)
+        {
+            const Point& p1 = pts[i];
+            const Point& p2 = pts[(i + 1) % pts.size()];
+            area += static_cast<double>(p1.x) * p2.y - static_cast<double>(p2.x) * p1.y;
+        }
         return std::abs(area) / 2.0;
     }
-
-    struct AreaSummator
-    {
-        std::string mode;
-        size_t num;
-        AreaSummator(std::string m, size_t n = 0) : mode(m), num(n) {}
-        double operator()(double current_sum, const Polygon& pol) const
-        {
-            bool condition = false;
-            if (mode == "EVEN")
-            {
-                condition = (pol.poly.size() % 2 == 0);
-            }
-            else if (mode == "ODD")
-            {
-                condition = (pol.poly.size() % 2 != 0);
-            }
-            else if (mode == "NUM")
-            {
-                condition = (pol.poly.size() == num);
-            }
-            else if (mode == "MEAN")
-            {
-                condition = true;
-            }
-            if (condition) {
-                return current_sum + getArea(pol);
-            }
-            return current_sum;
-        }
-    };
-
-    struct AreaComparator
-    {
-        bool operator()(const Polygon& a, const Polygon& b) const
-        {
-            return getArea(a) < getArea(b);
-        }
-    };
-
-    struct VertexComparator
-    {
-        bool operator()(const Polygon& a, const Polygon& b) const
-        {
-            return a.poly.size() < b.poly.size();
-        }
-    };
-
-    struct CountSummator
-    {
-        std::string mode;
-        size_t num;
-        CountSummator(std::string m, size_t n = 0) : mode(m), num(n) {}
-        size_t operator()(size_t current_count, const Polygon& pol) const {
-            bool condition = false;
-            size_t vertices = pol.poly.size();
-            if (mode == "EVEN")
-            {
-                condition = (vertices % 2 == 0);
-            }
-            else if (mode == "ODD")
-            {
-                condition = (vertices % 2 != 0);
-            }
-            else if (mode == "NUM")
-            {
-                condition = (vertices == num);
-            }
-            return condition ? (current_count + 1) : current_count;
-        }
-    };
 
     int getOrientation(const Point& p, const Point& q, const Point& r)
     {
@@ -162,15 +93,55 @@ namespace T3
         return (val > 0) ? 1 : 2;
     }
 
-    bool doIntersect(const Point& p1, const Point& q1, const Point& p2, const Point& q2) {
+    bool doIntersect(const Point& p1, const Point& q1, const Point& p2, const Point& q2)
+    {
         int o1 = getOrientation(p1, q1, p2);
         int o2 = getOrientation(p1, q1, q2);
         int o3 = getOrientation(p2, q2, p1);
         int o4 = getOrientation(p2, q2, q1);
-
-        if (o1 != o2 && o3 != o4) return true;
-        return false;
+        return (o1 != o2 && o3 != o4);
     }
+
+    bool arePolygonsEqual(const Polygon& a, const Polygon& b)
+    {
+        if (a.poly.size() != b.poly.size()) return false;
+        return std::equal(a.poly.begin(), a.poly.end(), b.poly.begin(),
+            [](const Point& p1, const Point& p2) {
+                return p1.x == p2.x && p1.y == p2.y;
+            });
+    }
+
+
+    struct AreaSummator
+    {
+        std::string mode;
+        size_t num;
+        AreaSummator(std::string m, size_t n = 0) : mode(m), num(n) {}
+        double operator()(double current_sum, const Polygon& pol) const
+        {
+            bool cond = false;
+            if (mode == "EVEN") cond = (pol.poly.size() % 2 == 0);
+            else if (mode == "ODD") cond = (pol.poly.size() % 2 != 0);
+            else if (mode == "NUM") cond = (pol.poly.size() == num);
+            else if (mode == "MEAN") cond = true;
+            return cond ? (current_sum + getArea(pol)) : current_sum;
+        }
+    };
+
+    struct CountSummator
+    {
+        std::string mode;
+        size_t num;
+        CountSummator(std::string m, size_t n = 0) : mode(m), num(n) {}
+        size_t operator()(size_t count, const Polygon& pol) const
+        {
+            bool cond = false;
+            if (mode == "EVEN") cond = (pol.poly.size() % 2 == 0);
+            else if (mode == "ODD") cond = (pol.poly.size() % 2 != 0);
+            else if (mode == "NUM") cond = (pol.poly.size() == num);
+            return cond ? (count + 1) : count;
+        }
+    };
 
     struct IntersectionsPredicate
     {
@@ -178,67 +149,44 @@ namespace T3
         IntersectionsPredicate(const Polygon& t) : target(t) {}
         bool operator()(const Polygon& current) const
         {
-            return std::any_of(current.poly.begin(), current.poly.end(), [&](const Point& p1) {
-                const Point& q1 = (&p1 == &current.poly.back()) ? current.poly.front() : *(&p1 + 1);
-
-                return std::any_of(target.poly.begin(), target.poly.end(), [&](const Point& p2) {
-                    const Point& q2 = (&p2 == &target.poly.back()) ? target.poly.front() : *(&p2 + 1);
-                    return doIntersect(p1, q1, p2, q2);
-                    });
-                });
-        }
-    };
-
-    struct PointComparator
-    {
-        bool operator()(const Point& a, const Point& b) const
-        {
-            return (a.x == b.x && a.y == b.y);
-        }
-    };
-    bool arePolygonsEqual(const Polygon& a, const Polygon& b)
-    {
-        if (a.poly.size() != b.poly.size())
-        {
-            return false;
-        }
-        return std::equal(a.poly.begin(), a.poly.end(), b.poly.begin(), PointComparator());
-    }
-    struct EchoComparator
-    {
-        const Polygon& target;
-
-        EchoComparator(const Polygon& t) : target(t) {}
-
-        bool operator()(const Polygon& a, const Polygon& b) const
-        {
-            if (arePolygonsEqual(a, target) && arePolygonsEqual(b, target))
-            {
-                return true;
+            for (size_t i = 0; i < current.poly.size(); ++i) {
+                for (size_t j = 0; j < target.poly.size(); ++j) {
+                    if (doIntersect(current.poly[i], current.poly[(i + 1) % current.poly.size()],
+                        target.poly[j], target.poly[(j + 1) % target.poly.size()]))
+                        return true;
+                }
             }
             return false;
         }
     };
-}
 
-using namespace T3;
+    struct EchoComparator
+    {
+        const Polygon& target;
+        EchoComparator(const Polygon& t) : target(t) {}
+        bool operator()(const Polygon& a, const Polygon& b) const {
+            return arePolygonsEqual(a, target) && arePolygonsEqual(b, target);
+        }
+    };
+
+    struct AreaComparator {
+        bool operator()(const Polygon& a, const Polygon& b) const { return getArea(a) < getArea(b); }
+    };
+
+    struct VertexComparator {
+        bool operator()(const Polygon& a, const Polygon& b) const { return a.poly.size() < b.poly.size(); }
+    };
+}
 
 int main()
 {
-    std::vector<Polygon> shapes;
-    std::string line;
+    std::vector<T3::Polygon> shapes;
+
     while (std::cin >> std::ws)
     {
-        if (!std::isdigit(std::cin.peek()))
-        {
-            break;
-        }
-
-        Polygon temp;
-        if (std::cin >> temp)
-        {
-            shapes.push_back(std::move(temp));
-        }
+        if (!std::isdigit(std::cin.peek())) break;
+        T3::Polygon temp;
+        if (std::cin >> temp) shapes.push_back(std::move(temp));
         else
         {
             std::cin.clear();
@@ -250,165 +198,77 @@ int main()
     std::string command;
     while (std::cin >> command)
     {
-        if (command == "AREA")
+        try
         {
-            std::string sub_command;
-            std::cin >> sub_command;
-            std::cout << std::fixed << std::setprecision(1);
-
-            if (sub_command == "EVEN")
+            if (command == "AREA")
             {
-                double res = std::accumulate(shapes.begin(), shapes.end(), 0.0, AreaSummator("EVEN"));
-                std::cout << res << "\n";
-            }
-            else if (sub_command == "ODD")
-            {
-                double res = std::accumulate(shapes.begin(), shapes.end(), 0.0, AreaSummator("ODD"));
-                std::cout << res << "\n";
-            }
-            else if (sub_command == "MEAN")
-            {
-                if (shapes.empty())
+                std::string sub; std::cin >> sub;
+                std::cout << std::fixed << std::setprecision(1);
+                if (sub == "EVEN" || sub == "ODD")
+                    std::cout << std::accumulate(shapes.begin(), shapes.end(), 0.0, T3::AreaSummator(sub)) << "\n";
+                else if (sub == "MEAN")
                 {
-                    std::cout << "<INVALID COMMAND>\n";
+                    if (shapes.empty()) throw std::invalid_argument("");
+                    std::cout << std::accumulate(shapes.begin(), shapes.end(), 0.0, T3::AreaSummator("MEAN")) / shapes.size() << "\n";
                 }
                 else
                 {
-                    double total = std::accumulate(shapes.begin(), shapes.end(), 0.0, AreaSummator("MEAN"));
-                    std::cout << total / shapes.size() << "\n";
+                    size_t n = std::stoul(sub);
+                    if (n < 3) throw std::invalid_argument("");
+                    std::cout << std::accumulate(shapes.begin(), shapes.end(), 0.0, T3::AreaSummator("NUM", n)) << "\n";
                 }
             }
-            else
+            else if (command == "MAX")
             {
-                try
+                std::string sub; std::cin >> sub;
+                if (shapes.empty()) throw std::invalid_argument("");
+                if (sub == "AREA") std::cout << std::fixed << std::setprecision(1) << T3::getArea(*std::max_element(shapes.begin(), shapes.end(), T3::AreaComparator())) << "\n";
+                else if (sub == "VERTICES") std::cout << std::max_element(shapes.begin(), shapes.end(), T3::VertexComparator())->poly.size() << "\n";
+                else throw std::invalid_argument("");
+            }
+            else if (command == "MIN")
+            {
+                std::string sub; std::cin >> sub;
+                if (shapes.empty()) throw std::invalid_argument("");
+                if (sub == "AREA") std::cout << std::fixed << std::setprecision(1) << T3::getArea(*std::min_element(shapes.begin(), shapes.end(), T3::AreaComparator())) << "\n";
+                else if (sub == "VERTICES") std::cout << std::min_element(shapes.begin(), shapes.end(), T3::VertexComparator())->poly.size() << "\n";
+                else throw std::invalid_argument("");
+            }
+            else if (command == "COUNT")
+            {
+                std::string sub; std::cin >> sub;
+                if (sub == "EVEN" || sub == "ODD")
+                    std::cout << std::accumulate(shapes.begin(), shapes.end(), 0, T3::CountSummator(sub)) << "\n";
+                else
                 {
-                    size_t num = std::stoul(sub_command);
-                    if (num < 3) {
-                        std::cout << "<INVALID COMMAND>\n";
-                    }
-                    else
-                    {
-                        double res = std::accumulate(shapes.begin(), shapes.end(), 0.0, AreaSummator("NUM", num));
-                        std::cout << res << "\n";
-                    }
-                }
-                catch (...)
-                {
-                    std::cout << "<INVALID COMMAND>\n";
+                    size_t n = std::stoul(sub);
+                    if (n < 3) throw std::invalid_argument("");
+                    std::cout << std::accumulate(shapes.begin(), shapes.end(), 0, T3::CountSummator("NUM", n)) << "\n";
                 }
             }
-        }
-        if (command == "MAX")
-        {
-            std::string sub_command;
-            std::cin >> sub_command;
-
-            if (shapes.empty())
+            else if (command == "INTERSECTIONS")
             {
-                std::cout << "<INVALID COMMAND>\n";
+                T3::Polygon target;
+                if (!(std::cin >> target)) throw std::invalid_argument("");
+                std::cout << std::count_if(shapes.begin(), shapes.end(), T3::IntersectionsPredicate(target)) << "\n";
             }
-            else if (sub_command == "AREA")
+            else if (command == "RMECHO")
             {
-                auto it = std::max_element(shapes.begin(), shapes.end(), AreaComparator());
-                std::cout << std::fixed << std::setprecision(1);
-                std::cout << getArea(*it) << "\n";
-            }
-            else if (sub_command == "VERTICES")
-            {
-                auto it = std::max_element(shapes.begin(), shapes.end(), VertexComparator());
-                std::cout << it->poly.size() << "\n";
-            }
-            else {
-                std::cout << "<INVALID COMMAND>\n";
-            }
-        }
-        if (command == "MIN")
-        {
-            std::string sub_command;
-            std::cin >> sub_command;
-
-            if (shapes.empty())
-            {
-                std::cout << "<INVALID COMMAND>\n";
-            }
-            else if (sub_command == "AREA")
-            {
-                auto it = std::min_element(shapes.begin(), shapes.end(), AreaComparator());
-                std::cout << std::fixed << std::setprecision(1) << getArea(*it) << "\n";
-            }
-            else if (sub_command == "VERTICES")
-            {
-                auto it = std::min_element(shapes.begin(), shapes.end(), VertexComparator());
-                std::cout << it->poly.size() << "\n";
-            }
-        }
-        if (command == "COUNT")
-        {
-            std::string sub_command;
-            std::cin >> sub_command;
-            if (sub_command == "EVEN")
-            {
-                size_t res = std::accumulate(shapes.begin(), shapes.end(), 0, CountSummator("EVEN"));
-                std::cout << res << "\n";
-            }
-            else if (sub_command == "ODD")
-            {
-                size_t res = std::accumulate(shapes.begin(), shapes.end(), 0, CountSummator("ODD"));
-                std::cout << res << "\n";
-            }
-            else
-            {
-                try {
-                    if (std::isdigit(sub_command[0])) {
-                        size_t num = std::stoul(sub_command);
-                        if (num < 3) {
-                            std::cout << "<INVALID COMMAND>\n";
-                        }
-                        else {
-                            size_t res = std::accumulate(shapes.begin(), shapes.end(), 0, CountSummator("NUM", num));
-                            std::cout << res << "\n";
-                        }
-                    }
-                    else if (sub_command == "EVEN") {
-                        std::cout << std::accumulate(shapes.begin(), shapes.end(), 0, CountSummator("EVEN")) << "\n";
-                    }
-                    else if (sub_command == "ODD") {
-                        std::cout << std::accumulate(shapes.begin(), shapes.end(), 0, CountSummator("ODD")) << "\n";
-                    }
-                    else {
-                        std::cout << "<INVALID COMMAND>\n";
-                    }
-                }
-                catch (...) {
-                    std::cout << "<INVALID COMMAND>\n";
-                }
-            }
-        }
-        if (command == "INTERSECTIONS")
-        {
-            Polygon target;
-            if (std::cin >> target)
-            {
-                long long count = std::count_if(shapes.begin(), shapes.end(), IntersectionsPredicate(target));
-                std::cout << count << "\n";
-            }
-            else
-            {
-                std::cout << "<INVALID COMMAND>\n";
-                std::cin.clear();
-                std::cin.ignore(10000, '\n');
-            }
-        }
-        if (command == "RMECHO")
-        {
-            Polygon target;
-            if (std::cin >> target)
-            {
-                size_t initial_size = shapes.size();
-                auto it = std::unique(shapes.begin(), shapes.end(), EchoComparator(target));
+                T3::Polygon target;
+                if (!(std::cin >> target)) throw std::invalid_argument("");
+                size_t oldSize = shapes.size();
+                auto it = std::unique(shapes.begin(), shapes.end(), T3::EchoComparator(target));
                 shapes.erase(it, shapes.end());
-                std::cout << initial_size - shapes.size() << "\n";
+                std::cout << oldSize - shapes.size() << "\n";
             }
+            else throw std::invalid_argument("");
+        }
+        catch (...)
+        {
+            std::cout << "<INVALID COMMAND>\n";
+            std::cin.clear();
+            std::string ignore;
+            std::getline(std::cin, ignore);
         }
     }
     return 0;
