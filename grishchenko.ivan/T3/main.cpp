@@ -7,15 +7,12 @@
 #include <numeric>
 #include <iomanip>
 #include <limits>
-
 struct Point {
     int x, y;
 };
-
 struct Polygon {
     std::vector<Point> points;
 };
-
 double getArea(const Polygon& p) {
     double area = 0.0;
     size_t n = p.points.size();
@@ -26,7 +23,6 @@ double getArea(const Polygon& p) {
     }
     return std::abs(area) / 2.0;
 }
-
 bool areEqual(const Polygon& a, const Polygon& b) {
     if (a.points.size() != b.points.size()) return false;
     return std::equal(a.points.begin(), a.points.end(), b.points.begin(),
@@ -34,14 +30,12 @@ bool areEqual(const Polygon& a, const Polygon& b) {
             return p1.x == p2.x && p1.y == p2.y;
         });
 }
-
 std::istream& consume(std::istream& is, char expected) {
     char ch;
     if (!(is >> ch)) return is;
     if (ch != expected) is.setstate(std::ios::failbit);
     return is;
 }
-
 std::istream& operator>>(std::istream& is, Point& p) {
     std::istream::sentry sentry(is);
     if (!sentry) return is;
@@ -52,7 +46,6 @@ std::istream& operator>>(std::istream& is, Point& p) {
     if (!consume(is, ')')) return is;
     return is;
 }
-
 std::istream& operator>>(std::istream& is, Polygon& poly) {
     std::istream::sentry sentry(is);
     if (!sentry) return is;
@@ -64,24 +57,21 @@ std::istream& operator>>(std::istream& is, Polygon& poly) {
         if (!(is >> p)) return is;
         tmp.push_back(p);
     }
-    if (n < 3) { // Проверка на валидность после вычитки n точек
+    if (n < 3) {
         is.setstate(std::ios::failbit);
         return is;
     }
     poly.points = std::move(tmp);
     return is;
 }
-
-// Вспомогательная функция для строгого чтения многоугольника из текущей строки
 void readTarget(Polygon& target) {
     std::string line;
-    std::getline(std::cin, line);
+    std::getline(std::cin >> std::ws, line);
     std::stringstream ss(line);
     if (!(ss >> target)) throw std::logic_error("");
     std::string extra;
-    if (ss >> extra) throw std::logic_error(""); // Если в строке осталось что-то лишнее
+    if (ss >> extra) throw std::logic_error("");
 }
-
 void cmdArea(const std::vector<Polygon>& shapes) {
     std::string arg;
     std::cin >> arg;
@@ -107,7 +97,6 @@ void cmdArea(const std::vector<Polygon>& shapes) {
     } else throw std::logic_error("");
     std::cout << std::fixed << std::setprecision(1) << res << "\n";
 }
-
 void cmdMax(const std::vector<Polygon>& shapes) {
     if (shapes.empty()) throw std::logic_error("");
     std::string arg;
@@ -124,7 +113,6 @@ void cmdMax(const std::vector<Polygon>& shapes) {
         std::cout << it->points.size() << "\n";
     } else throw std::logic_error("");
 }
-
 void cmdMin(const std::vector<Polygon>& shapes) {
     if (shapes.empty()) throw std::logic_error("");
     std::string arg;
@@ -141,7 +129,6 @@ void cmdMin(const std::vector<Polygon>& shapes) {
         std::cout << it->points.size() << "\n";
     } else throw std::logic_error("");
 }
-
 void cmdCount(const std::vector<Polygon>& shapes) {
     std::string arg;
     std::cin >> arg;
@@ -156,7 +143,6 @@ void cmdCount(const std::vector<Polygon>& shapes) {
     } else throw std::logic_error("");
     std::cout << res << "\n";
 }
-
 void cmdEcho(std::vector<Polygon>& shapes) {
     Polygon target;
     readTarget(target);
@@ -172,7 +158,6 @@ void cmdEcho(std::vector<Polygon>& shapes) {
     shapes = std::move(result);
     std::cout << added << "\n";
 }
-
 void cmdMaxSeq(const std::vector<Polygon>& shapes) {
     Polygon target;
     readTarget(target);
@@ -187,7 +172,6 @@ void cmdMaxSeq(const std::vector<Polygon>& shapes) {
     }
     std::cout << max_run << "\n";
 }
-
 int main(int argc, char* argv[]) {
     if (argc < 2) return 1;
     std::ifstream file(argv[1]);
@@ -222,4 +206,3 @@ int main(int argc, char* argv[]) {
     }
     return 0;
 }
-```</INVALID>
