@@ -38,7 +38,8 @@ struct AreaCalculator
     mutable std::size_t idx;
 
     explicit AreaCalculator(const std::vector<Point>& pts) : pts(pts), size(pts.size()), idx(0)
-    {}
+    {
+    }
 
     long long operator()(long long acc, const Point& curr) const
     {
@@ -82,7 +83,8 @@ struct SumAreaByVertexes
 {
     std::size_t verx;
     explicit SumAreaByVertexes(std::size_t verx_) : verx(verx_)
-    {}
+    {
+    }
 
     double operator()(double acc, const Polygon& p) const
     {
@@ -118,7 +120,8 @@ struct HasVertexCount
 {
     std::size_t verx;
     explicit HasVertexCount(std::size_t verx_) : verx(verx_)
-    {}
+    {
+    }
 
     bool operator()(const Polygon& p) const
     {
