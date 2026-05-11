@@ -205,6 +205,7 @@ int main(int argc, char* argv[]) {
         } catch (...) {
             std::cout << "<INVALID COMMAND>\n";
             std::cin.clear();
+            if (std::cin.eof()) break;
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
     }
