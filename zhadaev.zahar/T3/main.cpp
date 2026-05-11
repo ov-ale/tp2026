@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <iterator>
 #include <algorithm>
+#include <cctype>
 
 namespace T3
 {
@@ -225,29 +226,26 @@ using namespace T3;
 int main()
 {
     std::vector<Polygon> shapes;
-    while (!std::cin.eof())
+    std::string line;
+    while (std::cin >> std::ws)
     {
-        std::cin >> std::ws;
-        if (std::isdigit(std::cin.peek()))
-        {
-            Polygon temp;
-            if (std::cin >> temp)
-            {
-                shapes.push_back(std::move(temp));
-            }
-            else
-            {
-                std::cin.clear();
-                std::string skip;
-                std::getline(std::cin, skip);
-            }
-        }
-        else
+        if (!std::isdigit(std::cin.peek()))
         {
             break;
         }
+
+        Polygon temp;
+        if (std::cin >> temp)
+        {
+            shapes.push_back(std::move(temp));
+        }
+        else
+        {
+            std::cin.clear();
+            std::string skip;
+            std::getline(std::cin, skip);
+        }
     }
-    std::cin.clear();
 
     std::string command;
     while (std::cin >> command)
@@ -360,14 +358,28 @@ int main()
             }
             else
             {
-                try
-                {
-                    size_t num = std::stoul(sub_command);
-                    size_t res = std::accumulate(shapes.begin(), shapes.end(), 0, CountSummator("NUM", num));
-                    std::cout << res << "\n";
+                try {
+                    if (std::isdigit(sub_command[0])) {
+                        size_t num = std::stoul(sub_command);
+                        if (num < 3) {
+                            std::cout << "<INVALID COMMAND>\n";
+                        }
+                        else {
+                            size_t res = std::accumulate(shapes.begin(), shapes.end(), 0, CountSummator("NUM", num));
+                            std::cout << res << "\n";
+                        }
+                    }
+                    else if (sub_command == "EVEN") {
+                        std::cout << std::accumulate(shapes.begin(), shapes.end(), 0, CountSummator("EVEN")) << "\n";
+                    }
+                    else if (sub_command == "ODD") {
+                        std::cout << std::accumulate(shapes.begin(), shapes.end(), 0, CountSummator("ODD")) << "\n";
+                    }
+                    else {
+                        std::cout << "<INVALID COMMAND>\n";
+                    }
                 }
-                catch (...)
-                {
+                catch (...) {
                     std::cout << "<INVALID COMMAND>\n";
                 }
             }
