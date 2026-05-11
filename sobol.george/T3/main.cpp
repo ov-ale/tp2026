@@ -10,9 +10,7 @@
 #include <cstddef>
 #include <limits>
 #include <iomanip>
-//variant 12 PERMS INFRAME
 
-using namespace std::placeholders;
 struct Point
 {
     int x, y;
