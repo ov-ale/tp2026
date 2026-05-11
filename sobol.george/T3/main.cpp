@@ -108,51 +108,12 @@ struct CompareByVertexCount
     }
 };
 
-struct IsEvenVertex
-{
-    bool operator()(const Polygon& p) const
-    {
-        return p.points.size() % 2 == 0;
-    }
-};
-
-struct HasVertexCount
-{
-    std::size_t verx;
-    explicit HasVertexCount(std::size_t verx_) : verx(verx_)
-    {
-    }
-
-    bool operator()(const Polygon& p) const
-    {
-        return p.points.size() == verx;
-    }
-};
-
 struct SortPoints
 {
     bool operator()(const Point& a, const Point& b) const
     {
         if (a.x == b.x) return a.y < b.y;
         return a.x < b.x;
-    }
-};
-
-struct IsPerms
-{
-    Polygon stencil;
-
-    explicit IsPerms(Polygon p) : stencil(std::move(p))
-    {
-        std::sort(stencil.points.begin(), stencil.points.end(), SortPoints());
-    }
-
-    bool operator()(const Polygon& p) const
-    {
-        if (p.points.size() != stencil.points.size()) return false;
-        Polygon copy = p;
-        std::sort(copy.points.begin(), copy.points.end(), SortPoints());
-        return copy.points == stencil.points;
     }
 };
 
@@ -432,7 +393,7 @@ int main(int argc, char* argv[])
                     std::sort(target.points.begin(), target.points.end(), SortPoints());
 
                     size_t result = std::accumulate(polygons.begin(), polygons.end(), 0,
-                        [&target](int acc, Polygon p)
+                        [&target](int acc, const Polygon& p)
                         {
                             std::sort(p.points.begin(), p.points.end(), SortPoints());
                             return (p == target) ? acc + 1 : acc;
