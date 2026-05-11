@@ -18,11 +18,11 @@ struct Polygon {
 
 double getArea(const Polygon& p) {
     double area = 0.0;
-    int n = p.points.size();
+    size_t n = p.points.size();
     if (n < 3) return 0.0;
-    for (int i = 0; i < n; ++i) {
-        area += (p.points[i].x * p.points[(i + 1) % n].y);
-        area -= (p.points[(i + 1) % n].x * p.points[i].y);
+    for (size_t i = 0; i < n; ++i) {
+        area += (1.0 * p.points[i].x * p.points[(i + 1) % n].y);
+        area -= (1.0 * p.points[(i + 1) % n].x * p.points[i].y);
     }
     return std::abs(area) / 2.0;
 }
@@ -180,7 +180,6 @@ int main(int argc, char* argv[]) {
     if (argc < 2) return 1;
     std::ifstream file(argv[1]);
     if (!file) return 1;
-
     std::vector<Polygon> shapes;
     std::string line;
     while (std::getline(file, line)) {
@@ -189,12 +188,9 @@ int main(int argc, char* argv[]) {
         Polygon p;
         if (ss >> p) {
             std::string extra;
-            if (!(ss >> extra)) { 
-                shapes.push_back(p);
-            }
+            if (!(ss >> extra)) shapes.push_back(p);
         }
     }
-
     std::string cmd;
     while (std::cin >> cmd) {
         try {
