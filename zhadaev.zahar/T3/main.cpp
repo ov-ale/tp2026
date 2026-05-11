@@ -178,7 +178,7 @@ namespace T3
         {
             return std::any_of(current.poly.begin(), current.poly.end(), [&](const Point& p1) {
                 const Point& q1 = (&p1 == &current.poly.back()) ? current.poly.front() : *(&p1 + 1);
-                
+
                 return std::any_of(target.poly.begin(), target.poly.end(), [&](const Point& p2) {
                     const Point& q2 = (&p2 == &target.poly.back()) ? target.poly.front() : *(&p2 + 1);
                     return doIntersect(p1, q1, p2, q2);
