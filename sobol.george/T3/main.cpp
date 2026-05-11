@@ -140,7 +140,7 @@ struct SortPoints
 struct IsPerms
 {
     Polygon stencil;
-    
+
     explicit IsPerms(Polygon p) : stencil(std::move(p))
     {
         std::sort(stencil.points.begin(), stencil.points.end(), SortPoints());
