@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <iterator>
+#include <algorithm>
 
 namespace T3
 {
@@ -58,7 +59,7 @@ int main()
     {
         shapes.push_back(figure);
     }
-    for (int i = 0; i < shapes.size(); i++)
+    for (size_t i = 0; i < shapes.size(); i++)
     {
         std::cout << shapes[i] << '\n';
     }
