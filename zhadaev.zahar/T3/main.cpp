@@ -2,6 +2,7 @@
 #include <vector>
 #include <iterator>
 #include <algorithm>
+#include <fstream>
 
 namespace T3
 {
@@ -27,7 +28,7 @@ namespace T3
     std::istream& operator>>(std::istream& in, Polygon& poly)
     {
         int a; in >> a;
-        if (a < 3)
+        if (a < 3 || !(in))
         {
             in.setstate(std::ios::failbit);
             return in;
@@ -51,11 +52,15 @@ namespace T3
 
 using namespace T3;
 
-int main()
+int main(int argc, char* argv[])
 {
+    if (argc != 2) { return 1; }
+    std::ifstream input(argv[1]);
+    if (!(input)) { return 1; }
+
     std::vector<Polygon> shapes;
     Polygon figure;
-    while (std::cin >> figure)
+    while (input >> figure)
     {
         shapes.push_back(figure);
     }
@@ -63,9 +68,8 @@ int main()
     {
         std::cout << shapes[i] << '\n';
     }
+    input.clear();
+
+
     return 0;
 }
-// 3 (1;1) (2;2) (3;3)
-// 4 (1;1) (2;2) (3;3) (4;4)
-// 5 (1;1) (2;2) (3;3) (4;4) (5;5)
-// 6 (1;1) (2;2) (3;3) (4;4) (5;5) (6;6)
