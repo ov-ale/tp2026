@@ -7,6 +7,7 @@
 #include <functional>
 #include <fstream>
 #include <limits>
+#include <iomanip>
 
 namespace T3
 {
@@ -130,11 +131,8 @@ int main(int argc, char* argv[])
         if (command == "AREA")
         {
             std::cin >> sub_command;
-            if (shapes.empty())
-            {
-                std::cout << "<INVALID COMMAND>\n";
-            }
-            else if (sub_command == "EVEN")
+            std::cout << std::fixed << std::setprecision(1);
+            if (sub_command == "EVEN")
             {
                 std::cout << std::accumulate(shapes.begin(), shapes.end(), 0.0, AreaMods("EVEN")) << '\n';
             }
@@ -144,7 +142,14 @@ int main(int argc, char* argv[])
             }
             else if (sub_command == "MEAN")
             {
-                std::cout << std::accumulate(shapes.begin(), shapes.end(), 0.0, AreaMods("MEAN")) / shapes.size() << '\n';
+                if (shapes.size() == 0)
+                {
+                    std::cout << std::accumulate(shapes.begin(), shapes.end(), 0.0, AreaMods("MEAN")) << '\n';
+                }
+                else
+                {
+                    std::cout << std::accumulate(shapes.begin(), shapes.end(), 0.0, AreaMods("MEAN")) / shapes.size() << '\n';
+                }
             }
             else if (std::isdigit(sub_command[0]))
             {
