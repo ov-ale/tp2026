@@ -6,6 +6,7 @@
 #include <numeric>
 #include <functional>
 #include <fstream>
+#include <limits>
 
 namespace T3
 {
