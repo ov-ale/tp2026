@@ -142,9 +142,9 @@ int main(int argc, char* argv[])
             }
             else if (sub_command == "MEAN")
             {
-                if (shapes.size() == 0)
+                if (shapes.empty())
                 {
-                    std::cout << std::accumulate(shapes.begin(), shapes.end(), 0.0, AreaMods("MEAN")) << '\n';
+                    std::cout << "<INVALID COMMAND>\n";
                 }
                 else
                 {
