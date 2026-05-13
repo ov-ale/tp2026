@@ -106,6 +106,22 @@ namespace T3
             return currect;
         }
     };
+    struct Max
+    {
+        std::string command;
+        Max(std::string str) : command(str) {}
+        bool operator()(const Polygon& a, const Polygon& b)
+        {
+            if (command == "AREA")
+            {
+                return PolygonArea()(a) < PolygonArea()(b);
+            }
+            if (command == "VERTEXES")
+            {
+                return a.polygon.size() < b.polygon.size();
+            }
+        }
+    };
 }
 
 using namespace T3;
@@ -167,12 +183,34 @@ int main(int argc, char* argv[])
         else if (command == "MAX")
         {
             std::cin >> sub_command;
-
+            if (shapes.empty())
+            {
+                std::cout << "<INVALID COMMAND>\n";
+            }
+            if (sub_command == "AREA")
+            {
+                std::cout << PolygonArea()(*(std::max_element(shapes.begin(), shapes.end(), Max("AREA")))) << '\n';
+            }
+            else if (sub_command == "VERTEXES")
+            {
+                std::cout << std::max_element(shapes.begin(), shapes.end(), Max("VERTEXES"))->polygon.size() << '\n';
+            }
         }
         else if (command == "MIN")
         {
             std::cin >> sub_command;
-
+            if (shapes.empty())
+            {
+                std::cout << "<INVALID COMMAND>\n";
+            }
+            if (sub_command == "AREA")
+            {
+                std::cout << PolygonArea()(*(std::min_element(shapes.begin(), shapes.end(), Max("AREA")))) << '\n';
+            }
+            else if (sub_command == "VERTEXES")
+            {
+                std::cout << std::min_element(shapes.begin(), shapes.end(), Max("VERTEXES"))->polygon.size() << '\n';
+            }
         }
         else if (command == "COUNT")
         {
