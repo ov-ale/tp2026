@@ -161,6 +161,11 @@ int main(int argc, char* argv[])
     Polygon figure;
     while (input >> figure)
     {
+        if (!input)
+        {
+            input.clear();
+            input.ignore(std::numeric_limits<std::streamsize>::max());
+        }
         shapes.push_back(figure);
     }
     input.clear();
@@ -235,7 +240,7 @@ int main(int argc, char* argv[])
         else if (command == "COUNT")
         {
             std::cin >> sub_command;
-            if (shapes.empty()) { std::cout << 0 << "\n"; }
+            if (shapes.empty()) { std::cout << "<INVALID COMMAND>\n"; }
             else
             {
                 if (sub_command == "EVEN")
