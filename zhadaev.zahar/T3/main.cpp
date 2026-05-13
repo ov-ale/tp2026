@@ -263,9 +263,5 @@ int main(int argc, char* argv[])
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
     }
-    for (size_t i = 0; i < shapes.size(); i++)
-    {
-        std::cout << shapes[i] << '\n';
-    }
     return 0;
 }
