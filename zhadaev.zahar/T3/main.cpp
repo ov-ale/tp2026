@@ -279,25 +279,21 @@ int main(int argc, char* argv[])
         else if (command == "COUNT")
         {
             std::cin >> sub_command;
-            if (shapes.empty()) { std::cout << "<INVALID COMMAND>\n"; }
-            else
+            if (sub_command == "EVEN")
             {
-                if (sub_command == "EVEN")
+                std::cout << std::count_if(shapes.begin(), shapes.end(), Count("EVEN")) << '\n';
+            }
+            else if (sub_command == "ODD")
+            {
+                std::cout << std::count_if(shapes.begin(), shapes.end(), Count("ODD")) << '\n';
+            }
+            else if (std::isdigit(sub_command[0]))
+            {
+                size_t n = std::stoul(sub_command);
+                if (n < 3) { std::cout << "<INVALID COMMAND>\n"; }
+                else
                 {
-                    std::cout << std::count_if(shapes.begin(), shapes.end(), Count("EVEN")) << '\n';
-                }
-                else if (sub_command == "ODD")
-                {
-                    std::cout << std::count_if(shapes.begin(), shapes.end(), Count("ODD")) << '\n';
-                }
-                else if (std::isdigit(sub_command[0]))
-                {
-                    size_t n = std::stoul(sub_command);
-                    if (n < 3) { std::cout << "<INVALID COMMAND>\n"; }
-                    else
-                    {
-                        std::cout << std::count_if(shapes.begin(), shapes.end(), Count("NUM", n)) << '\n';
-                    }
+                    std::cout << std::count_if(shapes.begin(), shapes.end(), Count("NUM", n)) << '\n';
                 }
             }
         }
