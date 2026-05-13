@@ -17,8 +17,8 @@ namespace T3
     struct Symbol { char exp; Symbol(char c) : exp(c) {} };
     std::istream& operator>>(std::istream& in, Symbol&& sym)
     {
-        char c; in >> c;
-        if (c != sym.exp) { in.setstate(std::ios::failbit); }
+        char c = 0;
+        if (in >> c && c != sym.exp) { in.setstate(std::ios::failbit); }
         return in;
     }
     std::istream& operator>>(std::istream& in, Point& point)
@@ -33,24 +33,60 @@ namespace T3
     }
     std::istream& operator>>(std::istream& in, Polygon& poly)
     {
-        size_t a = 0; in >> a;
-        if (a < 3 || !(in))
+        std::string line;
+        if (!std::getline(in, line))
         {
             in.setstate(std::ios::failbit);
             return in;
         }
-        poly.polygon.resize(a);
-        std::copy_n(std::istream_iterator<Point>(in), a, poly.polygon.begin());
-        if (!(in))
+        std::istringstream iss(line);
+        size_t a = 0;
+        if (!(iss >> a) || a < 3)
         {
             in.setstate(std::ios::failbit);
+            return in;
+        }
+
+        poly.polygon.clear();
+        poly.polygon.resize(a);
+
+        struct PointReader
+        {
+            std::istream& stream;
+            bool failed = false;
+
+            PointReader(std::istream& s) : stream(s) {}
+
+            Point operator()()
+            {
+                Point p{ 0, 0 };
+                if (!failed && !(stream >> p))
+                    failed = true;
+                return p;
+            }
+        };
+
+        PointReader reader(iss);
+        std::generate_n(poly.polygon.begin(), a, std::ref(reader));
+        if (reader.failed || iss.fail())
+        {
+            poly.polygon.clear();
+            in.setstate(std::ios::failbit);
+            return in;
+        }
+        std::string trash;
+        if (iss >> trash)
+        {
+            poly.polygon.clear();
+            in.setstate(std::ios::failbit);
+            return in;
         }
         return in;
     }
     std::ostream& operator<<(std::ostream& out, Polygon& poly)
     {
         out << poly.polygon.size() << " ";
-        std::copy(
+            std::copy(
             poly.polygon.begin(),
             poly.polygon.end(),
             std::ostream_iterator<Point>(out)
@@ -171,19 +207,6 @@ int main(int argc, char* argv[])
             shapes.push_back(figure);
         }
     }
-    /*while (input >> figure)
-    {
-        if (!input)
-        {
-            input.clear();
-            input.ignore(std::numeric_limits<std::streamsize>::max());
-            input.setstate(std::ios::goodbit);
-        }
-        else
-        {
-            shapes.push_back(figure);
-        }
-    }*/
     input.clear();
 
     std::string command, sub_command;
