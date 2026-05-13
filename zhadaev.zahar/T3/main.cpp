@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <iterator>
@@ -32,7 +33,7 @@ namespace T3
     }
     std::istream& operator>>(std::istream& in, Polygon& poly)
     {
-        int a = 0; in >> a;
+        size_t a = 0; in >> a;
         if (a < 3 || !(in))
         {
             in.setstate(std::ios::failbit);
@@ -159,15 +160,30 @@ int main(int argc, char* argv[])
 
     std::vector<Polygon> shapes;
     Polygon figure;
-    while (input >> figure)
+
+
+    std::string line;
+    while (std::getline(input, line))
+    {
+        std::stringstream ss(line);
+        if (ss >> figure)
+        {
+            shapes.push_back(figure);
+        }
+    }
+    /*while (input >> figure)
     {
         if (!input)
         {
             input.clear();
             input.ignore(std::numeric_limits<std::streamsize>::max());
+            input.setstate(std::ios::goodbit);
         }
-        shapes.push_back(figure);
-    }
+        else
+        {
+            shapes.push_back(figure);
+        }
+    }*/
     input.clear();
 
     std::string command, sub_command;
