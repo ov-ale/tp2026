@@ -73,8 +73,7 @@ namespace T3
     };
     struct AreaMods
     {
-        std::string mode;
-        size_t ver;
+        std::string mode; size_t ver;
         AreaMods(std::string str, size_t num = 0) : mode(str), ver(num) {}
         double operator()(double currect, const Polygon& poly)
         {
@@ -123,6 +122,28 @@ namespace T3
             return false;
         }
     };
+    struct Count
+    {
+        std::string command; size_t n;
+        Count(std::string str, size_t ver = 0) : command(str), n(ver) {}
+        bool operator()(const Polygon& poly)
+        {
+            if (command == "EVEN")
+            {
+                return poly.polygon.size() % 2 == 0;
+            }
+            else if (command == "ODD")
+            {
+                return poly.polygon.size() % 2 != 0;
+
+            }
+            else if (command == "NUM")
+            {
+                return poly.polygon.size() == n;
+            }
+            return false;
+        }
+    };
 }
 
 using namespace T3;
@@ -141,8 +162,7 @@ int main(int argc, char* argv[])
     }
     input.clear();
 
-    std::string command;
-    std::string sub_command;
+    std::string command, sub_command;
     while (std::cin >> command)
     {
         if (command == "AREA")
@@ -159,10 +179,7 @@ int main(int argc, char* argv[])
             }
             else if (sub_command == "MEAN")
             {
-                if (shapes.empty())
-                {
-                    std::cout << "<INVALID COMMAND>\n";
-                }
+                if (shapes.empty()) { std::cout << "<INVALID COMMAND>\n"; }
                 else
                 {
                     std::cout << std::accumulate(shapes.begin(), shapes.end(), 0.0, AreaMods("MEAN")) / shapes.size() << '\n';
@@ -171,10 +188,7 @@ int main(int argc, char* argv[])
             else if (std::isdigit(sub_command[0]))
             {
                 size_t n = std::stoul(sub_command);
-                if (n < 3)
-                {
-                    std::cout << "<INVALID COMMAND>\n";
-                }
+                if (n < 3) { std::cout << "<INVALID COMMAND>\n"; }
                 else
                 {
                     std::cout << std::accumulate(shapes.begin(), shapes.end(), 0.0, AreaMods("NUM", n)) << '\n';
@@ -185,10 +199,7 @@ int main(int argc, char* argv[])
         {
             std::cin >> sub_command;
             std::cout << std::fixed << std::setprecision(1);
-            if (shapes.empty())
-            {
-                std::cout << "<INVALID COMMAND>\n";
-            }
+            if (shapes.empty()) { std::cout << "<INVALID COMMAND>\n"; }
             else
             {
                 if (sub_command == "AREA")
@@ -205,10 +216,7 @@ int main(int argc, char* argv[])
         {
             std::cin >> sub_command;
             std::cout << std::fixed << std::setprecision(1);
-            if (shapes.empty())
-            {
-                std::cout << "<INVALID COMMAND>\n";
-            }
+            if (shapes.empty()) { std::cout << "<INVALID COMMAND>\n"; }
             else
             {
                 if (sub_command == "AREA")
@@ -224,7 +232,27 @@ int main(int argc, char* argv[])
         else if (command == "COUNT")
         {
             std::cin >> sub_command;
-
+            if (shapes.empty()) { std::cout << "<INVALID COMMAND>\n"; }
+            else
+            {
+                if (sub_command == "EVEN")
+                {
+                    std::cout << std::count_if(shapes.begin(), shapes.end(), Count("EVEN")) << '\n';
+                }
+                else if (sub_command == "ODD")
+                {
+                    std::cout << std::count_if(shapes.begin(), shapes.end(), Count("ODD")) << '\n';
+                }
+                else if (std::isdigit(sub_command[0]))
+                {
+                    size_t n = std::stoul(sub_command);
+                    if (n < 3) { std::cout << "<INVALID COMMAND>\n"; }
+                    else
+                    {
+                        std::cout << std::count_if(shapes.begin(), shapes.end(), Count("NUM", n)) << '\n';
+                    }
+                }
+            }
         }
         else
         {
