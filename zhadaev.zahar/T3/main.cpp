@@ -40,7 +40,10 @@ namespace T3
         }
         poly.polygon.resize(a);
         std::copy_n(std::istream_iterator<Point>(in), a, poly.polygon.begin());
-        if (!(in)) { in.setstate(std::ios::failbit); }
+        if (!(in))
+        {
+            in.setstate(std::ios::failbit);
+        }
         return in;
     }
     std::ostream& operator<<(std::ostream& out, Polygon& poly)
@@ -232,7 +235,7 @@ int main(int argc, char* argv[])
         else if (command == "COUNT")
         {
             std::cin >> sub_command;
-            if (shapes.empty()) { std::cout << "<INVALID COMMAND>\n"; }
+            if (shapes.empty()) { std::cout << 0 << "\n"; }
             else
             {
                 if (sub_command == "EVEN")
@@ -259,6 +262,10 @@ int main(int argc, char* argv[])
             std::cout << "<INVALID COMMAND>\n";
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
+    }
+    for (size_t i = 0; i < shapes.size(); i++)
+    {
+        std::cout << shapes[i] << '\n';
     }
     return 0;
 }
