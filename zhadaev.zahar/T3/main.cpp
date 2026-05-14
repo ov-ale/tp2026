@@ -454,14 +454,28 @@ int main(int argc, char* argv[])
 
             int currentMaxX = std::max(globalMaxX, getPolygonMaxX(target));
 
-            auto count = std::count_if(shapes.begin(), shapes.end(),
-                [&target, currentMaxX](const Polygon& p)
+            struct IntersectPred
+            {
+                Polygon target;
+                int max_x;
+                mutable bool skipped = false;
+
+                bool operator()(const Polygon& p) const
                 {
-                    return polygonsIntersect(target, p, currentMaxX);
-                });
+                    if (!skipped && p == target)
+                    {
+                        skipped = true;
+                        return false;
+                    }
+                    return polygonsIntersect(target, p, max_x);
+                }
+            };
+
+            auto count = std::count_if(shapes.begin(), shapes.end(),
+                IntersectPred{ target, currentMaxX });
 
             std::cout << count << '\n';
-        }
+            }
     }
     return 0;
 }
