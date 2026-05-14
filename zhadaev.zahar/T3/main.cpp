@@ -87,7 +87,7 @@ namespace T3
     std::ostream& operator<<(std::ostream& out, Polygon& poly)
     {
         out << poly.polygon.size() << " ";
-            std::copy(
+        std::copy(
             poly.polygon.begin(),
             poly.polygon.end(),
             std::ostream_iterator<Point>(out)
@@ -455,16 +455,13 @@ int main(int argc, char* argv[])
             int currentMaxX = std::max(globalMaxX, getPolygonMaxX(target));
 
             auto count = std::count_if(shapes.begin(), shapes.end(),
-                [&target, currentMaxX, &restOfLine](const Polygon& p)
+                [&target, currentMaxX](const Polygon& p)
                 {
-                    if (p.polygon.size() == target.polygon.size() &&
-                        std::abs(PolygonArea()(p) - PolygonArea()(target)) < 0.001)
-                        return false;
                     return polygonsIntersect(target, p, currentMaxX);
                 });
 
             std::cout << count << '\n';
-            }
+        }
         else
         {
             std::cout << "<INVALID COMMAND>\n";
