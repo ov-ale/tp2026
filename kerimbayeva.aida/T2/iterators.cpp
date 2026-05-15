@@ -4,6 +4,8 @@
 #include <iterator>
 #include <string>
 #include <sstream>
+#include <cctype>
+#include <limits>
 
 struct DataStruct {
     unsigned long long key1;
@@ -27,10 +29,6 @@ struct StringIO {
     std::string& ref;
 };
 
-struct LabelIO {
-    std::string exp;
-};
-
 std::istream& operator>>(std::istream& in, DelimiterIO&& dest) {
     std::istream::sentry sentry(in);
     if (!sentry) return in;
@@ -45,31 +43,43 @@ std::istream& operator>>(std::istream& in, DelimiterIO&& dest) {
 std::istream& operator>>(std::istream& in, ULLLitIO&& dest) {
     std::istream::sentry sentry(in);
     if (!sentry) return in;
-    unsigned long long val;
-    in >> val;
-    if (in) {
-        std::string suffix;
-        for (int i = 0; i < 3; ++i) {
-            char c;
-            in >> c;
-            suffix += c;
-        }
-        if (suffix == "ull" || suffix == "ULL") {
-            dest.ref = val;
-        }
-        else {
+
+    std::string num;
+    in >> num;
+    if (!in) return in;
+
+    if (num.size() < 3) {
+        in.setstate(std::ios::failbit);
+        return in;
+    }
+
+    std::string suffix = num.substr(num.size() - 3);
+    if (suffix != "ull" && suffix != "ULL") {
+        in.setstate(std::ios::failbit);
+        return in;
+    }
+
+    std::string val = num.substr(0, num.size() - 3);
+    for (char c : val) {
+        if (!std::isdigit(c)) {
             in.setstate(std::ios::failbit);
+            return in;
         }
     }
+
+    dest.ref = std::stoull(val);
     return in;
 }
 
 std::istream& operator>>(std::istream& in, ULLBinIO&& dest) {
     std::istream::sentry sentry(in);
     if (!sentry) return in;
+
     std::string bin;
     in >> bin;
-    if (in && bin.size() >= 3 && bin[0] == '0' &&
+    if (!in) return in;
+
+    if (bin.size() >= 3 && bin[0] == '0' && 
         (bin[1] == 'b' || bin[1] == 'B')) {
         dest.ref = std::stoull(bin.substr(2), nullptr, 2);
     }
@@ -85,27 +95,15 @@ std::istream& operator>>(std::istream& in, StringIO&& dest) {
     return std::getline(in >> DelimiterIO{ '"' }, dest.ref, '"');
 }
 
-std::istream& operator>>(std::istream& in, LabelIO&& dest) {
-    std::istream::sentry sentry(in);
-    if (!sentry) return in;
-    std::string str;
-    if ((in >> StringIO{ str }) && str != dest.exp) {
-        in.setstate(std::ios::failbit);
-    }
-    return in;
-}
-
 std::istream& operator>>(std::istream& in, DataStruct& dest) {
     std::istream::sentry sentry(in);
     if (!sentry) return in;
 
-    in >> DelimiterIO{ '(' };
+    char ch;
+    while (in >> ch && ch != '(') {}
+    if (!in) return in;
 
     DataStruct tmp;
-    tmp.key1 = 0;
-    tmp.key2 = 0;
-    tmp.key3 = "";
-
     bool k1 = false, k2 = false, k3 = false;
     std::string token;
 
@@ -126,6 +124,8 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
             break;
         }
         else {
+            in.clear();
+            in.ignore(std::numeric_limits<std::streamsize>::max(), ')');
             in.setstate(std::ios::failbit);
             return in;
         }
@@ -137,7 +137,6 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
     else {
         in.setstate(std::ios::failbit);
     }
-
     return in;
 }
 
@@ -168,16 +167,20 @@ bool compare(const DataStruct& a, const DataStruct& b) {
 
 int main() {
     std::vector<DataStruct> data;
+
     std::copy(
         std::istream_iterator<DataStruct>(std::cin),
         std::istream_iterator<DataStruct>(),
         std::back_inserter(data)
     );
+
     std::sort(data.begin(), data.end(), compare);
+
     std::copy(
         data.begin(),
         data.end(),
         std::ostream_iterator<DataStruct>(std::cout, "\n")
     );
+
     return 0;
 }
