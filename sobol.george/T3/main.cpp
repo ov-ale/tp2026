@@ -11,7 +11,7 @@
 #include <limits>
 #include <iomanip>
 
-//allo
+//al
 struct Point
 {
     int x, y;
