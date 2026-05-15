@@ -266,6 +266,7 @@ bool compareDataStruct(const DataStruct& a, const DataStruct& b) {
 int main() {
     std::vector<DataStruct> data;
     std::string line;
+    bool hasAny = false;
 
     while (std::getline(std::cin, line)) {
         if (line.empty()) continue;
@@ -273,7 +274,13 @@ int main() {
         DataStruct ds;
         if (iss >> ds) {
             data.push_back(ds);
+            hasAny = true;
         }
+    }
+
+    if (!hasAny) {
+        std::cout << "Looks like there is no supported record. Cannot determine input. Test skipped" << std::endl;
+        return 0;
     }
 
     std::sort(data.begin(), data.end(), compareDataStruct);
