@@ -17,11 +17,7 @@ struct DelimiterIO {
     char exp;
 };
 
-struct UllLitIO {
-    unsigned long long& ref;
-};
-
-struct UllBinIO {
+struct ULLIO {
     unsigned long long& ref;
 };
 
@@ -40,7 +36,7 @@ std::istream& operator>>(std::istream& in, DelimiterIO&& dest) {
     return in;
 }
 
-std::istream& operator>>(std::istream& in, UllLitIO&& dest) {
+std::istream& operator>>(std::istream& in, ULLIO&& dest) {
     std::istream::sentry sentry(in);
     if (!sentry) return in;
 
@@ -57,48 +53,22 @@ std::istream& operator>>(std::istream& in, UllLitIO&& dest) {
         }
     }
 
-    if (clean.empty()) {
-        in.setstate(std::ios::failbit);
+    if (clean.size() >= 2 && clean[0] == '0' && (clean[1] == 'x' || clean[1] == 'X')) {
+        dest.ref = std::stoull(clean, nullptr, 16);
         return in;
     }
 
-    for (char c : clean) {
-        if (!std::isdigit(c)) {
-            in.setstate(std::ios::failbit);
-            return in;
-        }
+    if (clean.size() >= 2 && clean[0] == '0' && (clean[1] == 'b' || clean[1] == 'B')) {
+        dest.ref = std::stoull(clean.substr(2), nullptr, 2);
+        return in;
+    }
+
+    if (clean.size() > 1 && clean[0] == '0') {
+        dest.ref = std::stoull(clean, nullptr, 8);
+        return in;
     }
 
     dest.ref = std::stoull(clean);
-    return in;
-}
-
-std::istream& operator>>(std::istream& in, UllBinIO&& dest) {
-    std::istream::sentry sentry(in);
-    if (!sentry) return in;
-
-    std::string token;
-    in >> token;
-    if (!in) return in;
-
-    if (token.size() >= 3 && token[0] == '0' && (token[1] == 'b' || token[1] == 'B')) {
-        std::string binStr = token.substr(2);
-        for (char c : binStr) {
-            if (c != '0' && c != '1') {
-                in.setstate(std::ios::failbit);
-                return in;
-            }
-        }
-        dest.ref = std::stoull(binStr, nullptr, 2);
-        return in;
-    }
-
-    if (token.size() >= 1 && token[0] == '0') {
-        dest.ref = 0;
-        return in;
-    }
-
-    in.setstate(std::ios::failbit);
     return in;
 }
 
@@ -142,7 +112,7 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
         in >> key;
 
         if (key == "key1" && !k1) {
-            in >> UllLitIO{ temp.key1 };
+            in >> ULLIO{ temp.key1 };
             if (in) {
                 k1 = true;
             }
@@ -152,7 +122,7 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
             }
         }
         else if (key == "key2" && !k2) {
-            in >> UllBinIO{ temp.key2 };
+            in >> ULLIO{ temp.key2 };
             if (in) {
                 k2 = true;
             }
