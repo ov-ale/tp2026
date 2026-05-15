@@ -79,8 +79,7 @@ std::istream& operator>>(std::istream& in, ULLBinIO&& dest) {
     in >> bin;
     if (!in) return in;
 
-    if (bin.size() >= 3 && bin[0] == '0' && 
-        (bin[1] == 'b' || bin[1] == 'B')) {
+    if (bin.size() >= 3 && bin[0] == '0' && (bin[1] == 'b' || bin[1] == 'B')) {
         dest.ref = std::stoull(bin.substr(2), nullptr, 2);
     }
     else {
