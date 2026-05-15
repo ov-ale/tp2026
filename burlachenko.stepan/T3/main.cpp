@@ -316,8 +316,28 @@ int main(int argc, char* argv[])
             }
             else
             {
-                std::cout << std::count_if(polygons.begin(), polygons.end(),
-                    [&target](const Polygon& poly){ return isSame(poly, target); }) << "\n";
+                bool valid = true;
+                while(std::cin.peek() != '\n' && std::cin.peek() != EOF)
+                {
+                    if(!std::isspace(std::cin.peek()))
+                    {
+                        valid = false;
+                        break;
+                    }
+                    std::cin.get();
+                }
+
+                if(valid)
+                {
+                    std::cout << std::count_if(polygons.begin(), polygons.end(),
+                        [&target](const Polygon& poly){ return isSame(poly, target); }) << "\n";
+                }
+                else
+                {
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    std::cout << "<INVALID COMMAND>\n";
+                }
+
             }
         }
         else
