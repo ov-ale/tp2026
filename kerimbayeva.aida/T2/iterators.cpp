@@ -74,7 +74,7 @@ std::istream& operator>>(std::istream& in, KeyIO&& dest) {
     dest.ref.clear();
     while (in) {
         int next = in.peek();
-        if (next == std::char_traits<char>::eof() || next == ' ') break;
+        if (next == std::char_traits<char>::eof() || next == ' ' || next == ':') break;
         dest.ref += static_cast<char>(in.get());
     }
     if (dest.ref.empty()) {
@@ -91,7 +91,7 @@ std::istream& operator>>(std::istream& in, ULLiteralIO&& dest) {
     std::string token;
     while (in) {
         int next = in.peek();
-        if (next == std::char_traits<char>::eof() || next == ' ') break;
+        if (next == std::char_traits<char>::eof() || next == ' ' || next == ':') break;
         token += static_cast<char>(in.get());
     }
     if (token.size() < 4) {
@@ -131,7 +131,7 @@ std::istream& operator>>(std::istream& in, BinUllIO&& dest) {
     std::string token;
     while (in) {
         int next = in.peek();
-        if (next == std::char_traits<char>::eof() || next == ' ') break;
+        if (next == std::char_traits<char>::eof() || next == ' ' || next == ':') break;
         token += static_cast<char>(in.get());
     }
     if (token.size() < 3) {
@@ -196,6 +196,10 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
     }
     in.get();
 
+    if (in.peek() == ':') {
+        in.get();
+    }
+
     DataStruct temp;
     bool hasKey1 = false, hasKey2 = false, hasKey3 = false;
     std::string key2Raw;
@@ -204,7 +208,15 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
         std::string key;
         in >> KeyIO{ key };
         if (!in) return in;
-        if (!(in >> Delim{ ' ' })) return in;
+
+        if (in.peek() == ':') {
+            in.get();
+        }
+
+        if (in.peek() == ' ') {
+            in >> Delim{ ' ' };
+            if (!in) return in;
+        }
 
         if (key == "key1" && !hasKey1) {
             in >> ULLiteralIO{ temp.key1 };
@@ -224,7 +236,10 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
         }
 
         if (!in) return in;
-        if (!(in >> Delim{ ' ' })) return in;
+
+        if (in.peek() == ':') {
+            in.get();
+        }
     }
 
     if (in.peek() != ')') {
