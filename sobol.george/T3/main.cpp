@@ -392,7 +392,7 @@ int main(int argc, char *argv[])
                     std::cout << std::fixed << std::setprecision(1)
                      << getArea(*it) << "\n";
                 }
-                else if (arg == "VERTEX")
+                else if (arg == "VERTEXES")
                 {
                     auto it = std::max_element(polygons.begin(),
                      polygons.end(), CompareByVertexCount());
@@ -430,11 +430,6 @@ int main(int argc, char *argv[])
             }
             else if (command == "COUNT")
             {
-                if (polygons.empty())
-                {
-                    std::cout << 0 << '\n';
-                    continue;
-                }
                 std::string arg;
                 if (!(iss >> arg))
                 {
@@ -547,9 +542,14 @@ int main(int argc, char *argv[])
                         {
                             return (pt.x > maxX || pt.x < minX || pt.y > maxY || pt.y < minY);
                         });
-
-                    bool ifInframe = (count == 0);
-                    std::cout << ifInframe << "\n";
+                    if (count == 0)
+                    {
+                        std::cout << "<TRUE>\n";
+                    }
+                    else
+                    {
+                        std::cout << "<FALSE>\n";
+                    }
                 }
                 catch (...)
                 {
