@@ -6,6 +6,7 @@
 #include <cctype>
 #include <sstream>
 #include <iomanip>
+#include <limits>
 #include <vector>
 
 // var 13
@@ -47,10 +48,9 @@ std::istream& operator>>(std::istream& is, Point& p)
 
 std::istream& operator>>(std::istream& is, Polygon& poly)
 {
-    size_t n;
-    is >> n;
+    size_t n = 0;
 
-    if(n < 3)
+    if(is >> n || n < 3)
     {
         is.setstate(std::ios::failbit);
         return is;
@@ -116,10 +116,10 @@ bool isSame(const Polygon& a, const Polygon& b)
     int dx = a.points[0].x - b.points[0].x;
     int dy = a.points[0].y - b.points[0].y;
 
-    return std::all_of(a.points.begin(), a.points.end(),
-        [&b, dx, dy, i = 0](const Point& p) mutable
+    return std::equal(a.points.begin(), a.points.end(), b.points.begin(),
+        [dx, dy](const Point& pa, const Point& pb)
         {
-            return p.x - b.points[i].x == dx && p.y - b.points[i++].y == dy;
+            return (pa.x - pb.x == dx) && (pa.y - pb.y == dy);
         });
 }
 
@@ -214,9 +214,8 @@ int main(int argc, char* argv[])
                 }
                 catch(...)
                 {
-                    std::cout << "<INVALID COMMAND>\n>";
+                    std::cout << "<INVALID COMMAND>\n";
                 }
-
 
             }
 
@@ -306,6 +305,8 @@ int main(int argc, char* argv[])
             if(!(std::cin >> target))
             {
                 std::cin.clear();
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
                 std::cout << "<INVALID COMMAND>\n";
             }
             else
@@ -314,7 +315,13 @@ int main(int argc, char* argv[])
                     [&target](const Polygon& poly){ return isSame(poly, target); }) << "\n";
             }
         }
+        else
+        {
+            std::cout << "<INVALID COMMAND>\n";
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        }
     }
+
 
     return 0;
 }
