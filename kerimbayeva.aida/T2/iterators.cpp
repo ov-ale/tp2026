@@ -53,15 +53,11 @@ void printBinary(std::ostream& out, unsigned long long val) {
     out << s;
 }
 
-struct Delim {
-    char exp;
-};
+struct Delim { char exp; };
 
-std::istream& operator>>(std::istream& in, Delim& dest) {
+std::istream& operator>>(std::istream& in, Delim&& dest) {
     std::istream::sentry sentry(in, true);
-    if (!sentry) {
-        return in;
-    }
+    if (!sentry) return in;
     char c = '\0';
     in.get(c);
     if (!in || c != dest.exp) {
@@ -70,21 +66,15 @@ std::istream& operator>>(std::istream& in, Delim& dest) {
     return in;
 }
 
-struct KeyIO {
-    std::string& ref;
-};
+struct KeyIO { std::string& ref; };
 
 std::istream& operator>>(std::istream& in, KeyIO&& dest) {
     std::istream::sentry sentry(in, true);
-    if (!sentry) {
-        return in;
-    }
+    if (!sentry) return in;
     dest.ref.clear();
     while (in) {
         int next = in.peek();
-        if (next == std::char_traits<char>::eof() || next == ' ') {
-            break;
-        }
+        if (next == std::char_traits<char>::eof() || next == ' ') break;
         dest.ref += static_cast<char>(in.get());
     }
     if (dest.ref.empty()) {
@@ -93,21 +83,15 @@ std::istream& operator>>(std::istream& in, KeyIO&& dest) {
     return in;
 }
 
-struct ULLiteralIO {
-    unsigned long long& ref;
-};
+struct ULLiteralIO { unsigned long long& ref; };
 
 std::istream& operator>>(std::istream& in, ULLiteralIO&& dest) {
     std::istream::sentry sentry(in, true);
-    if (!sentry) {
-        return in;
-    }
+    if (!sentry) return in;
     std::string token;
     while (in) {
         int next = in.peek();
-        if (next == std::char_traits<char>::eof() || next == ' ') {
-            break;
-        }
+        if (next == std::char_traits<char>::eof() || next == ' ') break;
         token += static_cast<char>(in.get());
     }
     if (token.size() < 4) {
@@ -139,22 +123,15 @@ std::istream& operator>>(std::istream& in, ULLiteralIO&& dest) {
     return in;
 }
 
-struct BinUllIO {
-    unsigned long long& ref;
-    std::string& raw;
-};
+struct BinUllIO { unsigned long long& ref; std::string& raw; };
 
-std::istream& operator>>(std::istream& in, BinUllIO& dest) {
+std::istream& operator>>(std::istream& in, BinUllIO&& dest) {
     std::istream::sentry sentry(in, true);
-    if (!sentry) {
-        return in;
-    }
+    if (!sentry) return in;
     std::string token;
     while (in) {
         int next = in.peek();
-        if (next == std::char_traits<char>::eof() || next == ' ') {
-            break;
-        }
+        if (next == std::char_traits<char>::eof() || next == ' ') break;
         token += static_cast<char>(in.get());
     }
     if (token.size() < 3) {
@@ -186,15 +163,11 @@ std::istream& operator>>(std::istream& in, BinUllIO& dest) {
     return in;
 }
 
-struct StringIO {
-    std::string& ref;
-};
+struct StringIO { std::string& ref; };
 
-std::istream& operator>>(std::istream& in, StringIO& dest) {
+std::istream& operator>>(std::istream& in, StringIO&& dest) {
     std::istream::sentry sentry(in, true);
-    if (!sentry) {
-        return in;
-    }
+    if (!sentry) return in;
     char c = '\0';
     in.get(c);
     if (!in || c != '"') {
@@ -213,12 +186,10 @@ std::istream& operator>>(std::istream& in, StringIO& dest) {
 
 std::istream& operator>>(std::istream& in, DataStruct& dest) {
     std::istream::sentry sentry(in);
-    if (!sentry) {
-        return in;
-    }
-    while (in && std::isspace(in.peek())) {
-        in.get();
-    }
+    if (!sentry) return in;
+
+    while (in && std::isspace(in.peek())) in.get();
+
     if (in.peek() != '(') {
         in.setstate(std::ios::failbit);
         return in;
@@ -226,20 +197,14 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
     in.get();
 
     DataStruct temp;
-    bool hasKey1 = false;
-    bool hasKey2 = false;
-    bool hasKey3 = false;
+    bool hasKey1 = false, hasKey2 = false, hasKey3 = false;
     std::string key2Raw;
 
     for (int i = 0; i < 3; ++i) {
         std::string key;
         in >> KeyIO{ key };
-        if (!in) {
-            return in;
-        }
-        if (!(in >> Delim{ ' ' })) {
-            return in;
-        }
+        if (!in) return in;
+        if (!(in >> Delim{ ' ' })) return in;
 
         if (key == "key1" && !hasKey1) {
             in >> ULLiteralIO{ temp.key1 };
@@ -258,12 +223,8 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
             return in;
         }
 
-        if (!in) {
-            return in;
-        }
-        if (!(in >> Delim{ ' ' })) {
-            return in;
-        }
+        if (!in) return in;
+        if (!(in >> Delim{ ' ' })) return in;
     }
 
     if (in.peek() != ')') {
@@ -297,12 +258,8 @@ std::ostream& operator<<(std::ostream& out, const DataStruct& src) {
 }
 
 bool compareDataStruct(const DataStruct& a, const DataStruct& b) {
-    if (a.key1 != b.key1) {
-        return a.key1 < b.key1;
-    }
-    if (a.key2 != b.key2) {
-        return a.key2 < b.key2;
-    }
+    if (a.key1 != b.key1) return a.key1 < b.key1;
+    if (a.key2 != b.key2) return a.key2 < b.key2;
     return a.key3 < b.key3;
 }
 
@@ -311,9 +268,7 @@ int main() {
     std::string line;
 
     while (std::getline(std::cin, line)) {
-        if (line.empty()) {
-            continue;
-        }
+        if (line.empty()) continue;
         std::istringstream iss(line);
         DataStruct ds;
         if (iss >> ds) {
