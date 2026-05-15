@@ -295,13 +295,9 @@ int main() {
 
     if (!hasAny) {
         std::cout << "Looks like there is no supported record. Cannot determine input. Test skipped" << std::endl;
-        return 0;
     }
-
-    std::sort(data.begin(), data.end(), compareDataStruct);
-
-    for (const auto& item : data) {
-        std::cout << item << "\n";
+    else {
+        std::cout << "Atleast one supported record type" << std::endl;
     }
 
     return 0;
