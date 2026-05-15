@@ -23,22 +23,23 @@ struct Polygon
 
 std::istream& operator>>(std::istream& is, Point& p)
 {
-    char c;
+    char c1 = '\0', c2 = '\0', c3 = '\0';
+    int x = 0;
+    int y = 0;
 
-    is >> c;
-
-    if(c != '(')
+    if(is >> c1 >> x >> c2 >> y >> c3)
     {
-        is.setstate(std::ios::failbit);
-        return is;
+        if(c1 == '(' && c2 == ';' && c3 == ')')
+        {
+            p.x = x;
+            p.y = y;
+        }
+        else
+        {
+            is.setstate(std::ios::failbit);
+        }
     }
-
-    is >> p.x;
-    is >> c;
-    is >> p.y;
-    is >> c;
-
-    if( c != ')')
+    else
     {
         is.setstate(std::ios::failbit);
     }
@@ -50,7 +51,7 @@ std::istream& operator>>(std::istream& is, Polygon& poly)
 {
     size_t n = 0;
 
-    if(!(is >> n || n < 3))
+    if(!(is >> n) || n < 3)
     {
         is.setstate(std::ios::failbit);
         return is;
@@ -138,44 +139,21 @@ int main(int argc, char* argv[])
     }
 
     std::vector<Polygon> polygons;
+    std::string line;
 
-    while(file)
+    while(std::getline(file, line))
     {
-        file >> std::ws;
-
-        if(file.eof())
-        {
-            break;
-        }
-
+        std::istringstream iss(line);
         Polygon p;
-        if(file >> p)
+
+        if(iss >> p)
         {
-            bool valid = true;
+            std::string extra;
 
-            while(file.peek() != '\n' && file.peek() != EOF)
-            {
-                if(!std::isspace(file.peek()))
-                {
-                    valid = false;
-                    break;
-                }
-                file.get();
-            }
-
-            if(valid)
+            if(!(iss >> extra))
             {
                 polygons.push_back(p);
             }
-            else
-            {
-                file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            }
-        }
-        else
-        {
-            file.clear();
-            file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
     }
 
