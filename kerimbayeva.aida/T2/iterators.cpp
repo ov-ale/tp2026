@@ -17,11 +17,11 @@ struct DelimiterIO {
     char exp;
 };
 
-struct ULLLitIO {
+struct UllLitIO {
     unsigned long long& ref;
 };
 
-struct ULLBinIO {
+struct UllBinIO {
     unsigned long long& ref;
 };
 
@@ -40,51 +40,61 @@ std::istream& operator>>(std::istream& in, DelimiterIO&& dest) {
     return in;
 }
 
-std::istream& operator>>(std::istream& in, ULLLitIO&& dest) {
+std::istream& operator>>(std::istream& in, UllLitIO&& dest) {
     std::istream::sentry sentry(in);
     if (!sentry) return in;
 
-    std::string num;
-    in >> num;
+    std::string token;
+    in >> token;
     if (!in) return in;
 
-    if (num.size() < 3) {
-        in.setstate(std::ios::failbit);
-        return in;
-    }
+    token.erase(0, token.find_first_not_of(" \t"));
+    token.erase(token.find_last_not_of(" \t") + 1);
 
-    std::string suffix = num.substr(num.size() - 3);
-    if (suffix != "ull" && suffix != "ULL") {
-        in.setstate(std::ios::failbit);
-        return in;
-    }
-
-    std::string val = num.substr(0, num.size() - 3);
-    for (char c : val) {
-        if (!std::isdigit(c)) {
-            in.setstate(std::ios::failbit);
-            return in;
+    if (token.size() >= 3) {
+        std::string suffix = token.substr(token.size() - 3);
+        if (suffix == "ull" || suffix == "ULL") {
+            std::string numStr = token.substr(0, token.size() - 3);
+            bool valid = !numStr.empty();
+            for (char c : numStr) {
+                if (!std::isdigit(c)) {
+                    valid = false;
+                    break;
+                }
+            }
+            if (valid) {
+                dest.ref = std::stoull(numStr);
+                return in;
+            }
         }
     }
 
-    dest.ref = std::stoull(val);
+    std::istringstream iss(token);
+    if (iss >> dest.ref) {
+        return in;
+    }
+
+    in.setstate(std::ios::failbit);
     return in;
 }
 
-std::istream& operator>>(std::istream& in, ULLBinIO&& dest) {
+std::istream& operator>>(std::istream& in, UllBinIO&& dest) {
     std::istream::sentry sentry(in);
     if (!sentry) return in;
 
-    std::string bin;
-    in >> bin;
+    std::string token;
+    in >> token;
     if (!in) return in;
 
-    if (bin.size() >= 3 && bin[0] == '0' && (bin[1] == 'b' || bin[1] == 'B')) {
-        dest.ref = std::stoull(bin.substr(2), nullptr, 2);
+    if (token.size() >= 3 && token[0] == '0' && (token[1] == 'b' || token[1] == 'B')) {
+        std::string binStr = token.substr(2);
+        binStr.erase(0, binStr.find_first_not_of(" \t"));
+        binStr.erase(binStr.find_last_not_of(" \t") + 1);
+        dest.ref = std::stoull(binStr, nullptr, 2);
+        return in;
     }
-    else {
-        in.setstate(std::ios::failbit);
-    }
+
+    in.setstate(std::ios::failbit);
     return in;
 }
 
@@ -98,62 +108,86 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
     std::istream::sentry sentry(in);
     if (!sentry) return in;
 
-    char ch;
-    while (in >> ch && ch != '(') {}
+    char c;
+    while (in >> c) {
+        if (c == '(') break;
+        if (in.eof()) return in;
+    }
     if (!in) return in;
 
-    DataStruct tmp;
+    DataStruct temp;
     bool k1 = false, k2 = false, k3 = false;
-    std::string token;
+    bool fail = false;
 
-    while (in >> token) {
-        if (token == ":key1" && !k1) {
-            in >> ULLLitIO{ tmp.key1 };
-            k1 = true;
-        }
-        else if (token == ":key2" && !k2) {
-            in >> ULLBinIO{ tmp.key2 };
-            k2 = true;
-        }
-        else if (token == ":key3" && !k3) {
-            in >> StringIO{ tmp.key3 };
-            k3 = true;
-        }
-        else if (token == ":)") {
+    while (in && !fail) {
+        while (std::isspace(in.peek())) in.get();
+
+        if (in.peek() == ')') {
+            in.get();
             break;
         }
+
+        if (in.peek() != ':') {
+            fail = true;
+            break;
+        }
+
+        in.get();
+
+        std::string key;
+        in >> key;
+
+        if (key == "key1" && !k1) {
+            in >> UllLitIO{ temp.key1 };
+            if (in) k1 = true;
+            else fail = true;
+        }
+        else if (key == "key2" && !k2) {
+            in >> UllBinIO{ temp.key2 };
+            if (in) k2 = true;
+            else fail = true;
+        }
+        else if (key == "key3" && !k3) {
+            in >> StringIO{ temp.key3 };
+            if (in) k3 = true;
+            else fail = true;
+        }
         else {
-            in.clear();
-            in.ignore(std::numeric_limits<std::streamsize>::max(), ')');
-            in.setstate(std::ios::failbit);
-            return in;
+            fail = true;
         }
     }
 
-    if (k1 && k2 && k3) {
-        dest = tmp;
+    if (!fail && k1 && k2 && k3) {
+        dest = temp;
+        return in;
     }
-    else {
-        in.setstate(std::ios::failbit);
+
+    in.clear();
+    while (in && in.peek() != ')') {
+        in.get();
     }
+    if (in) in.get();
+    in.setstate(std::ios::failbit);
     return in;
 }
 
 std::ostream& operator<<(std::ostream& out, const DataStruct& src) {
     out << "(:key1 " << src.key1 << "ull";
     out << ":key2 0b";
+
     if (src.key2 == 0) {
         out << "0";
     }
     else {
-        std::string bin;
+        std::string binary;
         unsigned long long n = src.key2;
         while (n > 0) {
-            bin = (n & 1 ? '1' : '0') + bin;
+            binary = (n & 1 ? '1' : '0') + binary;
             n >>= 1;
         }
-        out << bin;
+        out << binary;
     }
+
     out << ":key3 \"" << src.key3 << "\":)";
     return out;
 }
@@ -167,11 +201,23 @@ bool compare(const DataStruct& a, const DataStruct& b) {
 int main() {
     std::vector<DataStruct> data;
 
+    if (std::cin.peek() == EOF) {
+        std::cout << "Looks like there is no supported record. Cannot determine input. Test skipped\n";
+        return 0;
+    }
+
     std::copy(
         std::istream_iterator<DataStruct>(std::cin),
         std::istream_iterator<DataStruct>(),
         std::back_inserter(data)
     );
+
+    if (data.empty()) {
+        std::cout << "Looks like there is no supported record. Cannot determine input. Test skipped\n";
+        return 0;
+    }
+
+    std::cout << "Atleast one supported record type\n";
 
     std::sort(data.begin(), data.end(), compare);
 
