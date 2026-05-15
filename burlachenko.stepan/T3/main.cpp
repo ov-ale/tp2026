@@ -6,6 +6,7 @@
 #include <cctype>
 #include <sstream>
 #include <iomanip>
+#include <vector>
 
 // var 13
 
