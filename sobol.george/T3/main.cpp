@@ -161,7 +161,7 @@ int getMinY(const std::vector<Polygon> &polygons)
         {
             int min_y_a = std::min_element(a.points.begin(), a.points.end(),
                 [](const Point &pa, const Point &pb)
-                { 
+                {
                     return pa.y < pb.y;
                 })
                 ->y;
