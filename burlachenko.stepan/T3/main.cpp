@@ -50,7 +50,7 @@ std::istream& operator>>(std::istream& is, Polygon& poly)
 {
     size_t n = 0;
 
-    if(is >> n || n < 3)
+    if(!(is >> n || n < 3))
     {
         is.setstate(std::ios::failbit);
         return is;
@@ -59,15 +59,13 @@ std::istream& operator>>(std::istream& is, Polygon& poly)
     poly.points.clear();
     poly.points.resize(n);
 
-    for(auto& pt : poly.points)
+    for (size_t i = 0; i < n; i++)
     {
-        is >> pt;
-    }
-
-    if(is.fail())
-    {
-        is.setstate(std::ios::failbit);
-        return is;
+        if (!(is >> poly.points[i]))
+        {
+            is.setstate(std::ios::failbit);
+            return is;
+        }
     }
 
     return is;
@@ -141,14 +139,43 @@ int main(int argc, char* argv[])
 
     std::vector<Polygon> polygons;
 
-    std::string line;
-    while(std::getline(file, line))
+    while(file)
     {
-        std::istringstream iss(line);
-        Polygon p;
-        if(iss >> p)
+        file >> std::ws;
+
+        if(file.eof())
         {
-            polygons.push_back(p);
+            break;
+        }
+
+        Polygon p;
+        if(file >> p)
+        {
+            bool valid = true;
+
+            while(file.peek() != '\n' && file.peek() != EOF)
+            {
+                if(!std::isspace(file.peek()))
+                {
+                    valid = false;
+                    break;
+                }
+                file.get();
+            }
+
+            if(valid)
+            {
+                polygons.push_back(p);
+            }
+            else
+            {
+                file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            }
+        }
+        else
+        {
+            file.clear();
+            file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
     }
 
@@ -206,7 +233,7 @@ int main(int argc, char* argv[])
                     else
                     {
                         std::cout << std::accumulate(polygons.begin(), polygons.end(), 0.0,
-                            [n](double sum, Polygon& poly)
+                            [n](double sum, const Polygon& poly)
                             {
                                 return poly.points.size() == n ? sum + PolygonArea(poly) : sum;
                             }) << "\n";
@@ -246,10 +273,10 @@ int main(int argc, char* argv[])
             {
                 auto it = (cmd == "MAX")
                 ? std::max_element(polygons.begin(), polygons.end(),
-                    [](Polygon& a, const Polygon& b) { return a.points.size() < b.points.size(); })
+                    [](const Polygon& a, const Polygon& b) { return a.points.size() < b.points.size(); })
 
                 : std::min_element(polygons.begin(), polygons.end(),
-                    [](Polygon& a, const Polygon&b) { return a.points.size() < b.points.size(); });
+                    [](const Polygon& a, const Polygon&b) { return a.points.size() < b.points.size(); });
 
                 std::cout << it->points.size() << "\n";
             }
