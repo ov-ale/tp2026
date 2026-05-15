@@ -6,6 +6,7 @@
 #include <sstream>
 #include <cctype>
 #include <limits>
+#include <stdexcept>
 
 struct DataStruct {
     unsigned long long key1;
@@ -53,23 +54,38 @@ std::istream& operator>>(std::istream& in, ULLIO&& dest) {
         }
     }
 
-    if (clean.size() >= 2 && clean[0] == '0' && (clean[1] == 'x' || clean[1] == 'X')) {
-        dest.ref = std::stoull(clean, nullptr, 16);
+    if (clean.empty()) {
+        in.setstate(std::ios::failbit);
         return in;
     }
 
-    if (clean.size() >= 2 && clean[0] == '0' && (clean[1] == 'b' || clean[1] == 'B')) {
-        dest.ref = std::stoull(clean.substr(2), nullptr, 2);
+    try {
+        if (clean.size() >= 2 && clean[0] == '0' && (clean[1] == 'x' || clean[1] == 'X')) {
+            dest.ref = std::stoull(clean, nullptr, 16);
+            return in;
+        }
+
+        if (clean.size() >= 2 && clean[0] == '0' && (clean[1] == 'b' || clean[1] == 'B')) {
+            dest.ref = std::stoull(clean.substr(2), nullptr, 2);
+            return in;
+        }
+
+        if (clean.size() > 1 && clean[0] == '0') {
+            dest.ref = std::stoull(clean, nullptr, 8);
+            return in;
+        }
+
+        dest.ref = std::stoull(clean);
         return in;
     }
-
-    if (clean.size() > 1 && clean[0] == '0') {
-        dest.ref = std::stoull(clean, nullptr, 8);
+    catch (const std::invalid_argument&) {
+        in.setstate(std::ios::failbit);
         return in;
     }
-
-    dest.ref = std::stoull(clean);
-    return in;
+    catch (const std::out_of_range&) {
+        in.setstate(std::ios::failbit);
+        return in;
+    }
 }
 
 std::istream& operator>>(std::istream& in, StringIO&& dest) {
