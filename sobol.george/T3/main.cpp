@@ -149,7 +149,7 @@ int getMinX(const std::vector<Polygon> &polygons)
     return std::min_element(it->points.begin(), it->points.end(),
     [](const Point &pa, const Point &pb)
     {
-        return pa.x < pb.x; 
+        return pa.x < pb.x;
     })
     ->x;
 }
@@ -218,7 +218,7 @@ int getMaxY(const std::vector<Polygon> &polygons)
                 int max_y_a = std::max_element(a.points.begin(), a.points.end(),
                 [](const Point &pa, const Point &pb)
                 {
-                    return pa.y < pb.y;\
+                    return pa.y < pb.y;
                 })
                 ->y;
                 int max_y_b = std::max_element(b.points.begin(), b.points.end(),
