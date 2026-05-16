@@ -15,7 +15,6 @@
 
 using namespace std::placeholders;
 
-// --- data structs ---
 struct Point {
     int x, y;
     Point(int x = 0, int y = 0) :
@@ -35,7 +34,6 @@ struct BBox {
     int minX, minY, maxX, maxY;
 };
 
-// --- ios operators ---
 std::istream& operator>>(std::istream& is, Point& dest) {
     std::istream::sentry sentry(is);
     if (!sentry)    return is;
@@ -70,7 +68,6 @@ std::istream& operator>>(std::istream& is, Polygon& dest) {
     return is;
 }
 
-// --- find area ---
 struct CrossProduct {
     const std::vector<Point>& p;
     mutable size_t i;
@@ -95,7 +92,6 @@ double area(const Polygon& p) {
     return std::abs(sum) * 0.5;
 }
 
-// --- common functors ---
 struct SumArea {
     double operator()(double acc, const Polygon& p) const {
         return acc + area(p);
@@ -150,7 +146,6 @@ struct IsNumOfVertexes {
     }
 };
 
-// --- LESSAREA functors ---
 struct PointEq {
     bool operator()(const Point& a, const Point& b) const {
         return a.x == b.x && a.y == b.y;
@@ -166,7 +161,6 @@ struct IsLessArea {
     }
 };
 
-// --- SAME functors ---
 struct PointDiff {
     Point operator()(const Point& a, const Point& b) const {
         return Point(a.x - b.x, a.y - b.y);
@@ -194,7 +188,6 @@ struct IsSame {
     }
 };
 
-// !!! --- main --- !!!
 
 int main(int argc, char* argv[]) {
 
@@ -222,7 +215,6 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    // === inputing comands ===
     std::cout << std::fixed << std::setprecision(1);
 
     std::string command;
@@ -234,7 +226,6 @@ int main(int argc, char* argv[]) {
         std::string mainCmd;
         iss >> mainCmd;
 
-        // === for AREA ===
         if (mainCmd == "AREA") {
             std::string sub;
             iss >> sub;
@@ -270,7 +261,6 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        // === for MAX ===
         else if (mainCmd == "MAX") {
             std::string sub;
             iss >> sub;
@@ -293,7 +283,6 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        // === for MIN ===
         else if (mainCmd == "MIN") {
             std::string sub;
             iss >> sub;
@@ -316,7 +305,6 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        // === for COUNT ===
         else if (mainCmd == "COUNT") {
             std::string sub;
             iss >> sub;
@@ -344,7 +332,6 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        // === for LESSAREA ===
         else if (mainCmd == "LESSAREA") {
             Polygon target;
             if (!(iss >> target)) {
@@ -362,7 +349,6 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        // === for SAME ===
         else if (mainCmd == "SAME") {
             Polygon target;
             if (!(iss >> target)) {
