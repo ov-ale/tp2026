@@ -11,7 +11,6 @@
 #include <limits>
 #include <iomanip>
 
-//al
 struct Point
 {
     int x, y;
@@ -22,48 +21,48 @@ struct Polygon
     std::vector<Point> points;
 };
 
-bool operator==(const Point &a, const Point &b)
+bool operator==(const Point& a, const Point& b)
 {
     return (a.x == b.x) && (a.y == b.y);
 }
 
-bool operator==(const Polygon &a, const Polygon &b)
+bool operator==(const Polygon& a, const Polygon& b)
 {
     return a.points == b.points;
 }
 struct AreaCalculator
 {
-    const std::vector<Point> &pts;
+    const std::vector<Point>& pts;
     std::size_t size;
     mutable std::size_t idx;
 
-    explicit AreaCalculator(const std::vector<Point> &pts) : pts(pts),
-     size(pts.size()), idx(0)
+    explicit AreaCalculator(const std::vector<Point>& pts) : pts(pts),
+        size(pts.size()), idx(0)
     {
     }
 
-    long long operator()(long long acc, const Point &curr) const
+    long long operator()(long long acc, const Point& curr) const
     {
-        const Point &next = pts[(idx + 1) % size];
+        const Point& next = pts[(idx + 1) % size];
         long long term = static_cast<long long>(curr.x) *
-         next.y - static_cast<long long>(next.x) * curr.y;
+            next.y - static_cast<long long>(next.x) * curr.y;
         ++idx;
         return acc + term;
     }
 };
 
-double getArea(const Polygon &p)
+double getArea(const Polygon& p)
 {
     if (p.points.size() < 3)
         return 0.0;
     long long sum = std::accumulate(p.points.begin(),
-     p.points.end(), 0LL, AreaCalculator(p.points));
+        p.points.end(), 0LL, AreaCalculator(p.points));
     return std::abs(sum) / 2.0;
 }
 
 struct SumAreaIfEven
 {
-    double operator()(double acc, const Polygon &p) const
+    double operator()(double acc, const Polygon& p) const
     {
         return (p.points.size() % 2 == 0) ? acc + getArea(p) : acc;
     }
@@ -71,7 +70,7 @@ struct SumAreaIfEven
 
 struct SumAreaIfOdd
 {
-    double operator()(double acc, const Polygon &p) const
+    double operator()(double acc, const Polygon& p) const
     {
         return (p.points.size() % 2 != 0) ? acc + getArea(p) : acc;
     }
@@ -79,7 +78,7 @@ struct SumAreaIfOdd
 
 struct SumArea
 {
-    double operator()(double acc, const Polygon &p) const
+    double operator()(double acc, const Polygon& p) const
     {
         return acc + getArea(p);
     }
@@ -92,7 +91,7 @@ struct SumAreaByVertexes
     {
     }
 
-    double operator()(double acc, const Polygon &p) const
+    double operator()(double acc, const Polygon& p) const
     {
         return (p.points.size() == verx) ? acc + getArea(p) : acc;
     }
@@ -100,7 +99,7 @@ struct SumAreaByVertexes
 
 struct CompareByArea
 {
-    bool operator()(const Polygon &a, const Polygon &b) const
+    bool operator()(const Polygon& a, const Polygon& b) const
     {
         return getArea(a) < getArea(b);
     }
@@ -108,15 +107,49 @@ struct CompareByArea
 
 struct CompareByVertexCount
 {
-    bool operator()(const Polygon &a, const Polygon &b) const
+    bool operator()(const Polygon& a, const Polygon& b) const
     {
         return a.points.size() < b.points.size();
     }
 };
 
+struct CountIfEvenOrOdd
+{
+    std::string arg;
+    explicit CountIfEvenOrOdd(std::string s) : arg(s)
+    {
+    }
+
+    bool operator()(const Polygon& p) const
+    {
+        if (arg == "EVEN")
+        {
+            return (p.points.size() % 2) == 0;
+        }
+        else if (arg == "ODD")
+        {
+            return (p.points.size() % 2) != 0;
+        }
+        else throw std::logic_error("Wrong argument in CountIfEvenOrOdd");
+    }
+};
+
+struct CountIfNumOfVertexes
+{
+    std::size_t arg;
+    explicit CountIfNumOfVertexes(size_t n) : arg(n)
+    {
+    }
+
+    bool operator()(const Polygon& p) const
+    {
+        return (p.points.size() % arg) == 0;
+    }
+};
+
 struct SortPoints
 {
-    bool operator()(const Point &a, const Point &b) const
+    bool operator()(const Point& a, const Point& b) const
     {
         if (a.x == b.x)
         {
@@ -126,119 +159,95 @@ struct SortPoints
     }
 };
 
-int getMinX(const std::vector<Polygon> &polygons)
+struct SortByX
 {
-    auto it = std::min_element(polygons.begin(), polygons.end(),
-    [](const Polygon &a, const Polygon &b)
+    bool operator()(const Point& a, const Point& b) const
     {
-        int min_x_a = std::min_element(a.points.begin(), a.points.end(),
-                [](const Point &pa, const Point &pb)
-                {
-                return pa.x < pb.x;
-                })
-                ->x;
-        int min_x_b = std::min_element(b.points.begin(), b.points.end(),
-                [](const Point &pa, const Point &pb)
-                {
-                return pa.x < pb.x;
-                })
-                ->x;
+        return a.x < b.x;
+    }
+};
+
+struct SortByY
+{
+    bool operator()(const Point& a, const Point& b) const
+    {
+        return a.y < b.y;
+    }
+};
+
+struct PolygonMinX
+{
+    bool operator()(const Polygon& a, const Polygon& b)
+    {
+        int min_x_a = std::min_element(a.points.begin(), a.points.end(), SortByX())->x;
+        int min_x_b = std::min_element(b.points.begin(), b.points.end(), SortByX())->x;
+
         return min_x_a < min_x_b;
-    });
+    }
+};
 
-    return std::min_element(it->points.begin(), it->points.end(),
-    [](const Point &pa, const Point &pb)
-    {
-        return pa.x < pb.x;
-    })
-    ->x;
-}
-
-int getMinY(const std::vector<Polygon> &polygons)
+struct PolygonMaxX
 {
-    auto it = std::min_element(polygons.begin(), polygons.end(),
-        [](const Polygon &a, const Polygon &b)
-        {
-            int min_y_a = std::min_element(a.points.begin(), a.points.end(),
-                [](const Point &pa, const Point &pb)
-                {
-                    return pa.y < pb.y;
-                })
-                ->y;
-            int min_y_b = std::min_element(b.points.begin(), b.points.end(),
-                [](const Point &pa, const Point &pb)
-                {
-                    return pa.y < pb.y;
-                })
-                ->y;
-            return min_y_a < min_y_b;
-        });
-
-    return std::min_element(it->points.begin(), it->points.end(),
-    [](const Point &pa, const Point &pb)
+    bool operator()(const Polygon& a, const Polygon& b)
     {
-        return pa.y < pb.y;
-    })
-    ->y;
-}
+        int max_x_a = std::max_element(a.points.begin(), a.points.end(), SortByX())->x;
+        int max_x_b = std::max_element(b.points.begin(), b.points.end(), SortByX())->x;
 
-int getMaxX(const std::vector<Polygon> &polygons)
+        return max_x_a < max_x_b;
+    }
+};
+
+struct PolygonMinY
 {
-    auto it = std::max_element(polygons.begin(), polygons.end(),
-        [](const Polygon &a, const Polygon &b)
-        {
-            int max_x_a = std::max_element(a.points.begin(), a.points.end(),
-                [](const Point &pa, const Point &pb)
-                {
-                    return pa.x < pb.x;
-                })
-                ->x;
-            int max_x_b = std::max_element(b.points.begin(), b.points.end(),
-                [](const Point &pa, const Point &pb)
-                {
-                    return pa.x < pb.x;
-                })
-                ->x;
-            return max_x_a < max_x_b;
-        });
-
-    return std::max_element(it->points.begin(), it->points.end(),
-    [](const Point &pa, const Point &pb)
+    bool operator()(const Polygon& a, const Polygon& b)
     {
-        return pa.x < pb.x;
-    })
-    ->x;
-}
+        int min_y_a = std::min_element(a.points.begin(), a.points.end(), SortByY())->y;
+        int min_y_b = std::min_element(b.points.begin(), b.points.end(), SortByY())->y;
 
-int getMaxY(const std::vector<Polygon> &polygons)
+        return min_y_a < min_y_b;
+    }
+};
+
+struct PolygonMaxY
 {
-    auto it = std::max_element(polygons.begin(), polygons.end(),
-            [](const Polygon &a, const Polygon &b)
-            {
-                int max_y_a = std::max_element(a.points.begin(), a.points.end(),
-                [](const Point &pa, const Point &pb)
-                {
-                    return pa.y < pb.y;
-                })
-                ->y;
-                int max_y_b = std::max_element(b.points.begin(), b.points.end(),
-                [](const Point &pa, const Point &pb)
-                {
-                    return pa.y < pb.y;
-                })
-                ->y;
-                return max_y_a < max_y_b;
-            });
-
-    return std::max_element(it->points.begin(), it->points.end(),
-    [](const Point &pa, const Point &pb)
+    bool operator()(const Polygon& a, const Polygon& b)
     {
-        return pa.y < pb.y;
-    })
-    ->y;
+        int max_y_a = std::max_element(a.points.begin(), a.points.end(), SortByY())->y;
+        int max_y_b = std::max_element(b.points.begin(), b.points.end(), SortByY())->y;
+
+        return max_y_a < max_y_b;
+    }
+};
+
+int getMinX(const std::vector<Polygon>& polygons)
+{
+    auto vec = std::min_element(polygons.begin(), polygons.end(), PolygonMinX());
+
+    return std::min_element(vec->points.begin(), vec->points.end(), SortByX())->x;
 }
 
-std::istream &operator>>(std::istream &in, Point &p)
+int getMaxX(const std::vector<Polygon>& polygons)
+{
+    auto vec = std::max_element(polygons.begin(), polygons.end(), PolygonMaxX());
+
+    return std::max_element(vec->points.begin(), vec->points.end(), SortByX())->x;
+}
+
+int getMinY(const std::vector<Polygon>& polygons)
+{
+    auto vec = std::min_element(polygons.begin(), polygons.end(), PolygonMinY());
+
+    return std::min_element(vec->points.begin(), vec->points.end(), SortByY())->y;
+}
+
+int getMaxY(const std::vector<Polygon>& polygons)
+{
+    auto vec = std::max_element(polygons.begin(), polygons.end(), PolygonMaxY());
+
+    return std::max_element(vec->points.begin(), vec->points.end(), SortByY())->y;
+}
+
+std::istream& operator>>(std::istream& in, Point& p)
 {
     char c1, c2, c3;
     if (!(in >> c1 >> p.x >> c2 >> p.y >> c3) || c1 != '(' || c2 != ';' || c3 != ')')
@@ -248,7 +257,7 @@ std::istream &operator>>(std::istream &in, Point &p)
     return in;
 }
 
-std::istream &operator>>(std::istream &in, Polygon &pol)
+std::istream& operator>>(std::istream& in, Polygon& pol)
 {
     size_t size{};
     if (!(in >> size) || size < 3)
@@ -272,7 +281,7 @@ std::istream &operator>>(std::istream &in, Polygon &pol)
     return in;
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     if (argc < 2)
     {
@@ -310,7 +319,7 @@ int main(int argc, char *argv[])
     input.close();
     size_t polySize = polygons.size();
 
-    std::istream &in = std::cin;
+    std::istream& in = std::cin;
 
     while (std::getline(in, line))
     {
@@ -335,14 +344,14 @@ int main(int argc, char *argv[])
                 if (arg == "EVEN")
                 {
                     std::cout << std::fixed << std::setprecision(1)
-                              << std::accumulate(polygons.begin(), polygons.end(),
-                               0.0, SumAreaIfEven()) << "\n";
+                        << std::accumulate(polygons.begin(), polygons.end(),
+                            0.0, SumAreaIfEven()) << "\n";
                 }
                 else if (arg == "ODD")
                 {
                     std::cout << std::fixed << std::setprecision(1)
-                              << std::accumulate(polygons.begin(), polygons.end(),
-                               0.0, SumAreaIfOdd()) << "\n";
+                        << std::accumulate(polygons.begin(), polygons.end(),
+                            0.0, SumAreaIfOdd()) << "\n";
                 }
                 else if (arg == "MEAN")
                 {
@@ -351,9 +360,9 @@ int main(int argc, char *argv[])
                         throw std::invalid_argument("");
                     }
                     double sum = std::accumulate(polygons.begin(), polygons.end(),
-                     0.0, SumArea());
+                        0.0, SumArea());
                     std::cout << std::fixed << std::setprecision(1)
-                     << sum / polySize << "\n";
+                        << sum / polySize << "\n";
                 }
                 else
                 {
@@ -365,8 +374,8 @@ int main(int argc, char *argv[])
                             throw std::invalid_argument("");
                         }
                         std::cout << std::fixed << std::setprecision(1)
-                                  << std::accumulate(polygons.begin(), polygons.end(),
-                                   0.0, SumAreaByVertexes(n)) << "\n";
+                            << std::accumulate(polygons.begin(), polygons.end(),
+                                0.0, SumAreaByVertexes(n)) << "\n";
                     }
                     catch (...)
                     {
@@ -388,14 +397,14 @@ int main(int argc, char *argv[])
                 if (arg == "AREA")
                 {
                     auto it = std::max_element(polygons.begin(),
-                     polygons.end(), CompareByArea());
+                        polygons.end(), CompareByArea());
                     std::cout << std::fixed << std::setprecision(1)
-                     << getArea(*it) << "\n";
+                        << getArea(*it) << "\n";
                 }
                 else if (arg == "VERTEXES")
                 {
                     auto it = std::max_element(polygons.begin(),
-                     polygons.end(), CompareByVertexCount());
+                        polygons.end(), CompareByVertexCount());
                     std::cout << it->points.size() << "\n";
                 }
                 else
@@ -417,14 +426,14 @@ int main(int argc, char *argv[])
                 if (arg == "AREA")
                 {
                     auto it = std::min_element(polygons.begin(),
-                     polygons.end(), CompareByArea());
+                        polygons.end(), CompareByArea());
                     std::cout << std::fixed << std::setprecision(1)
-                     << getArea(*it) << "\n";
+                        << getArea(*it) << "\n";
                 }
                 else if (arg == "VERTEX")
                 {
                     auto it = std::min_element(polygons.begin(),
-                     polygons.end(), CompareByVertexCount());
+                        polygons.end(), CompareByVertexCount());
                     std::cout << it->points.size() << "\n";
                 }
             }
@@ -437,20 +446,12 @@ int main(int argc, char *argv[])
                 }
                 if (arg == "EVEN")
                 {
-                    int count = std::accumulate(polygons.begin(), polygons.end(), 0,
-                    [](int acc, Polygon p)
-                    {
-                        return (p.points.size() % 2 == 0) ? acc + 1 : acc;
-                    });
+                    int count = std::count_if(polygons.begin(), polygons.end(), CountIfEvenOrOdd(arg));
                     std::cout << count << '\n';
                 }
                 else if (arg == "ODD")
                 {
-                    int count = std::accumulate(polygons.begin(), polygons.end(), 0,
-                    [](int acc, Polygon p)
-                    {
-                        return (p.points.size() % 2 == 0) ? acc : acc + 1;
-                    });
+                    int count = std::count_if(polygons.begin(), polygons.end(), CountIfEvenOrOdd(arg));
                     std::cout << count << '\n';
                 }
                 else
@@ -463,11 +464,7 @@ int main(int argc, char *argv[])
                             throw std::invalid_argument("");
                         }
 
-                        int count = std::accumulate(polygons.begin(), polygons.end(), 0,
-                            [&n](int acc, Polygon &p)
-                            {
-                                return (p.points.size() == n) ? acc + 1 : acc;
-                            });
+                        int count = std::count_if(polygons.begin(), polygons.end(), CountIfNumOfVertexes(n));
 
                         std::cout << count << '\n';
                     }
@@ -500,7 +497,7 @@ int main(int argc, char *argv[])
                     std::sort(target.points.begin(), target.points.end(), SortPoints());
 
                     size_t result = std::accumulate(polygons.begin(), polygons.end(), 0,
-                        [&target](int acc, const Polygon &p)
+                        [&target](int acc, const Polygon& p)
                         {
                             Polygon copy = p;
                             std::sort(copy.points.begin(), copy.points.end(), SortPoints());
