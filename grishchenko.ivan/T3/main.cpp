@@ -1,210 +1,256 @@
 #include <iostream>
-#include <vector>
 #include <string>
-#include <fstream>
-#include <sstream>
+#include <functional>
 #include <algorithm>
+#include <fstream>
 #include <numeric>
 #include <iomanip>
+#include <cmath>
+#include <vector>
+#include <utility>
 #include <limits>
+#include <iterator>
+#include <sstream>
+
+using namespace std::placeholders;
+
 struct Point {
     int x, y;
 };
+
 struct Polygon {
     std::vector<Point> points;
 };
-double getArea(const Polygon& p) {
-    double area = 0.0;
-    size_t n = p.points.size();
-    if (n < 3) return 0.0;
-    for (size_t i = 0; i < n; ++i) {
-        area += (1.0 * p.points[i].x * p.points[(i + 1) % n].y);
-        area -= (1.0 * p.points[(i + 1) % n].x * p.points[i].y);
-    }
-    return std::abs(area) / 2.0;
+
+bool operator==(const Point& p1, const Point& p2) {
+    return p1.x == p2.x && p1.y == p2.y;
 }
-bool areEqual(const Polygon& a, const Polygon& b) {
-    if (a.points.size() != b.points.size()) return false;
-    return std::equal(a.points.begin(), a.points.end(), b.points.begin(),
-        [](const Point& p1, const Point& p2) {
-            return p1.x == p2.x && p1.y == p2.y;
-        });
+
+bool operator==(const Polygon& p1, const Polygon& p2) {
+    return p1.points == p2.points;
 }
-std::istream& consume(std::istream& is, char expected) {
-    char ch;
-    if (!(is >> ch)) return is;
-    if (ch != expected) is.setstate(std::ios::failbit);
-    return is;
-}
+
 std::istream& operator>>(std::istream& is, Point& p) {
     std::istream::sentry sentry(is);
-    if (!sentry) return is;
-    if (!consume(is, '(')) return is;
-    if (!(is >> p.x)) return is;
-    if (!consume(is, ';')) return is;
-    if (!(is >> p.y)) return is;
-    if (!consume(is, ')')) return is;
+    if (!is) return is;
+    char c1, c2, c3;
+    if (is >> c1 >> p.x >> c2 >> p.y >> c3) {
+        if (c1 == '(' && c2 == ';' && c3 == ')') {
+            return is;
+        }
+    }
+    is.setstate(std::ios_base::failbit);
     return is;
 }
-std::istream& operator>>(std::istream& is, Polygon& poly) {
+
+std::istream& operator>>(std::istream& is, Polygon& pg) {
     std::istream::sentry sentry(is);
-    if (!sentry) return is;
-    size_t n;
-    if (!(is >> n)) return is;
-    std::vector<Point> tmp;
-    for (size_t i = 0; i < n; ++i) {
-        Point p;
-        if (!(is >> p)) return is;
-        tmp.push_back(p);
-    }
-    if (n < 3) {
-        is.setstate(std::ios::failbit);
+    if (!is) return is;
+    size_t count;
+    if (!(is >> count) || count < 3) {
+        is.setstate(std::ios_base::failbit);
         return is;
     }
-    poly.points = std::move(tmp);
+    std::vector<Point> pts;
+    std::copy_n(std::istream_iterator<Point>(is), count, std::back_inserter(pts));
+    if (is) {
+        pg.points = pts;
+    }
     return is;
 }
-void readTarget(Polygon& target) {
-    std::string line;
-    std::getline(std::cin >> std::ws, line);
-    std::stringstream ss(line);
-    if (!(ss >> target)) throw std::logic_error("");
-    std::string extra;
-    if (ss >> extra) throw std::logic_error("");
+
+double calcAreaTerm(Point a, Point b) {
+    return static_cast<double>(a.x * b.y - a.y * b.x);
 }
-void cmdArea(const std::vector<Polygon>& shapes) {
-    std::string arg;
-    std::cin >> arg;
-    double res = 0;
-    if (arg == "EVEN") {
-        res = std::accumulate(shapes.begin(), shapes.end(), 0.0, [](double t, const Polygon& p) {
-            return (p.points.size() % 2 == 0) ? t + getArea(p) : t;
-        });
-    } else if (arg == "ODD") {
-        res = std::accumulate(shapes.begin(), shapes.end(), 0.0, [](double t, const Polygon& p) {
-            return (p.points.size() % 2 != 0) ? t + getArea(p) : t;
-        });
-    } else if (arg == "MEAN") {
-        if (shapes.empty()) throw std::logic_error("");
-        res = std::accumulate(shapes.begin(), shapes.end(), 0.0, [](double t, const Polygon& p) {
-            return t + getArea(p);
-        }) / shapes.size();
-    } else if (std::isdigit(arg[0])) {
-        size_t n = std::stoul(arg);
-        if (n < 3) throw std::logic_error("");
-        res = std::accumulate(shapes.begin(), shapes.end(), 0.0, [n](double t, const Polygon& p) {
-            return (p.points.size() == n) ? t + getArea(p) : t;
-        });
-    } else throw std::logic_error("");
-    std::cout << std::fixed << std::setprecision(1) << res << "\n";
+
+double area(const Polygon& pg) {
+    if (pg.points.size() < 3) return 0.0;
+    std::vector<double> terms;
+    std::transform(pg.points.begin(), pg.points.end() - 1, pg.points.begin() + 1, std::back_inserter(terms), calcAreaTerm);
+    terms.push_back(calcAreaTerm(pg.points.back(), pg.points.front()));
+    double sum = std::accumulate(terms.begin(), terms.end(), 0.0);
+    return std::abs(sum) / 2.0;
 }
-void cmdMax(const std::vector<Polygon>& shapes) {
-    if (shapes.empty()) throw std::logic_error("");
-    std::string arg;
-    std::cin >> arg;
-    if (arg == "AREA") {
-        auto it = std::max_element(shapes.begin(), shapes.end(), [](const Polygon& a, const Polygon& b) {
-            return getArea(a) < getArea(b);
-        });
-        std::cout << std::fixed << std::setprecision(1) << getArea(*it) << "\n";
-    } else if (arg == "VERTEXES") {
-        auto it = std::max_element(shapes.begin(), shapes.end(), [](const Polygon& a, const Polygon& b) {
-            return a.points.size() < b.points.size();
-        });
-        std::cout << it->points.size() << "\n";
-    } else throw std::logic_error("");
-}
-void cmdMin(const std::vector<Polygon>& shapes) {
-    if (shapes.empty()) throw std::logic_error("");
-    std::string arg;
-    std::cin >> arg;
-    if (arg == "AREA") {
-        auto it = std::min_element(shapes.begin(), shapes.end(), [](const Polygon& a, const Polygon& b) {
-            return getArea(a) < getArea(b);
-        });
-        std::cout << std::fixed << std::setprecision(1) << getArea(*it) << "\n";
-    } else if (arg == "VERTEXES") {
-        auto it = std::min_element(shapes.begin(), shapes.end(), [](const Polygon& a, const Polygon& b) {
-            return a.points.size() < b.points.size();
-        });
-        std::cout << it->points.size() << "\n";
-    } else throw std::logic_error("");
-}
-void cmdCount(const std::vector<Polygon>& shapes) {
-    std::string arg;
-    std::cin >> arg;
-    size_t res = 0;
-    if (arg == "EVEN") {
-        res = std::count_if(shapes.begin(), shapes.end(), [](const Polygon& p) { return p.points.size() % 2 == 0; });
-    } else if (arg == "ODD") {
-        res = std::count_if(shapes.begin(), shapes.end(), [](const Polygon& p) { return p.points.size() % 2 != 0; });
-    } else if (std::isdigit(arg[0])) {
-        size_t n = std::stoul(arg);
-        if (n < 3) throw std::logic_error("");
-        res = std::count_if(shapes.begin(), shapes.end(), [n](const Polygon& p) { return p.points.size() == n; });
-    } else throw std::logic_error("");
-    std::cout << res << "\n";
-}
-void cmdEcho(std::vector<Polygon>& shapes) {
-    Polygon target;
-    readTarget(target);
-    std::vector<Polygon> result;
-    size_t added = 0;
-    for (const auto& p : shapes) {
-        result.push_back(p);
-        if (areEqual(p, target)) {
-            result.push_back(p);
-            added++;
-        }
+
+bool isEvenFunc(const Polygon& pg) { return pg.points.size() % 2 == 0; }
+bool isOddFunc(const Polygon& pg) { return pg.points.size() % 2 != 0; }
+bool hasNumVertices(const Polygon& pg, size_t n) { return pg.points.size() == n; }
+
+double addAreaIfEven(double sum, const Polygon& p) { return isEvenFunc(p) ? sum + area(p) : sum; }
+double addAreaIfOdd(double sum, const Polygon& p) { return isOddFunc(p) ? sum + area(p) : sum; }
+double addAreaIfNum(double sum, const Polygon& p, size_t n) { return hasNumVertices(p, n) ? sum + area(p) : sum; }
+double addArea(double sum, const Polygon& p) { return sum + area(p); }
+
+bool compareArea(const Polygon& p1, const Polygon& p2) { return area(p1) < area(p2); }
+bool compareVertexes(const Polygon& p1, const Polygon& p2) { return p1.points.size() < p2.points.size(); }
+
+struct MaxSeqState {
+    size_t current_run = 0;
+    size_t max_run = 0;
+};
+
+MaxSeqState accumulateMaxSeq(MaxSeqState state, const Polygon& p, const Polygon& target) {
+    if (p == target) {
+        state.current_run++;
+        state.max_run = std::max(state.max_run, state.current_run);
+    } else {
+        state.current_run = 0;
     }
-    shapes = std::move(result);
-    std::cout << added << "\n";
+    return state;
 }
-void cmdMaxSeq(const std::vector<Polygon>& shapes) {
-    Polygon target;
-    readTarget(target);
-    int max_run = 0, current_run = 0;
-    for (const auto& p : shapes) {
-        if (areEqual(p, target)) {
-            current_run++;
-            max_run = std::max(max_run, current_run);
-        } else {
-            current_run = 0;
-        }
+
+std::vector<Polygon> accumulateEcho(std::vector<Polygon> acc, const Polygon& p, const Polygon& target) {
+    acc.push_back(p);
+    if (p == target) {
+        acc.push_back(p);
     }
-    std::cout << max_run << "\n";
+    return acc;
 }
+
 int main(int argc, char* argv[]) {
-    if (argc < 2) return 1;
+    if (argc != 2) {
+        std::cerr << "Usage: " << argv[0] << " <filename>\n";
+        return 1;
+    }
+    
     std::ifstream file(argv[1]);
-    if (!file) return 1;
-    std::vector<Polygon> shapes;
-    while (!file.eof()) {
+    if (!file) {
+        std::cerr << "Error: Cannot open file " << argv[1] << "\n";
+        return 1;
+    }
+    
+    std::vector<Polygon> polys;
+    std::string file_line;
+    while (std::getline(file, file_line)) {
+        if (file_line.empty()) continue;
+        std::stringstream ss(file_line);
         Polygon p;
-        if (file >> p) shapes.push_back(p);
-        else {
-            file.clear();
-            file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        }
-    }
-    std::string cmd;
-    while (std::cin >> cmd) {
-        try {
-            if (cmd == "AREA") cmdArea(shapes);
-            else if (cmd == "MAX") cmdMax(shapes);
-            else if (cmd == "MIN") cmdMin(shapes);
-            else if (cmd == "COUNT") cmdCount(shapes);
-            else if (cmd == "ECHO") cmdEcho(shapes);
-            else if (cmd == "MAXSEQ") cmdMaxSeq(shapes);
-            else {
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                throw std::logic_error("");
+        if (ss >> p) {
+            std::string dummy;
+            if (!(ss >> dummy)) {
+                polys.push_back(p);
             }
-        } catch (...) {
-            std::cout << "<INVALID COMMAND>\n";
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
     }
+    file.close();
+
+    std::string input_line;
+    while (std::getline(std::cin, input_line)) {
+        if (input_line.empty()) continue;
+        std::stringstream ss(input_line);
+        std::string cmd;
+        if (!(ss >> cmd)) continue;
+
+        if (cmd == "AREA") {
+            std::string subcmd;
+            if (!(ss >> subcmd)) { std::cout << "<INVALID COMMAND>\n"; continue; }
+            
+            double res = 0.0;
+            if (subcmd == "EVEN") {
+                res = std::accumulate(polys.begin(), polys.end(), 0.0, addAreaIfEven);
+            } else if (subcmd == "ODD") {
+                res = std::accumulate(polys.begin(), polys.end(), 0.0, addAreaIfOdd);
+            } else if (subcmd == "MEAN") {
+                if (polys.empty()) { std::cout << "<INVALID COMMAND>\n"; continue; }
+                res = std::accumulate(polys.begin(), polys.end(), 0.0, addArea) / polys.size();
+            } else {
+                try {
+                    size_t n = std::stoull(subcmd);
+                    if (n < 3) throw std::invalid_argument("");
+                    res = std::accumulate(polys.begin(), polys.end(), 0.0, std::bind(addAreaIfNum, _1, _2, n));
+                } catch (...) {
+                    std::cout << "<INVALID COMMAND>\n";
+                    continue;
+                }
+            }
+            std::cout << std::fixed << std::setprecision(1) << res << "\n";
+
+        } else if (cmd == "MIN") {
+            std::string subcmd;
+            if (!(ss >> subcmd) || polys.empty()) { std::cout << "<INVALID COMMAND>\n"; continue; }
+            
+            if (subcmd == "AREA") {
+                auto it = std::min_element(polys.begin(), polys.end(), compareArea);
+                std::cout << std::fixed << std::setprecision(1) << area(*it) << "\n";
+            } else if (subcmd == "VERTEXES") {
+                auto it = std::min_element(polys.begin(), polys.end(), compareVertexes);
+                std::cout << it->points.size() << "\n";
+            } else {
+                std::cout << "<INVALID COMMAND>\n";
+            }
+
+        } else if (cmd == "MAX") {
+            std::string subcmd;
+            if (!(ss >> subcmd) || polys.empty()) { std::cout << "<INVALID COMMAND>\n"; continue; }
+            
+            if (subcmd == "AREA") {
+                auto it = std::max_element(polys.begin(), polys.end(), compareArea);
+                std::cout << std::fixed << std::setprecision(1) << area(*it) << "\n";
+            } else if (subcmd == "VERTEXES") {
+                auto it = std::max_element(polys.begin(), polys.end(), compareVertexes);
+                std::cout << it->points.size() << "\n";
+            } else {
+                std::cout << "<INVALID COMMAND>\n";
+            }
+
+        } else if (cmd == "COUNT") {
+            std::string subcmd;
+            if (!(ss >> subcmd)) { std::cout << "<INVALID COMMAND>\n"; continue; }
+            
+            if (subcmd == "EVEN") {
+                std::cout << std::count_if(polys.begin(), polys.end(), isEvenFunc) << "\n";
+            } else if (subcmd == "ODD") {
+                std::cout << std::count_if(polys.begin(), polys.end(), isOddFunc) << "\n";
+            } else {
+                try {
+                    size_t n = std::stoull(subcmd);
+                    if (n < 3) throw std::invalid_argument("");
+                    std::cout << std::count_if(polys.begin(), polys.end(), std::bind(hasNumVertices, _1, n)) << "\n";
+                } catch (...) {
+                    std::cout << "<INVALID COMMAND>\n";
+                }
+            }
+
+        } else if (cmd == "MAXSEQ") {
+            Polygon target;
+            std::string dummy;
+            if (!(ss >> target) || (ss >> dummy)) {
+                std::cout << "<INVALID COMMAND>\n";
+                continue;
+            }
+            
+            MaxSeqState init_state;
+            MaxSeqState final_state = std::accumulate(
+                polys.begin(), polys.end(), init_state,
+                std::bind(accumulateMaxSeq, _1, _2, std::cref(target))
+            );
+            std::cout << final_state.max_run << "\n";
+
+        } else if (cmd == "ECHO") {
+            Polygon target;
+            std::string dummy;
+            if (!(ss >> target) || (ss >> dummy)) {
+                std::cout << "<INVALID COMMAND>\n";
+                continue;
+            }
+
+            size_t added_count = std::count(polys.begin(), polys.end(), target);
+
+            std::vector<Polygon> updated_polys;
+            updated_polys.reserve(polys.size() + added_count);
+            
+            updated_polys = std::accumulate(
+                polys.begin(), polys.end(), updated_polys,
+                std::bind(accumulateEcho, _1, _2, std::cref(target))
+            );
+
+            polys = std::move(updated_polys);
+            std::cout << added_count << "\n";
+
+        } else {
+            std::cout << "<INVALID COMMAND>\n";
+        }
+    }
+
     return 0;
 }
