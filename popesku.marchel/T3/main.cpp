@@ -30,7 +30,6 @@ bool operator==(const Polygon &lhs, const Polygon &rhs) {
 }
 
 std::istream &operator>>(std::istream &in, Point &point) {
-    // (x;y) - читать вот это
     char leftBracket = 0;
     char semicolon = 0;
     char rightBracket = 0;
@@ -444,19 +443,59 @@ struct HasSameShift {
     }
 };
 
-bool isSameByTranslation(const Polygon &lhs, const Polygon &rhs) {
-    if (lhs.points.size() != rhs.points.size()) {
+struct IsSameFromStart
+{
+    const Polygon& lhs;
+    const Polygon& rhs;
+    std::size_t start;
+
+    bool operator()(std::size_t index) const
+    {
+        std::size_t size = rhs.points.size();
+        std::size_t rhsIndex = (start + index) % size;
+
+        int shiftX = rhs.points[start].x - lhs.points[0].x;
+        int shiftY = rhs.points[start].y - lhs.points[0].y;
+
+        return HasSameShift{shiftX, shiftY}(
+            lhs.points[index],
+            rhs.points[rhsIndex]
+        );
+    }
+};
+
+struct IsSameWithStart
+{
+    const Polygon& lhs;
+    const Polygon& rhs;
+
+    bool operator()(std::size_t start) const
+    {
+        std::vector<std::size_t> indexes(lhs.points.size());
+        std::iota(indexes.begin(), indexes.end(), 0);
+
+        return std::all_of(
+            indexes.begin(),
+            indexes.end(),
+            IsSameFromStart{lhs, rhs, start}
+        );
+    }
+};
+
+bool isSameByTranslation(const Polygon& lhs, const Polygon& rhs)
+{
+    if (lhs.points.size() != rhs.points.size())
+    {
         return false;
     }
 
-    int shiftX = rhs.points[0].x - lhs.points[0].x;
-    int shiftY = rhs.points[0].y - lhs.points[0].y;
+    std::vector<std::size_t> starts(lhs.points.size());
+    std::iota(starts.begin(), starts.end(), 0);
 
-    return std::equal(
-        lhs.points.begin(),
-        lhs.points.end(),
-        rhs.points.begin(),
-        HasSameShift{shiftX, shiftY}
+    return std::any_of(
+        starts.begin(),
+        starts.end(),
+        IsSameWithStart{lhs, rhs}
     );
 }
 
