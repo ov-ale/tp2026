@@ -112,13 +112,13 @@ int main(int argc, char* argv[]) {
         std::cerr << "Usage: " << argv[0] << " <filename>\n";
         return 1;
     }
-    
+
     std::ifstream file(argv[1]);
     if (!file) {
         std::cerr << "Error: Cannot open file " << argv[1] << "\n";
         return 1;
     }
-    
+
     std::vector<Polygon> polys;
     std::string file_line;
     while (std::getline(file, file_line)) {
@@ -144,7 +144,7 @@ int main(int argc, char* argv[]) {
         if (cmd == "AREA") {
             std::string subcmd;
             if (!(ss >> subcmd)) { std::cout << "<INVALID COMMAND>\n"; continue; }
-            
+
             double res = 0.0;
             if (subcmd == "EVEN") {
                 res = std::accumulate(polys.begin(), polys.end(), 0.0, addAreaIfEven);
@@ -168,7 +168,7 @@ int main(int argc, char* argv[]) {
         } else if (cmd == "MIN") {
             std::string subcmd;
             if (!(ss >> subcmd) || polys.empty()) { std::cout << "<INVALID COMMAND>\n"; continue; }
-            
+
             if (subcmd == "AREA") {
                 auto it = std::min_element(polys.begin(), polys.end(), compareArea);
                 std::cout << std::fixed << std::setprecision(1) << area(*it) << "\n";
@@ -182,7 +182,7 @@ int main(int argc, char* argv[]) {
         } else if (cmd == "MAX") {
             std::string subcmd;
             if (!(ss >> subcmd) || polys.empty()) { std::cout << "<INVALID COMMAND>\n"; continue; }
-            
+
             if (subcmd == "AREA") {
                 auto it = std::max_element(polys.begin(), polys.end(), compareArea);
                 std::cout << std::fixed << std::setprecision(1) << area(*it) << "\n";
@@ -196,7 +196,7 @@ int main(int argc, char* argv[]) {
         } else if (cmd == "COUNT") {
             std::string subcmd;
             if (!(ss >> subcmd)) { std::cout << "<INVALID COMMAND>\n"; continue; }
-            
+
             if (subcmd == "EVEN") {
                 std::cout << std::count_if(polys.begin(), polys.end(), isEvenFunc) << "\n";
             } else if (subcmd == "ODD") {
@@ -218,7 +218,7 @@ int main(int argc, char* argv[]) {
                 std::cout << "<INVALID COMMAND>\n";
                 continue;
             }
-            
+
             MaxSeqState init_state;
             MaxSeqState final_state = std::accumulate(
                 polys.begin(), polys.end(), init_state,
@@ -238,7 +238,7 @@ int main(int argc, char* argv[]) {
 
             std::vector<Polygon> updated_polys;
             updated_polys.reserve(polys.size() + added_count);
-            
+
             updated_polys = std::accumulate(
                 polys.begin(), polys.end(), updated_polys,
                 std::bind(accumulateEcho, _1, _2, std::cref(target))
