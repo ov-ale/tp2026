@@ -6,6 +6,7 @@
 #include <numeric>
 #include <cmath>
 #include <iomanip>
+#include <limits>
 
 struct Point {
     int x, y;
@@ -98,6 +99,15 @@ bool isNumber(const std::string& s) {
     return !s.empty() && std::all_of(s.begin(), s.end(), ::isdigit);
 }
 
+void skipInvalid() {
+    std::cout << "<INVALID COMMAND>\n";
+    std::cin.clear();
+    std::cin.ignore(
+        std::numeric_limits<std::streamsize>::max(),
+        '\n'
+    );
+}
+
 int main(int argc, char* argv[]) {
     if (argc < 2) return 1;
 
@@ -164,7 +174,7 @@ int main(int argc, char* argv[]) {
                 std::cout << res << "\n";
             } else if (arg == "MEAN") {
                 if (polygons.empty()) {
-                    std::cout << "<INVALID COMMAND>\n";
+                    skipInvalid();
                 } else {
                     double sum = std::accumulate(
                         polygons.begin(),
@@ -178,6 +188,10 @@ int main(int argc, char* argv[]) {
                 }
             } else if (isNumber(arg)) {
                 size_t num = std::stoi(arg);
+                if (num < 3) {
+                    skipInvalid();
+                    continue;
+                }
                 double res = std::accumulate(
                     polygons.begin(),
                     polygons.end(),
@@ -189,63 +203,69 @@ int main(int argc, char* argv[]) {
                 );
                 std::cout << res << "\n";
             } else {
-                std::cout << "<INVALID COMMAND>\n";
+                skipInvalid();
             }
         } else if (cmd == "MAX") {
             std::string arg;
-            if (!(std::cin >> arg) || polygons.empty()) {
-                std::cout << "<INVALID COMMAND>\n";
-                if (polygons.empty()) std::cin.clear();
-                continue;
-            }
+            if (!(std::cin >> arg)) continue;
+
             if (arg == "AREA") {
-                auto it = std::max_element(
-                    polygons.begin(),
-                    polygons.end(),
-                    [](const Polygon& a, const Polygon& b) {
-                        return getArea(a) < getArea(b);
-                    }
-                );
-                std::cout << getArea(*it) << "\n";
+                if (polygons.empty()) skipInvalid();
+                else {
+                    auto it = std::max_element(
+                        polygons.begin(),
+                        polygons.end(),
+                        [](const Polygon& a, const Polygon& b) {
+                            return getArea(a) < getArea(b);
+                        }
+                    );
+                    std::cout << getArea(*it) << "\n";
+                }
             } else if (arg == "VERTEXES") {
-                auto it = std::max_element(
-                    polygons.begin(),
-                    polygons.end(),
-                    [](const Polygon& a, const Polygon& b) {
-                        return a.points.size() < b.points.size();
-                    }
-                );
-                std::cout << it->points.size() << "\n";
+                if (polygons.empty()) skipInvalid();
+                else {
+                    auto it = std::max_element(
+                        polygons.begin(),
+                        polygons.end(),
+                        [](const Polygon& a, const Polygon& b) {
+                            return a.points.size() < b.points.size();
+                        }
+                    );
+                    std::cout << it->points.size() << "\n";
+                }
             } else {
-                std::cout << "<INVALID COMMAND>\n";
+                skipInvalid();
             }
         } else if (cmd == "MIN") {
             std::string arg;
-            if (!(std::cin >> arg) || polygons.empty()) {
-                std::cout << "<INVALID COMMAND>\n";
-                if (polygons.empty()) std::cin.clear();
-                continue;
-            }
+            if (!(std::cin >> arg)) continue;
+
             if (arg == "AREA") {
-                auto it = std::min_element(
-                    polygons.begin(),
-                    polygons.end(),
-                    [](const Polygon& a, const Polygon& b) {
-                        return getArea(a) < getArea(b);
-                    }
-                );
-                std::cout << getArea(*it) << "\n";
+                if (polygons.empty()) skipInvalid();
+                else {
+                    auto it = std::min_element(
+                        polygons.begin(),
+                        polygons.end(),
+                        [](const Polygon& a, const Polygon& b) {
+                            return getArea(a) < getArea(b);
+                        }
+                    );
+                    std::cout << getArea(*it) << "\n";
+                }
             } else if (arg == "VERTEXES") {
-                auto it = std::min_element(
-                    polygons.begin(),
-                    polygons.end(),
-                    [](const Polygon& a, const Polygon& b) {
-                        return a.points.size() < b.points.size();
-                    }
-                );
-                std::cout << it->points.size() << "\n";
+                if (polygons.empty()) skipInvalid();
+                else {
+                    auto it = std::min_element(
+                        polygons.begin(),
+                        polygons.end(),
+                        [](const Polygon& a, const Polygon& b) {
+                            return a.points.size() < b.points.size();
+                        }
+                    );
+                    std::cout << it->points.size() << "\n";
+                }
             } else {
-                std::cout << "<INVALID COMMAND>\n";
+                skipInvalid();
             }
         } else if (cmd == "COUNT") {
             std::string arg;
@@ -270,6 +290,10 @@ int main(int argc, char* argv[]) {
                 std::cout << cnt << "\n";
             } else if (isNumber(arg)) {
                 size_t num = std::stoi(arg);
+                if (num < 3) {
+                    skipInvalid();
+                    continue;
+                }
                 long long cnt = std::count_if(
                     polygons.begin(),
                     polygons.end(),
@@ -279,7 +303,7 @@ int main(int argc, char* argv[]) {
                 );
                 std::cout << cnt << "\n";
             } else {
-                std::cout << "<INVALID COMMAND>\n";
+                skipInvalid();
             }
         } else if (cmd == "RMECHO") {
             Polygon target;
@@ -296,8 +320,7 @@ int main(int argc, char* argv[]) {
                 polygons.erase(it, polygons.end());
                 std::cout << removedCount << "\n";
             } else {
-                std::cout << "<INVALID COMMAND>\n";
-                std::cin.clear();
+                skipInvalid();
             }
         } else if (cmd == "SAME") {
             Polygon target;
@@ -311,12 +334,10 @@ int main(int argc, char* argv[]) {
                 );
                 std::cout << cnt << "\n";
             } else {
-                std::cout << "<INVALID COMMAND>\n";
-                std::cin.clear();
+                skipInvalid();
             }
         } else {
-            std::cout << "<INVALID COMMAND>\n";
-            std::cin.clear();
+            skipInvalid();
         }
     }
     return 0;
