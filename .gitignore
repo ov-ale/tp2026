@@ -12,3 +12,6 @@ out
 .config
 .config.cache
 
+
+.DS_Store
+test_build
