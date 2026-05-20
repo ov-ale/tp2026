@@ -1,10 +1,15 @@
 #include "rectangle.h"
+#include <stdexcept>
 #include <string>
 
 Rectangle::Rectangle(const Point& bottomLeft, const Point& topRight) :
     bottomLeft_(bottomLeft),
     topRight_(topRight)
-{}
+{
+    if (bottomLeft_.x >= topRight_.x || bottomLeft_.y >= topRight_.y) {
+        throw std::invalid_argument("Invalid coordinates: bottomLeft must be strictly below and to the left of topRight.");
+    }
+}
 
 double Rectangle::getArea() const {
     return (topRight_.x - bottomLeft_.x) * (topRight_.y - bottomLeft_.y);
@@ -33,18 +38,7 @@ std::string Rectangle::getName() const {
     return "RECTANGLE";
 }
 
-double Rectangle::getMinX() const {
-    return bottomLeft_.x;
-}
-
-double Rectangle::getMinY() const {
-    return bottomLeft_.y;
-}
-
-double Rectangle::getMaxX() const {
-    return topRight_.x;
-}
-
-double Rectangle::getMaxY() const {
-    return topRight_.y;
-}
+double Rectangle::getMinX() const { return bottomLeft_.x; }
+double Rectangle::getMinY() const { return bottomLeft_.y; }
+double Rectangle::getMaxX() const { return topRight_.x; }
+double Rectangle::getMaxY() const { return topRight_.y; }
