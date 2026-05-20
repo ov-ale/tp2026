@@ -27,7 +27,7 @@ std::istream& operator>>(std::istream& in, DoubleLitIO&& dest) {
     in>>suffix;
     if (in && (suffix=='d' || suffix=='D')) {
         dest.ref=val;
-    } 
+    }
     else {
         in.setstate(std::ios::failbit);
     }
@@ -47,7 +47,7 @@ std::istream& operator>>(std::istream& in, UllLitIO&& dest) {
     in>>u>>l1>>l2;
     if (in && (u=='u' || u=='U') && (l1=='l' || l1=='L') && (l2=='l' || l2=='L')) {
         dest.ref=val;
-    } 
+    }
     else {
         in.setstate(std::ios::failbit);
     }
@@ -69,19 +69,19 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
     in>>DelimiterIO{'('};
     for (int i=0; i<3; ++i) {
         std::string label;
-        in>>DelimiterIO{':'}; 
+        in>>DelimiterIO{':'};
         if (!(in>>label)) {
             break;
         }
         if (label=="key1") {
             in>>DoubleLitIO{temp.key1};
-        } 
+        }
         else if (label=="key2") {
             in>>UllLitIO{temp.key2};
-        } 
+        }
         else if (label=="key3") {
             in>>StringIO{temp.key3};
-        } 
+        }
         else {
             in.setstate(std::ios::failbit);
         }
