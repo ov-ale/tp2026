@@ -237,7 +237,7 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
             in.setstate(std::ios::failbit);
             return in;
         }
-        
+
         if (!in) return in;
 
         in >> DelimiterIO{':'};
