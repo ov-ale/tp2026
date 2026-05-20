@@ -84,15 +84,16 @@ bool readPolygon(std::istream& in, Polygon& poly) {
     size_t num;
     if (!(in >> num) || num < 3) return false;
     poly.points.resize(num);
-    return std::all_of(
-        poly.points.begin(),
-        poly.points.end(),
-        [&](Point& p) {
-            char c1, c2, c3;
-            return (in >> c1 && c1 == '(' && in >> p.x >> c2 &&
-                    c2 == ';' && in >> p.y >> c3 && c3 == ')');
-        }
-    );
+    bool success = std::all_of(poly.points.begin(), poly.points.end(), [&](Point& p) {
+        char c1, c2, c3;
+        return (in >> c1 && c1 == '(' && in >> p.x >> c2
+            && c2 == ';' && in >> p.y >> c3 && c3 == ')');
+    });
+    if (!success) return false;
+    if (in >> std::ws && in.peek() == '(') {
+        return false;
+    }
+    return true;
 }
 
 bool isNumber(const std::string& s) {
