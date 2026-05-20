@@ -1,9 +1,14 @@
 #include "square.h"
+#include <stdexcept>
 #include <string>
 
 Square::Square(const Point& bottomLeft, double side) :
     bottomLeft_(bottomLeft), side_(side)
-{ }
+{
+    if (side_ <= 0.0) {
+        throw std::invalid_argument("Invalid square side: side must be strictly greater than zero.");
+    }
+}
 
 double Square::getArea() const {
     return side_ * side_;
