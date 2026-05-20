@@ -118,23 +118,32 @@ struct IsDuplicateOfTarget {
     }
 };
 
+struct RemoveDuplicate {
+    const Polygon& target;
+    explicit RemoveDuplicate(const Polygon& t) : target(t) {}
+
+    std::reference_wrapper<std::vector<Polygon>> operator()(
+        std::reference_wrapper<std::vector<Polygon>> res,
+        const Polygon& curr) const {
+        std::vector<Polygon>& vec = res.get();
+        if (!(curr == target && vec.back() == target)) {
+            vec.push_back(curr);
+        }
+        return res;
+    }
+};
+
 std::vector<Polygon> removeConsecutiveDuplicates(const std::vector<Polygon>& polys, const Polygon& target) {
     if (polys.empty()) return polys;
 
     std::vector<Polygon> result;
     result.push_back(polys[0]);
 
-    std::accumulate(polys.begin() + 1, polys.end(), std::ref(result),
-        [&target](std::reference_wrapper<std::vector<Polygon>> res, const Polygon& curr) {
-            std::vector<Polygon>& vec = res.get();
-            if (!(curr == target && vec.back() == target)) {
-                vec.push_back(curr);
-            }
-            return res;
-        });
+    std::accumulate(polys.begin() + 1, polys.end(), std::ref(result), RemoveDuplicate(target));
 
     return result;
 }
+
 
 struct BoundingBox {
     int minX, maxX, minY, maxY;
@@ -204,6 +213,12 @@ struct CountRemovedDuplicates {
     }
 };
 
+struct MakePair {
+    std::pair<const Polygon&, const Polygon&> operator()(const Polygon& a, const Polygon& b) const {
+        return { a, b };
+    }
+};
+
 int countConsecutiveDuplicates(const std::vector<Polygon>& polys, const Polygon& target) {
     if (polys.size() < 2) return 0;
 
@@ -211,10 +226,7 @@ int countConsecutiveDuplicates(const std::vector<Polygon>& polys, const Polygon&
     pairs.reserve(polys.size() - 1);
 
     std::transform(polys.begin(), polys.end() - 1, polys.begin() + 1,
-        std::back_inserter(pairs),
-        [](const Polygon& a, const Polygon& b) -> std::pair<const Polygon&, const Polygon&> {
-            return { a, b };
-        });
+        std::back_inserter(pairs), MakePair());
 
     return std::accumulate(pairs.begin(), pairs.end(), 0, CountRemovedDuplicates(target));
 }
