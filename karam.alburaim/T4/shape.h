@@ -1,22 +1,23 @@
-#ifndef SHAPE_H
-#define SHAPE_H
+#ifndef SQUARE_H
+#define SQUARE_H
 
-#include "point.h"
-#include <string>
+#include "shape.h"
 
-class Shape {
+class Square : public Shape {
+private:
+    Point bottomLeft_;
+    double side_;
 public:
-    virtual ~Shape() = default;
-    virtual double getArea() const = 0;
-    virtual Point getCenter() const = 0;
-    virtual void move(double dx, double dy) = 0;
-    virtual void scale(double factor) = 0;
-    virtual std::string getName() const = 0;
-
-    virtual double getMinX() const = 0;
-    virtual double getMinY() const = 0;
-    virtual double getMaxX() const = 0;
-    virtual double getMaxY() const = 0;
+    Square(const Point& bottomLeft, double side);
+    double getArea() const override;
+    Point getCenter() const override;
+    void move(double dx, double dy) override;
+    void scale(double factor) override;
+    std::string getName() const override;
+    double getMinX() const override;
+    double getMinY() const override;
+    double getMaxX() const override;
+    double getMaxY() const override;
 };
 
 #endif
