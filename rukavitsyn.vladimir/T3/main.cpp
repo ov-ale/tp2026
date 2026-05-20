@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 #include <fstream>
 #include <sstream>
 #include <vector>
@@ -51,7 +51,11 @@ std::istream& operator>>(std::istream& in, Polygon& poly)
     std::for_each(poly.points.begin(), poly.points.end(),
         [&in](Point& p) { in >> p; });
 
-    if (!in) { in.setstate(std::ios::failbit); }
+    if (!in) { in.setstate(std::ios::failbit); return in; }
+
+    std::string extra;
+    if (in >> extra) { in.setstate(std::ios::failbit); return in; }
+    in.clear();
     return in;
 }
 
@@ -78,10 +82,10 @@ long long signedArea2(const Polygon& poly)
         std::plus<long long>(),
         [](const Point& a, const Point& b) -> long long {
             return static_cast<long long>(a.x) * b.y
-                - static_cast<long long>(b.x) * a.y;
+                 - static_cast<long long>(b.x) * a.y;
         });
     sum += static_cast<long long>(pts.back().x) * pts.front().y
-        - static_cast<long long>(pts.front().x) * pts.back().y;
+         - static_cast<long long>(pts.front().x) * pts.back().y;
     return std::abs(sum);
 }
 
@@ -93,7 +97,7 @@ double area(const Polygon& poly)
 long long dot(const Point& a, const Point& b, const Point& c)
 {
     return static_cast<long long>(b.x - a.x) * (c.x - a.x)
-        + static_cast<long long>(b.y - a.y) * (c.y - a.y);
+         + static_cast<long long>(b.y - a.y) * (c.y - a.y);
 }
 
 bool hasRightAngle(const Polygon& poly)
@@ -103,20 +107,14 @@ bool hasRightAngle(const Polygon& poly)
 
     auto checkAngleAt = [&](std::size_t i) -> bool {
         const Point& prev = pts[(i + n - 1) % n];
-        const Point& cur = pts[i];
+        const Point& cur  = pts[i];
         const Point& next = pts[(i + 1) % n];
         return dot(cur, prev, next) == 0;
-        };
+    };
 
     std::vector<std::size_t> indices(n);
     std::iota(indices.begin(), indices.end(), 0);
     return std::any_of(indices.begin(), indices.end(), checkAngleAt);
-}
-
-bool isRect(const Polygon& poly)
-{
-    if (poly.points.size() != 4) return false;
-    return hasRightAngle(poly);
 }
 
 bool isRectangle(const Polygon& poly)
@@ -160,13 +158,12 @@ void cmdArea(const std::vector<Polygon>& polygons, const std::string& param)
         double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
             [](double acc, const Polygon& poly) { return acc + area(poly); });
         std::cout << std::fixed << std::setprecision(1)
-            << sum / static_cast<double>(polygons.size()) << "\n";
+                  << sum / static_cast<double>(polygons.size()) << "\n";
     }
     else
     {
         std::size_t n = 0;
-        try { n = std::stoul(param); }
-        catch (...) { std::cout << "<INVALID COMMAND>\n"; return; }
+        try { n = std::stoul(param); } catch (...) { std::cout << "<INVALID COMMAND>\n"; return; }
         if (n < 3) { std::cout << "<INVALID COMMAND>\n"; return; }
 
         double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
@@ -239,8 +236,7 @@ void cmdCount(const std::vector<Polygon>& polygons, const std::string& param)
     else
     {
         std::size_t n = 0;
-        try { n = std::stoul(param); }
-        catch (...) { std::cout << "<INVALID COMMAND>\n"; return; }
+        try { n = std::stoul(param); } catch (...) { std::cout << "<INVALID COMMAND>\n"; return; }
         if (n < 3) { std::cout << "<INVALID COMMAND>\n"; return; }
 
         long count = std::count_if(polygons.begin(), polygons.end(),
@@ -262,7 +258,7 @@ void cmdMaxSeq(const std::vector<Polygon>& polygons, const Polygon& target)
     PolygonEqual eq(target);
     RunState state = std::accumulate(
         polygons.begin(), polygons.end(),
-        RunState{ 0, 0 },
+        RunState{0, 0},
         [&eq](RunState st, const Polygon& poly) -> RunState {
             if (eq(poly))
             {
@@ -286,13 +282,12 @@ bool parsePolygon(const std::string& rest, Polygon& out)
     return ss && !out.points.empty();
 }
 
-
 int main(int argc, char* argv[])
 {
     if (argc < 2)
     {
         std::cerr << "Error: filename not specified.\n"
-            << "Usage: " << argv[0] << " <filename>\n";
+                  << "Usage: " << argv[0] << " <filename>\n";
         return 1;
     }
 
