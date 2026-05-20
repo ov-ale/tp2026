@@ -21,4 +21,5 @@ public:
     double getMaxX() const override;
     double getMaxY() const override;
 };
+
 #endif
