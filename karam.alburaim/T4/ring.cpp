@@ -1,4 +1,5 @@
 #include "ring.h"
+#include <stdexcept>
 #include <cmath>
 #include <string>
 
@@ -6,7 +7,11 @@ const double PI = 3.141592653589793;
 
 Ring::Ring(const Point& center, double outer, double inner) :
     center_(center), outerRadius_(outer), innerRadius_(inner)
-{ }
+{
+    if (outerRadius_ <= 0 || innerRadius_ < 0 || innerRadius_ >= outerRadius_) {
+        throw std::invalid_argument("Invalid ring radii: outer must be strictly greater than inner, and both must be positive.");
+    }
+}
 
 double Ring::getArea() const {
     return PI * (outerRadius_ * outerRadius_ - innerRadius_ * innerRadius_);
