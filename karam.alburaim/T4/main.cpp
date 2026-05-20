@@ -12,7 +12,7 @@ int main() {
         std::cout << std::fixed << std::setprecision(2);
         std::vector<std::unique_ptr<Shape>> shapes;
 
-  
+
         shapes.push_back(std::make_unique<Rectangle>(Point(0,0), Point(2,2)));
         shapes.push_back(std::make_unique<Square>(Point(5,5), 3));
         shapes.push_back(std::make_unique<Ring>(Point(10,10), 5, 2));
@@ -20,8 +20,8 @@ int main() {
         shapes.push_back(std::make_unique<Rectangle>(Point(1,1), Point(4,6)));
 
         auto comp = std::make_unique<CompositeShape>();
-        
-     
+
+
         comp->addShape(std::make_unique<Square>(Point(0,0), 2));
         comp->addShape(std::make_unique<Rectangle>(Point(5,5), Point(7,7)));
         comp->addShape(std::make_unique<Ring>(Point(2,2), 4, 1));
