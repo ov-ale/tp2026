@@ -15,7 +15,6 @@ public:
     void move(double dx, double dy) override;
     void scale(double factor) override;
     std::string getName() const override;
-
     double getMinX() const override;
     double getMinY() const override;
     double getMaxX() const override;
