@@ -1,5 +1,6 @@
 #include "DataStruct.h"
 #include <iomanip>
+#include <cmath>
 #include <algorithm>
 std::istream& operator>>(std::istream& in, DelimiterIO&& dest) {
     std::istream::sentry sentry(in);
@@ -103,17 +104,12 @@ std::ostream& operator<<(std::ostream& out, const DataStruct& src) {
     return out;
 }
 bool compareData(const DataStruct& lhs, const DataStruct& rhs) {
-    if (lhs.key1<rhs.key1) {
-        return true;
+    const double EPS=1e-9;
+    if (std::abs(lhs.key1-rhs.key1)>EPS) {
+        return lhs.key1<rhs.key1;
     }
-    if (rhs.key1<lhs.key1) {
-        return false;
-    }
-    if (lhs.key2<rhs.key2) {
-        return true;
-    }
-    if (rhs.key2<lhs.key2) {
-        return false;
+    if (lhs.key2!=rhs.key2) {
+        return lhs.key2<rhs.key2;
     }
     return lhs.key3.length()<rhs.key3.length();
 }
