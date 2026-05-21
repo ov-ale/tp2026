@@ -8,6 +8,7 @@
 #include <limits>
 #include <iomanip>
 #include <algorithm>
+#include <functional>
 #include <sstream>
 #include <cctype>
 
@@ -153,6 +154,75 @@ bool isRectangle(const Polygon& poly) {
     return (dot1 == 0) && (dot2 == 0);
 }
 
+struct IsEvenVertex {
+    bool operator()(const Polygon& p) const {
+        return p.points.size() % 2 == 0;
+    }
+};
+
+struct IsOddVertex {
+    bool operator()(const Polygon& p) const {
+        return p.points.size() % 2 == 1;
+    }
+};
+
+struct CompareByArea {
+    bool operator()(const Polygon& a, const Polygon& b) const {
+        return getArea(a) < getArea(b);
+    }
+};
+
+struct SumArea {
+    double operator()(double sum, const Polygon& p) const {
+        return sum + getArea(p);
+    }
+};
+
+struct SumAreaIfEven {
+    double operator()(double sum, const Polygon& p) const {
+        if (p.points.size() % 2 == 0) {
+            return sum + getArea(p);
+        }
+        return sum;
+    }
+};
+
+struct SumAreaIfOdd {
+    double operator()(double sum, const Polygon& p) const {
+        if (p.points.size() % 2 == 1) {
+            return sum + getArea(p);
+        }
+        return sum;
+    }
+};
+
+struct SumAreaIfVertexCount {
+    size_t target;
+    SumAreaIfVertexCount(size_t t) : target(t) {}
+
+    double operator()(double sum, const Polygon& p) const {
+        if (p.points.size() == target) {
+            return sum + getArea(p);
+        }
+        return sum;
+    }
+};
+
+struct CountIfVertexCount {
+    size_t target;
+    CountIfVertexCount(size_t t) : target(t) {}
+
+    bool operator()(const Polygon& p) const {
+        return p.points.size() == target;
+    }
+};
+
+struct CompareByVertexCount {
+    bool operator()(const Polygon& a, const Polygon& b) const {
+        return a.points.size() < b.points.size();
+    }
+};
+
 int main(int argc, char* argv[]) {
     if (argc < 2) {
         std::cerr << "Error: filename not specified" << '\n';
@@ -201,35 +271,15 @@ int main(int argc, char* argv[]) {
             std::string arg;
             std::cin >> arg;
 
-            if (isNumber(arg)) {
-                int num = std::stoi(arg);
-                if (num < 3) {
-                    std::cout << "<INVALID COMMAND>" << '\n';
-                    continue;
-                }
-            }
-
             double total = 0.0;
 
             if (arg == "EVEN") {
-                total = std::accumulate(shapes.begin(), shapes.end(), 0.0,
-                    [](double sum, const Polygon& p) {
-                        if (p.points.size() % 2 == 0) {
-                            return sum + getArea(p);
-                        }
-                        return sum;
-                    });
+                total = std::accumulate(shapes.begin(), shapes.end(), 0.0, SumAreaIfEven());
                 std::cout << total << '\n';
             }
 
             else if (arg == "ODD") {
-                total = std::accumulate(shapes.begin(), shapes.end(), 0.0,
-                    [](double sum, const Polygon& p) {
-                        if (p.points.size() % 2 == 1) {
-                            return sum + getArea(p);
-                        }
-                        return sum;
-                    });
+                total = std::accumulate(shapes.begin(), shapes.end(), 0.0, SumAreaIfOdd());
                 std::cout << total << '\n';
             }
 
@@ -239,9 +289,7 @@ int main(int argc, char* argv[]) {
                 }
                 else {
                     double sumAll = std::accumulate(shapes.begin(), shapes.end(), 0.0,
-                        [](double sum, const Polygon& p) {
-                            return sum + getArea(p);
-                        });
+                        SumArea());
                     std::cout << sumAll / shapes.size() << '\n';
                 }
             }
@@ -249,15 +297,14 @@ int main(int argc, char* argv[]) {
             else if (isNumber(arg) == true) {
                 int num = std::stoi(arg);
 
-                double res = std::accumulate(shapes.begin(), shapes.end(), 0.0,
-                    [num](double sum, const Polygon& p) {
-                        if (p.points.size() == static_cast<size_t>(num)) {
-                            return sum + getArea(p);
-                        }
-                        return sum;
-                    });
-
-                std::cout << res << '\n';
+                if (num < 3) {
+                    std::cout << "<INVALID COMMAND>" << '\n';
+                }
+                else {
+                    double res = std::accumulate(shapes.begin(), shapes.end(), 0.0,
+                        SumAreaIfVertexCount(static_cast<size_t>(num)));
+                    std::cout << res << '\n';
+                }
             }
 
             else {
@@ -288,18 +335,12 @@ int main(int argc, char* argv[]) {
             }
 
             else if (arg == "EVEN") {
-                size_t count = std::count_if(shapes.begin(), shapes.end(),
-                    [](const Polygon& p) {
-                        return p.points.size() % 2 == 0;
-                    });
+                size_t count = std::count_if(shapes.begin(), shapes.end(), IsEvenVertex());
                 std::cout << count << '\n';
             }
 
             else if (arg == "ODD") {
-                size_t count = std::count_if(shapes.begin(), shapes.end(),
-                    [](const Polygon& p) {
-                        return p.points.size() % 2 == 1;
-                    });
+                size_t count = std::count_if(shapes.begin(), shapes.end(), IsOddVertex());
                 std::cout << count << '\n';
             }
 
@@ -310,9 +351,7 @@ int main(int argc, char* argv[]) {
                 }
                 else {
                     size_t count = std::count_if(shapes.begin(), shapes.end(),
-                        [num](const Polygon& p) {
-                            return p.points.size() == static_cast<size_t>(num);
-                        });
+                        CountIfVertexCount(static_cast<size_t>(num)));
                     std::cout << count << '\n';
                 }
             }
@@ -333,18 +372,12 @@ int main(int argc, char* argv[]) {
             else if (arg == "AREA") {
 
                 if (cmd == "MAX") {
-                    auto it = std::max_element(shapes.begin(), shapes.end(),
-                        [](const Polygon& a, const Polygon& b) {
-                            return getArea(a) < getArea(b);
-                        });
+                    auto it = std::max_element(shapes.begin(), shapes.end(), CompareByArea());
                     std::cout << getArea(*it) << '\n';
                 }
 
                 else {
-                    auto it = std::min_element(shapes.begin(), shapes.end(),
-                        [](const Polygon& a, const Polygon& b) {
-                            return getArea(a) < getArea(b);
-                        });
+                    auto it = std::min_element(shapes.begin(), shapes.end(), CompareByArea());
                     std::cout << getArea(*it) << '\n';
                 }
             }
@@ -353,17 +386,13 @@ int main(int argc, char* argv[]) {
 
                 if (cmd == "MAX") {
                     auto it = std::max_element(shapes.begin(), shapes.end(),
-                        [](const Polygon& a, const Polygon& b) {
-                            return a.points.size() < b.points.size();
-                        });
+                        CompareByVertexCount());
                     std::cout << it->points.size() << '\n';
                 }
 
                 else {
                     auto it = std::min_element(shapes.begin(), shapes.end(),
-                        [](const Polygon& a, const Polygon& b) {
-                            return a.points.size() < b.points.size();
-                        });
+                        CompareByVertexCount());
                     std::cout << it->points.size() << '\n';
                 }
             }
@@ -438,9 +467,7 @@ int main(int argc, char* argv[]) {
             }
 
             int count = std::count_if(shapes.begin(), shapes.end(),
-                [&target](const Polygon& p) {
-                    return p == target;
-                });
+                std::bind(&Polygon::operator==, std::placeholders::_1, target));
 
             std::vector<Polygon> newShapes = std::accumulate(shapes.begin(), shapes.end(),
                 std::vector<Polygon>(),
@@ -463,3 +490,4 @@ int main(int argc, char* argv[]) {
 
     return 0;
 }
+
