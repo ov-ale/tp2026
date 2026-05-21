@@ -259,8 +259,9 @@ std::istream& operator>>(std::istream& in, Point& p)
 
 std::istream& operator>>(std::istream& in, Polygon& pol)
 {
-    size_t size{};
-    if (!(in >> size) || size < 3)
+    size_t size = 0;
+    in >> size;
+    if (!in || size < 3)
     {
         in.setstate(std::ios_base::failbit);
         return in;
@@ -269,12 +270,16 @@ std::istream& operator>>(std::istream& in, Polygon& pol)
     std::vector<Point> temp;
     temp.reserve(size);
 
-    std::copy_n(std::istream_iterator<Point>(in), size, std::back_inserter(temp));
-
-    if (temp.size() != size)
+    for (size_t i = 0; i < size; ++i)
     {
-        in.setstate(std::ios_base::failbit);
-        return in;
+        Point p;
+        in >> p;
+        if (!in)
+        {
+            in.setstate(std::ios_base::failbit);
+            return in;
+        }
+        temp.push_back(p);
     }
 
     pol.points = std::move(temp);
