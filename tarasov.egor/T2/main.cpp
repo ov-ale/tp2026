@@ -222,7 +222,7 @@ bool compareDataStruct(const DataStruct& first, const DataStruct& second) {
     if (std::abs(first.key1 - second.key1) > EPSILON) {
         return first.key1 < second.key1;
     }
-    
+
     if (first.key2 != second.key2) {
         return first.key2 < second.key2;
     }
