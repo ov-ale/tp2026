@@ -437,22 +437,22 @@ int main(int argc, char* argv[]) {
                 continue;
             }
 
-            int count = 0;
-            for (const auto& poly : shapes) {
-                if (poly == target) {
-                    count++;
-                }
-            }
+            int count = std::count_if(shapes.begin(), shapes.end(),
+                [&target](const Polygon& p) {
+                    return p == target;
+                });
 
-            std::vector<Polygon> newShapes;
-            for (const auto& poly : shapes) {
-                newShapes.push_back(poly);
-                if (poly == target) {
-                    newShapes.push_back(poly);
-                }
-            }
+            std::vector<Polygon> newShapes = std::accumulate(shapes.begin(), shapes.end(),
+                std::vector<Polygon>(),
+                [&target](std::vector<Polygon>& acc, const Polygon& p) {
+                    acc.push_back(p);
+                    if (p == target) {
+                        acc.push_back(p);
+                    }
+                    return acc;
+                });
+
             shapes = std::move(newShapes);
-
             std::cout << count << '\n';
         }
         else {
