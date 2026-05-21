@@ -43,6 +43,10 @@ struct Polygon {
     }
 };
 
+bool isValidPolygon(const Polygon& poly) {
+    return poly.points.size() >= 3;
+}
+
 bool readPointDirect(std::ifstream& file, Point& p) {
     char c1, c2, c3;
     if (file >> c1 && c1 == '(' && file >> p.x &&
@@ -55,6 +59,10 @@ bool readPointDirect(std::ifstream& file, Point& p) {
 }
 
 double getArea(const Polygon& poly) {
+    if (!isValidPolygon(poly)) {
+        return 0.0;
+    }
+
     double area = 0.0;
     int n = poly.points.size();
 
@@ -85,6 +93,10 @@ bool readPolygon(std::istringstream& iss, Polygon& poly) {
         return false;
     }
 
+    if (numPoints < 3) {
+        return false;
+    }
+
     std::vector<Point> points;
     for (size_t i = 0; i < numPoints; ++i) {
         char c1, c2, c3;
@@ -97,6 +109,11 @@ bool readPolygon(std::istringstream& iss, Polygon& poly) {
         else {
             return false;
         }
+    }
+
+    char leftover;
+    if (iss >> leftover) {
+        return false;
     }
 
     if (points.size() == numPoints) {
@@ -165,12 +182,12 @@ int main(int argc, char* argv[]) {
             poly.points.push_back(p);
         }
 
-        if (ok) {
+        if (ok && isValidPolygon(poly)) {
             shapes.push_back(poly);
         }
         else {
             file.clear();
-            file.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
+            file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
     }
 
@@ -184,15 +201,23 @@ int main(int argc, char* argv[]) {
             std::string arg;
             std::cin >> arg;
 
+            if (isNumber(arg)) {
+                int num = std::stoi(arg);
+                if (num < 3) {
+                    std::cout << "<INVALID COMMAND>" << '\n';
+                    continue;
+                }
+            }
+
             double total = 0.0;
 
             if (arg == "EVEN") {
                 total = std::accumulate(shapes.begin(), shapes.end(), 0.0,
                     [](double sum, const Polygon& p) {
-                    if (p.points.size() % 2 == 0) {
-                        return sum + getArea(p);
-                    }
-                    return sum;
+                        if (p.points.size() % 2 == 0) {
+                            return sum + getArea(p);
+                        }
+                        return sum;
                     });
                 std::cout << total << '\n';
             }
@@ -200,10 +225,10 @@ int main(int argc, char* argv[]) {
             else if (arg == "ODD") {
                 total = std::accumulate(shapes.begin(), shapes.end(), 0.0,
                     [](double sum, const Polygon& p) {
-                    if (p.points.size() % 2 == 1) {
-                        return sum + getArea(p);
-                    }
-                    return sum;
+                        if (p.points.size() % 2 == 1) {
+                            return sum + getArea(p);
+                        }
+                        return sum;
                     });
                 std::cout << total << '\n';
             }
@@ -215,7 +240,7 @@ int main(int argc, char* argv[]) {
                 else {
                     double sumAll = std::accumulate(shapes.begin(), shapes.end(), 0.0,
                         [](double sum, const Polygon& p) {
-                        return sum + getArea(p);
+                            return sum + getArea(p);
                         });
                     std::cout << sumAll / shapes.size() << '\n';
                 }
@@ -226,10 +251,10 @@ int main(int argc, char* argv[]) {
 
                 double res = std::accumulate(shapes.begin(), shapes.end(), 0.0,
                     [num](double sum, const Polygon& p) {
-                    if (p.points.size() == static_cast<size_t>(num)) {
-                        return sum + getArea(p);
-                    }
-                    return sum;
+                        if (p.points.size() == static_cast<size_t>(num)) {
+                            return sum + getArea(p);
+                        }
+                        return sum;
                     });
 
                 std::cout << res << '\n';
@@ -245,13 +270,27 @@ int main(int argc, char* argv[]) {
             std::cin >> arg;
 
             if (shapes.empty()) {
-                std::cout << "<INVALID COMMAND>" << '\n';
+                if (arg == "EVEN" || arg == "ODD") {
+                    std::cout << 0 << '\n';
+                }
+                else if (isNumber(arg)) {
+                    int num = std::stoi(arg);
+                    if (num < 3) {
+                        std::cout << "<INVALID COMMAND>" << '\n';
+                    }
+                    else {
+                        std::cout << 0 << '\n';
+                    }
+                }
+                else {
+                    std::cout << "<INVALID COMMAND>" << '\n';
+                }
             }
 
             else if (arg == "EVEN") {
                 size_t count = std::count_if(shapes.begin(), shapes.end(),
                     [](const Polygon& p) {
-                    return p.points.size() % 2 == 0;
+                        return p.points.size() % 2 == 0;
                     });
                 std::cout << count << '\n';
             }
@@ -259,18 +298,23 @@ int main(int argc, char* argv[]) {
             else if (arg == "ODD") {
                 size_t count = std::count_if(shapes.begin(), shapes.end(),
                     [](const Polygon& p) {
-                    return p.points.size() % 2 == 1;
+                        return p.points.size() % 2 == 1;
                     });
                 std::cout << count << '\n';
             }
 
             else if (isNumber(arg)) {
                 int num = std::stoi(arg);
-                size_t count = std::count_if(shapes.begin(), shapes.end(),
-                    [num](const Polygon& p) {
-                    return p.points.size() == static_cast<size_t>(num);
-                    });
-                std::cout << count << '\n';
+                if (num < 3) {
+                    std::cout << "<INVALID COMMAND>" << '\n';
+                }
+                else {
+                    size_t count = std::count_if(shapes.begin(), shapes.end(),
+                        [num](const Polygon& p) {
+                            return p.points.size() == static_cast<size_t>(num);
+                        });
+                    std::cout << count << '\n';
+                }
             }
 
             else {
@@ -291,7 +335,7 @@ int main(int argc, char* argv[]) {
                 if (cmd == "MAX") {
                     auto it = std::max_element(shapes.begin(), shapes.end(),
                         [](const Polygon& a, const Polygon& b) {
-                        return getArea(a) < getArea(b);
+                            return getArea(a) < getArea(b);
                         });
                     std::cout << getArea(*it) << '\n';
                 }
@@ -299,7 +343,7 @@ int main(int argc, char* argv[]) {
                 else {
                     auto it = std::min_element(shapes.begin(), shapes.end(),
                         [](const Polygon& a, const Polygon& b) {
-                        return getArea(a) < getArea(b);
+                            return getArea(a) < getArea(b);
                         });
                     std::cout << getArea(*it) << '\n';
                 }
@@ -310,7 +354,7 @@ int main(int argc, char* argv[]) {
                 if (cmd == "MAX") {
                     auto it = std::max_element(shapes.begin(), shapes.end(),
                         [](const Polygon& a, const Polygon& b) {
-                        return a.points.size() < b.points.size();
+                            return a.points.size() < b.points.size();
                         });
                     std::cout << it->points.size() << '\n';
                 }
@@ -318,7 +362,7 @@ int main(int argc, char* argv[]) {
                 else {
                     auto it = std::min_element(shapes.begin(), shapes.end(),
                         [](const Polygon& a, const Polygon& b) {
-                        return a.points.size() < b.points.size();
+                            return a.points.size() < b.points.size();
                         });
                     std::cout << it->points.size() << '\n';
                 }
@@ -333,23 +377,16 @@ int main(int argc, char* argv[]) {
             std::string line;
             std::getline(std::cin, line);
 
-            size_t pos = 0;
-            while (pos < line.length() && !isdigit(line[pos])) {
-                pos++;
-            }
+            std::istringstream iss(line);
 
-            if (pos >= line.length()) {
+            Polygon target;
+            if (!readPolygon(iss, target)) {
                 std::cout << "<INVALID COMMAND>" << '\n';
                 continue;
             }
 
-            std::istringstream iss(line);
-            for (size_t i = 0; i < pos; i++) {
-                iss.get();
-            }
-
-            Polygon target;
-            if (!readPolygon(iss, target)) {
+            char leftover;
+            if (iss >> leftover) {
                 std::cout << "<INVALID COMMAND>" << '\n';
                 continue;
             }
@@ -389,7 +426,37 @@ int main(int argc, char* argv[]) {
                 std::cout << count << '\n';
             }
         }
+        else if (cmd == "ECHO") {
+            std::string line;
+            std::getline(std::cin, line);
+            std::istringstream iss(line);
+
+            Polygon target;
+            if (!readPolygon(iss, target)) {
+                std::cout << "<INVALID COMMAND>" << '\n';
+                continue;
+            }
+
+            int count = 0;
+            for (const auto& poly : shapes) {
+                if (poly == target) {
+                    count++;
+                }
+            }
+
+            std::vector<Polygon> newShapes;
+            for (const auto& poly : shapes) {
+                newShapes.push_back(poly);
+                if (poly == target) {
+                    newShapes.push_back(poly);
+                }
+            }
+            shapes = std::move(newShapes);
+
+            std::cout << count << '\n';
+        }
         else {
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             std::cout << "<INVALID COMMAND>" << '\n';
         }
     }
