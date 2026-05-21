@@ -15,6 +15,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <cmath>
 
 struct DataStruct {
     double    key1;
@@ -35,10 +36,6 @@ struct SLLLiteralIO {
 };
 
 struct StringIO {
-    std::string& ref;
-};
-
-struct LabelIO {
     std::string& ref;
 };
 
@@ -71,7 +68,6 @@ std::istream& operator>>(std::istream& in, DelimiterIO&& dest);
 std::istream& operator>>(std::istream& in, DoubleLiteralIO&& dest);
 std::istream& operator>>(std::istream& in, SLLLiteralIO&& dest);
 std::istream& operator>>(std::istream& in, StringIO&& dest);
-std::istream& operator>>(std::istream& in, LabelIO&& dest);
 std::istream& operator>>(std::istream& in, DataStruct& dest);
 std::ostream& operator<<(std::ostream& out, const DataStruct& src);
 
@@ -79,7 +75,7 @@ std::istream& operator>>(std::istream& in, DelimiterIO&& dest) {
     std::istream::sentry sentry(in);
     if (!sentry) return in;
 
-    char c = '0';
+    char c = '\0';
     in >> c;
     if (in && c != dest.exp) {
         in.setstate(std::ios::failbit);
@@ -91,53 +87,18 @@ std::istream& operator>>(std::istream& in, DoubleLiteralIO&& dest) {
     std::istream::sentry sentry(in);
     if (!sentry) return in;
 
-    bool negative = false;
-    if (in.peek() == '-') {
-        negative = true;
-        in.get();
-    }
-    else if (in.peek() == '+') {
-        in.get();
-    }
+    double val = 0.0;
+    in >> val;
+    if (!in) return in;
 
-    std::string integer_part;
-    while (std::isdigit(static_cast<unsigned char>(in.peek()))) {
-        integer_part.push_back(static_cast<char>(in.get()));
-    }
-    if (integer_part.empty()) {
+    char suffix = '\0';
+    in.get(suffix);
+    if (!in || (suffix != 'd' && suffix != 'D')) {
         in.setstate(std::ios::failbit);
         return in;
     }
 
-    if (in.peek() != '.') {
-        in.setstate(std::ios::failbit);
-        return in;
-    }
-    in.get();
-
-    std::string frac_part;
-    while (std::isdigit(static_cast<unsigned char>(in.peek()))) {
-        frac_part.push_back(static_cast<char>(in.get()));
-    }
-    if (frac_part.empty()) {
-        in.setstate(std::ios::failbit);
-        return in;
-    }
-
-    char suffix = static_cast<char>(in.peek());
-    if (suffix != 'd' && suffix != 'D') {
-        in.setstate(std::ios::failbit);
-        return in;
-    }
-    in.get();
-
-    try {
-        std::string raw = (negative ? "-" : "") + integer_part + "." + frac_part;
-        dest.ref = std::stod(raw);
-    }
-    catch (...) {
-        in.setstate(std::ios::failbit);
-    }
+    dest.ref = val;
     return in;
 }
 
@@ -145,62 +106,50 @@ std::istream& operator>>(std::istream& in, SLLLiteralIO&& dest) {
     std::istream::sentry sentry(in);
     if (!sentry) return in;
 
-    bool negative = false;
-    if (in.peek() == '-') {
-        negative = true;
-        in.get();
-    }
-    else if (in.peek() == '+') {
-        in.get();
-    }
+    long long val = 0;
+    in >> val;
+    if (!in) return in;
 
-    std::string digits;
-    while (std::isdigit(static_cast<unsigned char>(in.peek()))) {
-        digits.push_back(static_cast<char>(in.get()));
-    }
-    if (digits.empty()) {
-        in.setstate(std::ios::failbit);
-        return in;
-    }
-
-    char l1 = static_cast<char>(in.get());
-    char l2 = static_cast<char>(in.get());
+    char l1 = '\0';
+    char l2 = '\0';
+    in.get(l1);
+    in.get(l2);
     if (!in || !((l1 == 'l' && l2 == 'l') || (l1 == 'L' && l2 == 'L'))) {
         in.setstate(std::ios::failbit);
         return in;
     }
 
-    try {
-        std::string raw = (negative ? "-" : "") + digits;
-        dest.ref = std::stoll(raw);
-    }
-    catch (...) {
-        in.setstate(std::ios::failbit);
-    }
-
+    dest.ref = val;
     return in;
 }
 
 std::istream& operator>>(std::istream& in, StringIO&& dest) {
     std::istream::sentry sentry(in);
     if (!sentry) return in;
-    return std::getline(in >> DelimiterIO{'"'}, dest.ref, '"');
-}
 
-std::istream& operator>>(std::istream& in, LabelIO&& dest) {
-    std::istream::sentry sentry(in);
-    if (!sentry) return in;
+    in >> DelimiterIO{'"'};
+    if (!in) return in;
 
-    dest.ref.clear();
-    char c = '0';
-    while (in.get(c) && !std::isspace(static_cast<unsigned char>(c))) {
-        dest.ref.push_back(c);
+    char c = '\0';
+    while (in.get(c)) {
+        if (c == '\\') {
+            char next = '\0';
+            if (in.get(next)) {
+                if (next == '"') {
+                    dest.ref.push_back('"');
+                } else {
+                    dest.ref.push_back('\\');
+                    dest.ref.push_back(next);
+                }
+            }
+        } else if (c == '"') {
+            return in;
+        } else {
+            dest.ref.push_back(c);
+        }
     }
 
-    if (!in || in.peek() == ' ' || dest.ref.empty()) {
-        in.setstate(std::ios::failbit);
-    }
-
+    in.setstate(std::ios::failbit);
     return in;
 }
 
@@ -217,23 +166,20 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
     if (!in) return in;
 
     while (in && in.peek() != ')') {
-        std::string field_name;
-        in >> LabelIO{field_name};
+        std::string key;
+        in >> key;
         if (!in) return in;
 
-        if (field_name == "key1" && !has_key1) {
+        if (key == "key1" && !has_key1) {
             in >> DoubleLiteralIO{obj.key1};
             has_key1 = true;
-        }
-        else if (field_name == "key2" && !has_key2) {
+        } else if (key == "key2" && !has_key2) {
             in >> SLLLiteralIO{obj.key2};
             has_key2 = true;
-        }
-        else if (field_name == "key3" && !has_key3) {
+        } else if (key == "key3" && !has_key3) {
             in >> StringIO{obj.key3};
             has_key3 = true;
-        }
-        else {
+        } else {
             in.setstate(std::ios::failbit);
             return in;
         }
@@ -247,8 +193,7 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
 
     if (in && has_key1 && has_key2 && has_key3) {
         dest = std::move(obj);
-    }
-    else {
+    } else {
         in.setstate(std::ios::failbit);
     }
 
@@ -273,10 +218,11 @@ std::ostream& operator<<(std::ostream& out, const DataStruct& src) {
 }
 
 bool compareDataStruct(const DataStruct& first, const DataStruct& second) {
-    if (first.key1 != second.key1) {
+    const double EPSILON = 1e-9;
+    if (std::abs(first.key1 - second.key1) > EPSILON) {
         return first.key1 < second.key1;
     }
-
+    
     if (first.key2 != second.key2) {
         return first.key2 < second.key2;
     }
