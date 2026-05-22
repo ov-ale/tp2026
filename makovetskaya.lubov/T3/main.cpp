@@ -11,6 +11,7 @@
 #include <limits>
 #include <iterator>
 #include <exception>
+#include <cassert>
 
 using namespace std::placeholders;
 
@@ -109,15 +110,6 @@ bool countEven(const Polygon& p) { return isEven(p); }
 bool countOdd(const Polygon& p) { return isOdd(p); }
 bool countByVertex(const Polygon& p, size_t n) { return hasVertexCount(p, n); }
 
-struct IsDuplicateOfTarget {
-    const Polygon& target;
-    explicit IsDuplicateOfTarget(const Polygon& t) : target(t) {}
-
-    bool operator()(const Polygon& prev, const Polygon& curr) const {
-        return prev == target && curr == target;
-    }
-};
-
 struct RemoveDuplicate {
     const Polygon& target;
     explicit RemoveDuplicate(const Polygon& t) : target(t) {}
@@ -126,7 +118,10 @@ struct RemoveDuplicate {
         std::reference_wrapper<std::vector<Polygon>> res,
         const Polygon& curr) const {
         std::vector<Polygon>& vec = res.get();
-        if (!(curr == target && vec.back() == target)) {
+        if (vec.empty()) {
+            vec.push_back(curr);
+        }
+        else if (!(curr == target && vec.back() == target)) {
             vec.push_back(curr);
         }
         return res;
@@ -197,8 +192,6 @@ struct MergeBoxes {
 };
 
 BoundingBox getGlobalBoundingBox(const std::vector<Polygon>& polys) {
-    if (polys.empty()) return BoundingBox();
-
     BoundingBox global = getBoundingBox(polys[0]);
     global = std::accumulate(polys.begin() + 1, polys.end(), global, MergeBoxes());
     return global;
@@ -307,7 +300,14 @@ int main(int argc, char* argv[]) {
 
         else if (command == "MIN") {
             std::string mode;
-            if (!(std::cin >> mode) || polys.empty()) {
+            if (!(std::cin >> mode)) {
+                std::cout << "<INVALID COMMAND>\n";
+                std::cin.clear();
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                continue;
+            }
+
+            if (polys.empty()) {
                 std::cout << "<INVALID COMMAND>\n";
                 std::cin.clear();
                 std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -335,7 +335,14 @@ int main(int argc, char* argv[]) {
 
         else if (command == "MAX") {
             std::string mode;
-            if (!(std::cin >> mode) || polys.empty()) {
+            if (!(std::cin >> mode)) {
+                std::cout << "<INVALID COMMAND>\n";
+                std::cin.clear();
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                continue;
+            }
+
+            if (polys.empty()) {
                 std::cout << "<INVALID COMMAND>\n";
                 std::cin.clear();
                 std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -416,9 +423,7 @@ int main(int argc, char* argv[]) {
             }
 
             int removed = countConsecutiveDuplicates(polys, target);
-
             polys = removeConsecutiveDuplicates(polys, target);
-
             std::cout << removed << "\n";
         }
 
@@ -439,7 +444,7 @@ int main(int argc, char* argv[]) {
             }
 
             if (polys.empty()) {
-                std::cout << "<FALSE>\n";
+                std::cout << "<INVALID COMMAND>\n";
                 continue;
             }
 
