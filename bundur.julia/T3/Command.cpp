@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <limits>
 #include <string>
+#include <stdexcept>
 struct MaxSeqState {
     Polygon target;
     int current_streak=0;
@@ -46,6 +47,9 @@ void processCommands(const std::vector<Polygon>& polygons) {
             else {
                 try {
                     size_t vertexCount=std::stoull(arg);
+                    if (vertexCount<3) {
+                        throw std::invalid_argument("invalid vertex count");
+                    }
                     double sum=std::accumulate(polygons.begin(), polygons.end(), 0.0,
                         [vertexCount](double acc, const Polygon& p) {
                             return (p.points.size()==vertexCount)?acc+getPolygonArea(p):acc;
@@ -61,7 +65,7 @@ void processCommands(const std::vector<Polygon>& polygons) {
         }
         else if (cmd=="MAX" || cmd=="MIN") {
             std::string arg;
-            std::cin>>arg;
+            std::cin >> arg;
             if (polygons.empty()) {
                 std::cout<<"<INVALID COMMAND>\n";
                 continue;
@@ -69,10 +73,10 @@ void processCommands(const std::vector<Polygon>& polygons) {
             bool isMax=(cmd=="MAX");
             if (arg=="AREA") {
                 auto cmp=[](const Polygon& a, const Polygon& b) {
-                    return getPolygonArea(a) < getPolygonArea(b);
+                    return getPolygonArea(a)<getPolygonArea(b);
                 };
                 auto it=isMax?std::max_element(polygons.begin(), polygons.end(), cmp)
-                            :std::min_element(polygons.begin(), polygons.end(), cmp);
+                             :std::min_element(polygons.begin(), polygons.end(), cmp);
                 std::cout<<getPolygonArea(*it)<<"\n";
             }
             else if (arg=="VERTEXES") {
@@ -103,6 +107,9 @@ void processCommands(const std::vector<Polygon>& polygons) {
             else {
                 try {
                     size_t vertexCount=std::stoull(arg);
+                    if (vertexCount<3) {
+                        throw std::invalid_argument("invalid vertex count");
+                    }
                     std::cout<<std::count_if(polygons.begin(), polygons.end(),
                         [vertexCount](const Polygon& p) { return p.points.size()==vertexCount; })<<"\n";
                 }
@@ -114,11 +121,17 @@ void processCommands(const std::vector<Polygon>& polygons) {
             }
         }
         else if (cmd=="RECTS") {
-            std::cout<<std::count_if(polygons.begin(), polygons.end(), isRectangle)<<"\n";
+            std::cout<<std::count_if(polygons.begin(), polygons.end(), isRectangle) << "\n";
         }
         else if (cmd=="MAXSEQ") {
             Polygon target;
             if (std::cin>>target) {
+                std::string trailing;
+                std::getline(std::cin, trailing);
+                if (trailing.find_first_not_of(" \t\r")!=std::string::npos) {
+                    std::cout<<"<INVALID COMMAND>\n";
+                    continue;
+                }
                 auto updateMaxSeq=[](MaxSeqState state, const Polygon& p) {
                     if (p==state.target) {
                         state.current_streak++;
