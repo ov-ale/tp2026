@@ -8,6 +8,7 @@
 #include <limits>
 #include <iomanip>
 #include <algorithm>
+#include <iterator>
 #include <functional>
 #include <sstream>
 #include <cctype>
@@ -31,12 +32,7 @@ struct Polygon {
         if (points.size() != other.points.size()) {
             return false;
         }
-        for (size_t i = 0; i < points.size(); ++i) {
-            if (points[i] != other.points[i]) {
-                return false;
-            }
-        }
-        return true;
+        return std::equal(points.begin(), points.end(), other.points.begin());
     }
 
     bool operator!=(const Polygon& other) const {
@@ -48,47 +44,61 @@ bool isValidPolygon(const Polygon& poly) {
     return poly.points.size() >= 3;
 }
 
-bool readPointDirect(std::ifstream& file, Point& p) {
+std::istream& operator>>(std::istream& in, Point& p) {
     char c1, c2, c3;
-    if (file >> c1 && c1 == '(' && file >> p.x &&
-        file >> c2 && c2 == ';' && file >> p.y &&
-        file >> c3 && c3 == ')')
-    {
-        return true;
+    if (in >> c1 && c1 == '(' && in >> p.x &&
+        in >> c2 && c2 == ';' && in >> p.y &&
+        in >> c3 && c3 == ')') {
     }
-    return false;
+    else {
+        in.setstate(std::ios::failbit);
+    }
+    return in;
 }
+
+struct AreaCalculator {
+    const Polygon& poly;
+    size_t n;
+    size_t i = 0;
+
+    double operator()(double sum, const Point& p1) {
+        const Point& p2 = poly.points[(i + 1) % n];
+        double step = (p1.x * p2.y) - (p1.y * p2.x);
+        i++;
+        return sum + step;
+    }
+};
 
 double getArea(const Polygon& poly) {
     if (!isValidPolygon(poly)) {
         return 0.0;
     }
 
-    double area = 0.0;
-    int n = poly.points.size();
-
-    for (int i = 0; i < n; ++i) {
-        area += (poly.points[i].x * poly.points[(i + 1) % n].y);
-        area -= (poly.points[(i + 1) % n].x * poly.points[i].y);
-    }
+    double area = std::accumulate(poly.points.begin(), poly.points.end(), 0.0,
+        AreaCalculator{ poly, poly.points.size() });
 
     return std::abs(area) / 2.0;
 }
+
+struct IsNotDigit {
+    bool operator()(char c) const {
+        return c < '0' || c > '9';
+    }
+};
 
 bool isNumber(const std::string& s) {
     if (s.empty()) {
         return false;
     }
 
-    for (size_t i = 0; i < s.length(); ++i) {
-        if (s[i] < '0' || s[i] > '9') {
-            return false;
-        }
-    }
-    return true;
+    return std::find_if(s.begin(), s.end(), IsNotDigit()) == s.end();
 }
 
 bool readPolygon(std::istringstream& iss, Polygon& poly) {
+    if (!iss.good()) {
+        return false;
+    }
+
     size_t numPoints;
     if (!(iss >> numPoints)) {
         return false;
@@ -98,18 +108,16 @@ bool readPolygon(std::istringstream& iss, Polygon& poly) {
         return false;
     }
 
-    std::vector<Point> points;
-    for (size_t i = 0; i < numPoints; ++i) {
-        char c1, c2, c3;
-        int x, y;
-        if (iss >> c1 && c1 == '(' && iss >> x &&
-            iss >> c2 && c2 == ';' && iss >> y &&
-            iss >> c3 && c3 == ')') {
-            points.push_back({ x, y });
-        }
-        else {
-            return false;
-        }
+    std::vector<Point> points(numPoints);
+
+    if (!iss.good()) {
+        return false;
+    }
+
+    std::copy_n(std::istream_iterator<Point>(iss), numPoints, points.begin());
+
+    if (iss.fail()) {
+        return false;
     }
 
     char leftover;
@@ -117,11 +125,8 @@ bool readPolygon(std::istringstream& iss, Polygon& poly) {
         return false;
     }
 
-    if (points.size() == numPoints) {
-        poly.points = points;
-        return true;
-    }
-    return false;
+    poly.points = points;
+    return true;
 }
 
 bool isRectangle(const Polygon& poly) {
@@ -223,6 +228,21 @@ struct CompareByVertexCount {
     }
 };
 
+struct PointReader {
+    std::ifstream& file;
+    bool& ok;
+
+    PointReader(std::ifstream& f, bool& o) : file(f), ok(o) {}
+
+    Point operator()(const Point&) const {
+        Point p;
+        if (ok && !(file >> p)) {
+            ok = false;
+        }
+        return p;
+    }
+};
+
 int main(int argc, char* argv[]) {
     if (argc < 2) {
         std::cerr << "Error: filename not specified" << '\n';
@@ -243,13 +263,13 @@ int main(int argc, char* argv[]) {
         Polygon poly;
         bool ok = true;
 
-        for (size_t i = 0; i < numPoints; ++i) {
-            Point p;
-            if (!readPointDirect(file, p)) {
-                ok = false;
-                break;
-            }
-            poly.points.push_back(p);
+        poly.points.resize(numPoints);
+
+        std::transform(poly.points.begin(), poly.points.end(), poly.points.begin(),
+            PointReader(file, ok));
+
+        if (!ok) {
+            poly.points.clear();
         }
 
         if (ok && isValidPolygon(poly)) {
@@ -490,4 +510,3 @@ int main(int argc, char* argv[]) {
 
     return 0;
 }
-
