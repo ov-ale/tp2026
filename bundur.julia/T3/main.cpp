@@ -10,7 +10,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     std::ifstream file(argv[1]);
-    if (!file) {
+    if (!file.is_open()) {
         std::cerr<<"Error: Could not open file\n";
         return 1;
     }
