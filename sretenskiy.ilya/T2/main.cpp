@@ -59,12 +59,12 @@ std::istream& operator>>(std::istream& in, DoubleIO&& dest)
 
     if (in.peek() == '+' || in.peek() == '-')
     {
-        numStr += (char)in.get();
+        numStr += static_cast<char>(in.get());
     }
 
     while (in.get(c))
     {
-        if (std::isdigit(c))
+        if (std::isdigit(static_cast<unsigned char>(c)))
         {
             numStr += c;
             if (hasDot) hasDigitsAfter = true;
@@ -98,13 +98,13 @@ std::istream& operator>>(std::istream& in, DoubleIO&& dest)
 
     if (in.peek() == '+' || in.peek() == '-')
     {
-        numStr += (char)in.get();
+        numStr += static_cast<char>(in.get());
     }
 
     bool hasExpDigits = false;
-    while (in && std::isdigit(in.peek()))
+    while (in && std::isdigit(static_cast<unsigned char>(in.peek())))
     {
-        numStr += (char)in.get();
+        numStr += static_cast<char>(in.get());
         hasExpDigits = true;
     }
 
@@ -132,10 +132,16 @@ std::istream& operator>>(std::istream& in, CharIO&& dest)
     if (!sentry) return in;
     char quote1, quote2;
     in >> quote1;
-    if (quote1 != '\'') { in.setstate(std::ios::failbit); return in; }
+    if (quote1 != '\'')
+    {
+        in.setstate(std::ios::failbit); return in;
+    }
     in >> std::noskipws >> dest.ref >> std::skipws;
     in >> quote2;
-    if (quote2 != '\'') { in.setstate(std::ios::failbit); return in; }
+    if (quote2 != '\'')
+    {
+        in.setstate(std::ios::failbit); return in;
+    }
     return in;
 }
 
@@ -155,7 +161,7 @@ std::istream& operator>>(std::istream& in, DataStruct& dest)
     std::istream::sentry sentry(in);
     if (!sentry) return in;
 
-    while (std::isspace(in.peek())) in.get();
+    while (std::isspace(static_cast<unsigned char>(in.peek()))) in.get();
 
     char openBracket;
     if (!(in >> openBracket) || openBracket != '(')
@@ -170,7 +176,7 @@ std::istream& operator>>(std::istream& in, DataStruct& dest)
 
     while (in)
     {
-        while (std::isspace(in.peek())) in.get();
+        while (std::isspace(static_cast<unsigned char>(in.peek()))) in.get();
 
         if (in.peek() == ')') break;
         if (in.peek() != ':') { isValid = false; break; }
@@ -179,9 +185,9 @@ std::istream& operator>>(std::istream& in, DataStruct& dest)
         if (in.peek() == ')') break;
 
         std::string label;
-        while (in && (std::isalpha(in.peek()) || std::isdigit(in.peek())))
+        while (in && (std::isalpha(static_cast<unsigned char>(in.peek())) || std::isdigit(static_cast<unsigned char>(in.peek()))))
         {
-            label += (char)in.get();
+            label += static_cast<char>(in.get());
         }
 
         if (in.peek() != ' ') { isValid = false; break; }
@@ -208,7 +214,7 @@ std::istream& operator>>(std::istream& in, DataStruct& dest)
         }
     }
 
-    while (std::isspace(in.peek())) in.get();
+    while (std::isspace(static_cast<unsigned char>(in.peek()))) in.get();
 
     char closingBracket;
     if (isValid && foundKey1 && foundKey2 && foundKey3 && (in >> closingBracket) && closingBracket == ')')
@@ -288,3 +294,4 @@ int main()
 
     return 0;
 }
+
