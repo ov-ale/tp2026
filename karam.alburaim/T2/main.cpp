@@ -89,7 +89,7 @@ namespace lab2 {
             }
             is >> CharGuard{':'};
         }
-        
+
         is >> CharGuard{')'};
 
         if (is && keysMask == 7) {
@@ -106,12 +106,12 @@ namespace lab2 {
         if (!sentry) return os;
 
         StreamStateSaver saver(os);
-        
+
         os << "(:key1 " << src.key1 << "ull"
            << ":key2 #c(" << std::fixed << std::setprecision(1)
            << src.key2.real() << " " << src.key2.imag() << ")"
            << ":key3 " << std::quoted(src.key3) << ":)";
-           
+
         return os;
     }
 }
