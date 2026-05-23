@@ -114,6 +114,16 @@ std::istream& operator>>(std::istream& is, Point& p) {
     return is;
 }
 
+bool Garbage() {
+    char c;
+    while (std::cin.get(c) && (c == ' ' || c == '\t' || c == '\r')) {}
+    if (c != '\n' && c != EOF) {
+        std::cin.putback(c);
+        return true;
+    }
+    return false;
+}
+
 void skipInvalid() {
     std::cout << "<INVALID COMMAND>\n";
     std::cin.clear();
@@ -241,12 +251,14 @@ int main(int argc, char* argv[]) {
             else {
                 Polygon target;
                 bool valid = true;
-                for (size_t i = 0; i < num; ++i) {
+                size_t count = 0;
+                while (count < num) {
                     Point p;
                     if (!(std::cin >> p)) { valid = false; break; }
                     target.points.push_back(p);
+                    count++;
                 }
-                if (valid) {
+                if (valid && !Garbage()) {
                     size_t oldSize = polygons.size();
                     auto bindTarget = std::bind(isConsecutiveTarget,
                                                 std::placeholders::_1,
@@ -265,12 +277,14 @@ int main(int argc, char* argv[]) {
             else {
                 Polygon target;
                 bool valid = true;
-                for (size_t i = 0; i < num; ++i) {
+                size_t count = 0;
+                while (count < num) {
                     Point p;
                     if (!(std::cin >> p)) { valid = false; break; }
                     target.points.push_back(p);
+                    count++;
                 }
-                if (valid) {
+                if (valid && !Garbage()) {
                     auto bindSame = std::bind(isSame,
                                               std::placeholders::_1,
                                               target);
