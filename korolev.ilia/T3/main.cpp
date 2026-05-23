@@ -236,16 +236,15 @@ int main(int argc, char* argv[]) {
             }
         }
         else if (cmd == "RMECHO") {
-            Polygon target;
             size_t num;
-            if (std::cin >> num && num >= 3) {
-                size_t count = 0;
-                Point p;
+            if (!(std::cin >> num) || num < 3) skipInvalid();
+            else {
+                Polygon target;
                 bool valid = true;
-                while (count < num) {
+                for (size_t i = 0; i < num; ++i) {
+                    Point p;
                     if (!(std::cin >> p)) { valid = false; break; }
                     target.points.push_back(p);
-                    count++;
                 }
                 if (valid) {
                     size_t oldSize = polygons.size();
@@ -258,27 +257,28 @@ int main(int argc, char* argv[]) {
                     polygons.erase(it, polygons.end());
                     std::cout << (oldSize - polygons.size()) << "\n";
                 } else skipInvalid();
-            } else skipInvalid();
+            }
         }
         else if (cmd == "SAME") {
-            Polygon target;
             size_t num;
-            if (std::cin >> num && num >= 3) {
-                size_t count = 0;
-                Point p;
+            if (!(std::cin >> num) || num < 3) skipInvalid();
+            else {
+                Polygon target;
                 bool valid = true;
-                while (count < num) {
+                for (size_t i = 0; i < num; ++i) {
+                    Point p;
                     if (!(std::cin >> p)) { valid = false; break; }
                     target.points.push_back(p);
-                    count++;
                 }
                 if (valid) {
                     auto bindSame = std::bind(isSame,
-                                              std::placeholders::_1, target);
+                                              std::placeholders::_1,
+                                              target);
                     std::cout << std::count_if(polygons.begin(),
-                                               polygons.end(), bindSame) << "\n";
+                                               polygons.end(),
+                                               bindSame) << "\n";
                 } else skipInvalid();
-            } else skipInvalid();
+            }
         }
         else skipInvalid();
     }
