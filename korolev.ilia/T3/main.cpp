@@ -8,110 +8,93 @@
 #include <iomanip>
 #include <limits>
 
-struct Point {
-    int x, y;
-};
+struct Point { int x, y; };
+struct Polygon { std::vector<Point> points; };
 
-struct Polygon {
-    std::vector<Point> points;
-};
+bool comparePoints(const Point& p1, const Point& p2) {
+    return p1.x == p2.x && p1.y == p2.y;
+}
+
+int addAreaTerm(int acc, size_t i, const Polygon& poly) {
+    size_t next = (i + 1) % poly.points.size();
+    return acc + (poly.points[i].x * poly.points[next].y -
+                  poly.points[next].x * poly.points[i].y);
+}
 
 double getArea(const Polygon& poly) {
     if (poly.points.size() < 3) return 0.0;
-    size_t n = poly.points.size();
-    std::vector<size_t> indices(n);
-    std::iota(indices.begin(), indices.end(), 0);
-    int doubleArea = std::accumulate(
-        indices.begin(),
-        indices.end(),
-        0,
-        [&](int acc, size_t i) {
-            size_t next = (i + 1) % n;
-            return acc + (poly.points[i].x * poly.points[next].y -
-                          poly.points[next].x * poly.points[i].y);
-        }
-    );
+    int doubleArea = 0;
+    for (size_t i = 0; i < poly.points.size(); ++i) {
+        doubleArea = addAreaTerm(doubleArea, i, poly);
+    }
     return std::abs(doubleArea) / 2.0;
 }
 
 bool areIdentical(const Polygon& a, const Polygon& b) {
     if (a.points.size() != b.points.size()) return false;
-    return std::equal(
-        a.points.begin(),
-        a.points.end(),
-        b.points.begin(),
-        [](const Point& p1, const Point& p2) {
-            return p1.x == p2.x && p1.y == p2.y;
-        }
-    );
+    return std::equal(a.points.begin(), a.points.end(),
+                      b.points.begin(), comparePoints);
+}
+
+bool checkShift(const Polygon& a, const Polygon& b, size_t i, bool forward) {
+    size_t n = a.points.size();
+    int dx = b.points[0].x - a.points[i].x;
+    int dy = b.points[0].y - a.points[i].y;
+    for (size_t j = 0; j < n; ++j) {
+        size_t a_idx = forward ? (i + j) % n : (i + n - j) % n;
+        if ((b.points[j].x != a.points[a_idx].x + dx) ||
+            (b.points[j].y != a.points[a_idx].y + dy)) return false;
+    }
+    return true;
 }
 
 bool isSame(const Polygon& a, const Polygon& b) {
     if (a.points.size() != b.points.size()) return false;
-    size_t n = a.points.size();
-    std::vector<size_t> indices(n);
-    std::iota(indices.begin(), indices.end(), 0);
-    return std::any_of(
-        indices.begin(),
-        indices.end(),
-        [&](size_t i) {
-            int dx = b.points[0].x - a.points[i].x;
-            int dy = b.points[0].y - a.points[i].y;
-            bool forward = std::all_of(
-                indices.begin(),
-                indices.end(),
-                [&](size_t j) {
-                    size_t a_idx = (i + j) % n;
-                    return (b.points[j].x == a.points[a_idx].x + dx) &&
-                           (b.points[j].y == a.points[a_idx].y + dy);
-                }
-            );
-            if (forward) return true;
-            return std::all_of(
-                indices.begin(),
-                indices.end(),
-                [&](size_t j) {
-                    size_t a_idx = (i + n - j) % n;
-                    return (b.points[j].x == a.points[a_idx].x + dx) &&
-                           (b.points[j].y == a.points[a_idx].y + dy);
-                }
-            );
-        }
-    );
+    for (size_t i = 0; i < a.points.size(); ++i) {
+        if (checkShift(a, b, i, true) || checkShift(a, b, i, false))
+            return true;
+    }
+    return false;
+}
+
+bool readSinglePoint(std::istream& in, Point& p) {
+    char c1, c2, c3;
+    return (in >> c1 && c1 == '(' && in >> p.x >> c2 &&
+            c2 == ';' && in >> p.y >> c3 && c3 == ')');
 }
 
 bool readPolygon(std::istream& in, Polygon& poly) {
     size_t num;
     if (!(in >> num) || num < 3) return false;
     poly.points.resize(num);
-    bool success = std::all_of(poly.points.begin(), poly.points.end(), [&](Point& p) {
-        char c1, c2, c3;
-        return (in >> c1 && c1 == '(' && in >> p.x >> c2
-            && c2 == ';' && in >> p.y >> c3 && c3 == ')');
-    });
-    if (!success) return false;
-    if (in >> std::ws && in.peek() == '(') {
-        return false;
+    for (size_t i = 0; i < num; ++i) {
+        if (!readSinglePoint(in, poly.points[i])) return false;
+    }
+    char next;
+    while (in.get(next)) {
+        if (next == '\n') return true;
+        if (next != ' ' && next != '\t') return false;
     }
     return true;
 }
 
 bool isNumber(const std::string& s) {
-    return !s.empty() && std::all_of(s.begin(), s.end(), ::isdigit);
+    if (s.empty()) return false;
+    for (char const &c : s) if (!std::isdigit(c)) return false;
+    return true;
 }
 
-void skipInvalid() {
+void skipInvalid(std::istream& in) {
     std::cout << "<INVALID COMMAND>\n";
-    std::cin.clear();
-    std::cin.ignore(
-        std::numeric_limits<std::streamsize>::max(),
-        '\n'
-    );
+    in.clear();
+    in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
+
+bool isEvenSize(const Polygon& p) { return p.points.size() % 2 == 0; }
+bool isOddSize(const Polygon& p) { return p.points.size() % 2 != 0; }
 
 int main(int argc, char* argv[]) {
     if (argc < 2) return 1;
-
     std::ifstream file(argv[1]);
     if (!file.is_open()) return 1;
 
@@ -124,12 +107,7 @@ int main(int argc, char* argv[]) {
             poly.points.resize(num);
             bool valid = true;
             for (size_t i = 0; i < num; ++i) {
-                char c1, c2, c3;
-                if (!(file >> c1 && c1 == '(' &&
-                      file >> poly.points[i].x >> c2 &&
-                      c2 == ';' &&
-                      file >> poly.points[i].y >> c3 &&
-                      c3 == ')')) {
+                if (!readSinglePoint(file, poly.points[i])) {
                     valid = false;
                     file.clear();
                     break;
@@ -151,195 +129,92 @@ int main(int argc, char* argv[]) {
         if (cmd == "AREA") {
             std::string arg;
             if (!(std::cin >> arg)) continue;
-            if (arg == "EVEN") {
-                double res = std::accumulate(
-                    polygons.begin(),
-                    polygons.end(),
-                    0.0,
-                    [](double acc, const Polygon& p) {
-                        return p.points.size() % 2 == 0 ?
-                               acc + getArea(p) : acc;
+            if (arg == "EVEN" || arg == "ODD") {
+                double res = 0.0;
+                for (const auto& p : polygons) {
+                    if ((arg == "EVEN" && isEvenSize(p)) ||
+                        (arg == "ODD" && isOddSize(p))) {
+                        res += getArea(p);
                     }
-                );
-                std::cout << res << "\n";
-            } else if (arg == "ODD") {
-                double res = std::accumulate(
-                    polygons.begin(),
-                    polygons.end(),
-                    0.0,
-                    [](double acc, const Polygon& p) {
-                        return p.points.size() % 2 != 0 ?
-                               acc + getArea(p) : acc;
-                    }
-                );
+                }
                 std::cout << res << "\n";
             } else if (arg == "MEAN") {
-                if (polygons.empty()) {
-                    skipInvalid();
-                } else {
-                    double sum = std::accumulate(
-                        polygons.begin(),
-                        polygons.end(),
-                        0.0,
-                        [](double acc, const Polygon& p) {
-                            return acc + getArea(p);
-                        }
-                    );
-                    std::cout << sum / polygons.size() << "\n";
+                if (polygons.empty()) skipInvalid(std::cin);
+                else {
+                    double total = 0.0;
+                    for (const auto& p : polygons) total += getArea(p);
+                    std::cout << total / polygons.size() << "\n";
                 }
             } else if (isNumber(arg)) {
                 size_t num = std::stoi(arg);
-                if (num < 3) {
-                    skipInvalid();
-                    continue;
-                }
-                double res = std::accumulate(
-                    polygons.begin(),
-                    polygons.end(),
-                    0.0,
-                    [num](double acc, const Polygon& p) {
-                        return p.points.size() == num ?
-                               acc + getArea(p) : acc;
+                if (num < 3) skipInvalid(std::cin);
+                else {
+                    double res = 0.0;
+                    for (const auto& p : polygons) {
+                        if (p.points.size() == num) res += getArea(p);
                     }
-                );
-                std::cout << res << "\n";
-            } else {
-                skipInvalid();
-            }
-        } else if (cmd == "MAX") {
+                    std::cout << res << "\n";
+                }
+            } else skipInvalid(std::cin);
+        } else if (cmd == "MAX" || cmd == "MIN") {
             std::string arg;
             if (!(std::cin >> arg)) continue;
-
-            if (arg == "AREA") {
-                if (polygons.empty()) skipInvalid();
+            if (arg == "AREA" || arg == "VERTEXES") {
+                if (polygons.empty()) skipInvalid(std::cin);
                 else {
-                    auto it = std::max_element(
-                        polygons.begin(),
-                        polygons.end(),
-                        [](const Polygon& a, const Polygon& b) {
-                            return getArea(a) < getArea(b);
-                        }
-                    );
-                    std::cout << getArea(*it) << "\n";
+                    auto comp = [&arg](const Polygon& a, const Polygon& b) {
+                        if (arg == "AREA") return getArea(a) < getArea(b);
+                        return a.points.size() < b.points.size();
+                    };
+                    auto it = (cmd == "MAX") ?
+                        std::max_element(polygons.begin(), polygons.end(), comp) :
+                        std::min_element(polygons.begin(), polygons.end(), comp);
+                    if (arg == "AREA") std::cout << getArea(*it) << "\n";
+                    else std::cout << it->points.size() << "\n";
                 }
-            } else if (arg == "VERTEXES") {
-                if (polygons.empty()) skipInvalid();
-                else {
-                    auto it = std::max_element(
-                        polygons.begin(),
-                        polygons.end(),
-                        [](const Polygon& a, const Polygon& b) {
-                            return a.points.size() < b.points.size();
-                        }
-                    );
-                    std::cout << it->points.size() << "\n";
-                }
-            } else {
-                skipInvalid();
-            }
-        } else if (cmd == "MIN") {
-            std::string arg;
-            if (!(std::cin >> arg)) continue;
-
-            if (arg == "AREA") {
-                if (polygons.empty()) skipInvalid();
-                else {
-                    auto it = std::min_element(
-                        polygons.begin(),
-                        polygons.end(),
-                        [](const Polygon& a, const Polygon& b) {
-                            return getArea(a) < getArea(b);
-                        }
-                    );
-                    std::cout << getArea(*it) << "\n";
-                }
-            } else if (arg == "VERTEXES") {
-                if (polygons.empty()) skipInvalid();
-                else {
-                    auto it = std::min_element(
-                        polygons.begin(),
-                        polygons.end(),
-                        [](const Polygon& a, const Polygon& b) {
-                            return a.points.size() < b.points.size();
-                        }
-                    );
-                    std::cout << it->points.size() << "\n";
-                }
-            } else {
-                skipInvalid();
-            }
+            } else skipInvalid(std::cin);
         } else if (cmd == "COUNT") {
             std::string arg;
             if (!(std::cin >> arg)) continue;
             if (arg == "EVEN") {
-                long long cnt = std::count_if(
-                    polygons.begin(),
-                    polygons.end(),
-                    [](const Polygon& p) {
-                        return p.points.size() % 2 == 0;
-                    }
-                );
-                std::cout << cnt << "\n";
+                std::cout << std::count_if(polygons.begin(),
+                    polygons.end(), isEvenSize) << "\n";
             } else if (arg == "ODD") {
-                long long cnt = std::count_if(
-                    polygons.begin(),
-                    polygons.end(),
-                    [](const Polygon& p) {
-                        return p.points.size() % 2 != 0;
-                    }
-                );
-                std::cout << cnt << "\n";
+                std::cout << std::count_if(polygons.begin(),
+                    polygons.end(), isOddSize) << "\n";
             } else if (isNumber(arg)) {
                 size_t num = std::stoi(arg);
-                if (num < 3) {
-                    skipInvalid();
-                    continue;
-                }
-                long long cnt = std::count_if(
-                    polygons.begin(),
-                    polygons.end(),
-                    [num](const Polygon& p) {
-                        return p.points.size() == num;
+                if (num < 3) skipInvalid(std::cin);
+                else {
+                    long long cnt = 0;
+                    for (const auto& p : polygons) {
+                        if (p.points.size() == num) cnt++;
                     }
-                );
-                std::cout << cnt << "\n";
-            } else {
-                skipInvalid();
-            }
+                    std::cout << cnt << "\n";
+                }
+            } else skipInvalid(std::cin);
         } else if (cmd == "RMECHO") {
             Polygon target;
             if (readPolygon(std::cin, target)) {
-                auto it = std::unique(
-                    polygons.begin(),
-                    polygons.end(),
-                    [&](const Polygon& a, const Polygon& b) {
-                        return areIdentical(a, target) &&
-                               areIdentical(b, target);
-                    }
-                );
-                auto removedCount = std::distance(it, polygons.end());
-                polygons.erase(it, polygons.end());
-                std::cout << removedCount << "\n";
-            } else {
-                skipInvalid();
-            }
+                long long removed = 0;
+                std::vector<Polygon> updated;
+                for (const auto& p : polygons) {
+                    if (areIdentical(p, target)) removed++;
+                    else updated.push_back(p);
+                }
+                polygons = updated;
+                std::cout << removed << "\n";
+            } else skipInvalid(std::cin);
         } else if (cmd == "SAME") {
             Polygon target;
             if (readPolygon(std::cin, target)) {
-                long long cnt = std::count_if(
-                    polygons.begin(),
-                    polygons.end(),
-                    [&](const Polygon& p) {
-                        return isSame(p, target);
-                    }
-                );
+                long long cnt = 0;
+                for (const auto& p : polygons) {
+                    if (isSame(p, target)) cnt++;
+                }
                 std::cout << cnt << "\n";
-            } else {
-                skipInvalid();
-            }
-        } else {
-            skipInvalid();
-        }
+            } else skipInvalid(std::cin);
+        } else skipInvalid(std::cin);
     }
     return 0;
 }
