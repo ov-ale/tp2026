@@ -34,7 +34,7 @@ std::istream& operator>>(std::istream& in, UllLitIO&& dest){
         std::cout<<"sentry broke?\n";
         return in;
     }
-    
+
     std::string token;
     char c;
     while(in.get(c) && c != ':' && c != ' ' && c != '\t'){
