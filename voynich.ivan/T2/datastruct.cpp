@@ -237,3 +237,4 @@ std::ostream& operator<<(std::ostream& out, const DataStruct& dest){
     return out;
 
 }
+
