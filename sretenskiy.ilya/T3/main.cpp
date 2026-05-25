@@ -61,7 +61,9 @@ std::istream& operator>>(std::istream& is, Polygon& poly)
 struct AreaAccumulator
 {
     const std::vector<Point>& points;
-    AreaAccumulator(const std::vector<Point>& pts) : points(pts) {}
+    AreaAccumulator(const std::vector<Point>& pts) : points(pts)
+    {
+    }
     double operator()(double sum, int i) const
     {
         int next = (i + 1) % points.size();
@@ -82,7 +84,9 @@ struct RightAngleChecker
 {
     const Polygon& poly;
     size_t n;
-    RightAngleChecker(const Polygon& p) : poly(p), n(p.points.size()) {}
+    RightAngleChecker(const Polygon& p) : poly(p), n(p.points.size())
+    {
+    }
     bool operator()(int i) const
     {
         int prev = (i + n - 1) % n;
@@ -129,7 +133,9 @@ bool IsOddPoly(const Polygon& p)
 struct HasNVertices
 {
     size_t n;
-    HasNVertices(size_t n) : n(n) {}
+    HasNVertices(size_t n) : n(n)
+    {
+    }
     bool operator()(const Polygon& p) const
     {
         return p.points.size() == n;
@@ -163,7 +169,9 @@ struct AddAreaTotal
 struct AddAreaN
 {
     size_t n;
-    AddAreaN(size_t n) : n(n) {}
+    AddAreaN(size_t n) : n(n)
+    {
+    }
     double operator()(double acc, const Polygon& p) const
     {
         return acc + (p.points.size() == n ? GetPolygonArea(p) : 0.0);
@@ -211,7 +219,9 @@ struct PolyBoxExpander
 struct IsPointInBox
 {
     BoundingBox box;
-    IsPointInBox(const BoundingBox& b) : box(b) {}
+    IsPointInBox(const BoundingBox& b) : box(b)
+    {
+    }
     bool operator()(const Point& p) const
     {
         return p.x >= box.min_x && p.x <= box.max_x &&
@@ -389,47 +399,57 @@ int main(int argc, char* argv[])
     std::string cmd;
     while (std::cin >> cmd)
     {
-        try
+        if (cmd == "INFRAME")
         {
-            if (cmd == "AREA")
-            {
-                std::string arg; std::cin >> arg;
-                CmdArea(polygons, arg);
-            }
-            else if (cmd == "MAX")
-            {
-                std::string arg; std::cin >> arg;
-                CmdMax(polygons, arg);
-            }
-            else if (cmd == "MIN")
-            {
-                std::string arg; std::cin >> arg;
-                CmdMin(polygons, arg);
-            }
-            else if (cmd == "COUNT")
-            {
-                std::string arg; std::cin >> arg;
-                CmdCount(polygons, arg);
-            }
-            else if (cmd == "INFRAME")
+            try
             {
                 CmdInframe(polygons);
             }
-            else if (cmd == "RIGHTSHAPES")
+            catch (...)
             {
-                CmdRightShapes(polygons);
-            }
-            else
-            {
-                throw std::invalid_argument("");
+                std::cout << "<INVALID COMMAND>\n";
             }
         }
-        catch (...)
+        else
         {
-            std::cout << "<INVALID COMMAND>\n";
-            std::cin.clear();
-            std::string discard;
-            std::getline(std::cin, discard);
+            try
+            {
+                if (cmd == "AREA")
+                {
+                    std::string arg; std::cin >> arg;
+                    CmdArea(polygons, arg);
+                }
+                else if (cmd == "MAX")
+                {
+                    std::string arg; std::cin >> arg;
+                    CmdMax(polygons, arg);
+                }
+                else if (cmd == "MIN")
+                {
+                    std::string arg; std::cin >> arg;
+                    CmdMin(polygons, arg);
+                }
+                else if (cmd == "COUNT")
+                {
+                    std::string arg; std::cin >> arg;
+                    CmdCount(polygons, arg);
+                }
+                else if (cmd == "RIGHTSHAPES")
+                {
+                    CmdRightShapes(polygons);
+                }
+                else
+                {
+                    throw std::invalid_argument("");
+                }
+            }
+            catch (...)
+            {
+                std::cout << "<INVALID COMMAND>\n";
+                std::cin.clear();
+                std::string discard;
+                std::getline(std::cin, discard);
+            }
         }
     }
 
