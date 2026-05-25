@@ -22,8 +22,8 @@ int main(int argc, char* argv[]) {
         std::istringstream iss(line);
         Polygon poly;
         if (iss>>poly) {
-            iss >> std::ws;                    // пропускаем пробельные символы
-            if (iss.eof()) {                   // если дошли до конца — строка корректна
+            iss >> std::ws;
+            if (iss.eof()) {
                 polygons.push_back(std::move(poly));
             }
         }
