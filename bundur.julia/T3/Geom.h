@@ -1,17 +1,16 @@
 #ifndef GEOM_H
 #define GEOM_H
 #include <vector>
-#include <istream>
+#include <iostream>
 struct Point {
     int x, y;
+    bool operator==(const Point& other) const;
 };
 struct Polygon {
     std::vector<Point> points;
+    bool operator==(const Polygon& other) const;
 };
-std::istream& operator>>(std::istream& is, Point& pt);
-std::istream& operator>>(std::istream& is, Polygon& poly);
-bool operator==(const Point& lhs, const Point& rhs);
-bool operator==(const Polygon& lhs, const Polygon& rhs);
-double getPolygonArea(const Polygon& poly);
-bool isRectangle(const Polygon& poly);
+std::istream& operator>>(std::istream& in, Polygon& p);
+double getPolygonArea(const Polygon& p);
+bool isRectangle(const Polygon& p);
 #endif

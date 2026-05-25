@@ -1,7 +1,9 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <vector>
-#include <limits>
+#include <iterator>
+#include <algorithm>
 #include "Geom.h"
 #include "Command.h"
 int main(int argc, char* argv[]) {
@@ -15,17 +17,14 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     std::vector<Polygon> polygons;
-    while (!file.eof()) {
+    std::string line;
+    while (std::getline(file, line)) {
+        std::istringstream iss(line);
         Polygon poly;
-        if (file>>poly) {
-            polygons.push_back(poly);
-        }
-        else {
-            file.clear();
-            file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        if (iss>>poly) {
+            polygons.push_back(std::move(poly));
         }
     }
-    file.close();
     processCommands(polygons);
     return 0;
 }
