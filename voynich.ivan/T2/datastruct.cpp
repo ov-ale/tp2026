@@ -56,9 +56,14 @@ std::istream& operator>>(std::istream& in, UllLitIO&& dest){
         return in;
     }
 
-    if(pos >= token.length()){
+    if(pos == 0){
         in.setstate(std::ios::failbit);
         return in;
+    }
+
+    if(pos == token.length()){
+        in.setstate(std::ios::failbit);
+        return in;        
     }
 
     std::string suffix = token.substr(pos);
