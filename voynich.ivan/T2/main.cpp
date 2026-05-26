@@ -8,7 +8,6 @@
 int main() {
     std::vector<DataStruct> data;
     
-    // Тестовые данные прямо в коде
     std::string testData = 
         "(:key1 0ull:key2 0b0:key3 \"Data\":)\n"
         "(:key1 89ull:key2 0b0:key3 \"Data\":)\n"
@@ -28,13 +27,10 @@ int main() {
         if (iss >> ds) {
             data.push_back(ds);
         }
-        // Если ошибка - просто пропускаем строку
     }
     
-    // Сортировка
     std::sort(data.begin(), data.end(), compareDataStruct);
     
-    // Вывод
     std::copy(
         data.begin(),
         data.end(),

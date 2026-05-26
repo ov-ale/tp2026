@@ -36,14 +36,12 @@ std::istream& operator>>(std::istream& in, UllLitIO&& dest){
     }
 
     std::string token;
-    char c;
-    while(in.get(c) && c != ':' && c != ' ' && c != '\t'){
-        token +=c;
+    if(!std::getline(in, token, ':')){
+        in.setstate(std::ios::failbit);
+        return in;
     }
-    if(in && (c == ':' || c == ' ' || c == '\t')){
-        in.putback(c);
-    }
-    if (!in) return in;
+
+    in.putback(':');
 
     size_t pos = 0;
     unsigned long long value = 0;
