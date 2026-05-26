@@ -153,7 +153,6 @@ struct IsEven {
         return poly.points.size() % 2 == 0;
     }
 };
-
 struct IsOdd {
     bool operator()(const Polygon& poly) const {
         return poly.points.size() % 2 != 0;
