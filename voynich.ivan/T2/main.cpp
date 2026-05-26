@@ -7,35 +7,32 @@
 
 int main() {
     std::vector<DataStruct> data;
-    
-    std::string testData = 
-        "(:key1 0ull:key2 0b0:key3 \"Data\":)\n"
-        "(:key1 89ull:key2 0b0:key3 \"Data\":)\n"
-        "(:key1 \"Data\":key2 \"Data\":key3 \"Data\":)\n"
-        "(:key1 89ull:key2 0b1:key3 \"Data\":)\n"
-        "(:key1 89ull:key2 0b1:key3 \"Data with :\":)\n";
-    
-    std::istringstream input(testData);
     std::string line;
-    
-    while (std::getline(input, line)) {
+
+    while (std::getline(std::cin, line)) {
         if (line.empty()) continue;
-        
+
         std::istringstream iss(line);
-        DataStruct ds;
-        
-        if (iss >> ds) {
-            data.push_back(ds);
-        }
+
+        std::copy(
+            std::istream_iterator<DataStruct>(iss),
+            std::istream_iterator<DataStruct>(),
+            std::back_inserter(data)
+        );
     }
-    
-    std::sort(data.begin(), data.end(), compareDataStruct);
-    
+
+    std::sort(data.begin(), data.end(),
+        [](const DataStruct& a, const DataStruct& b) {
+            if (a.key1 != b.key1) return a.key1 < b.key1;
+            if (a.key2 != b.key2) return a.key2 < b.key2;
+            return a.key3.length() < b.key3.length();
+        }
+    );
+
     std::copy(
         data.begin(),
         data.end(),
         std::ostream_iterator<DataStruct>(std::cout, "\n")
     );
-    
     return 0;
 }
