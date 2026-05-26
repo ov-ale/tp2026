@@ -36,10 +36,14 @@ std::istream& operator>>(std::istream& in, UllLitIO&& dest){
     }
 
     std::string token;
-    if(!std::getline(in, token, ':')){
-        in.setstate(std::ios::failbit);
-        return in;
+    char c;
+    while(in.get(c) && c != ':' && c != ' ' && c != '\t'){
+        token +=c;
     }
+    if(in && (c == ':' || c == ' ' || c == '\t')){
+        in.putback(c);
+    }
+    if (!in) return in;
 
     size_t pos = 0;
     unsigned long long value = 0;
@@ -238,4 +242,3 @@ std::ostream& operator<<(std::ostream& out, const DataStruct& dest){
     return out;
 
 }
-
