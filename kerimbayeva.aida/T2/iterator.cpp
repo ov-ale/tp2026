@@ -11,7 +11,8 @@ struct DataStruct {
     std::string key3;
 };
 
-struct BinaryRecord {
+struct BinaryRecord
+{
     DataStruct data;
     std::string text;
 };
@@ -53,11 +54,15 @@ void printBinary(std::ostream& out, unsigned long long val) {
     out << s;
 }
 
-struct Delim { char exp; };
+struct Delim
+{
+    char exp;
+};
 
 std::istream& operator>>(std::istream& in, Delim&& dest) {
     std::istream::sentry sentry(in, true);
-    if (!sentry) return in;
+    if (!sentry)
+        return in;
     char c = '\0';
     in.get(c);
     if (!in || c != dest.exp) {
@@ -70,11 +75,13 @@ struct KeyIO { std::string& ref; };
 
 std::istream& operator>>(std::istream& in, KeyIO&& dest) {
     std::istream::sentry sentry(in, true);
-    if (!sentry) return in;
+    if (!sentry) 
+        return in;
     dest.ref.clear();
     while (in) {
         int next = in.peek();
-        if (next == std::char_traits<char>::eof() || next == ' ' || next == ':') break;
+        if (next == std::char_traits<char>::eof() || next == ' ' || next == ':')
+            break;
         dest.ref += static_cast<char>(in.get());
     }
     if (dest.ref.empty()) {
@@ -87,11 +94,13 @@ struct ULLiteralIO { unsigned long long& ref; };
 
 std::istream& operator>>(std::istream& in, ULLiteralIO&& dest) {
     std::istream::sentry sentry(in, true);
-    if (!sentry) return in;
+    if (!sentry)
+        return in;
     std::string token;
     while (in) {
         int next = in.peek();
-        if (next == std::char_traits<char>::eof() || next == ' ' || next == ':') break;
+        if (next == std::char_traits<char>::eof() || next == ' ' || next == ':')
+            break;
         token += static_cast<char>(in.get());
     }
     if (token.size() < 4) {
@@ -123,15 +132,20 @@ std::istream& operator>>(std::istream& in, ULLiteralIO&& dest) {
     return in;
 }
 
-struct BinUllIO { unsigned long long& ref; std::string& raw; };
+struct BinUllIO
+{
+    unsigned long long& ref; std::string& raw; 
+};
 
 std::istream& operator>>(std::istream& in, BinUllIO&& dest) {
     std::istream::sentry sentry(in, true);
-    if (!sentry) return in;
+    if (!sentry)
+        return in;
     std::string token;
     while (in) {
         int next = in.peek();
-        if (next == std::char_traits<char>::eof() || next == ' ' || next == ':') break;
+        if (next == std::char_traits<char>::eof() || next == ' ' || next == ':') 
+            break;
         token += static_cast<char>(in.get());
     }
     if (token.size() < 3) {
@@ -163,11 +177,15 @@ std::istream& operator>>(std::istream& in, BinUllIO&& dest) {
     return in;
 }
 
-struct StringIO { std::string& ref; };
+struct StringIO 
+{
+    std::string& ref;
+};
 
 std::istream& operator>>(std::istream& in, StringIO&& dest) {
     std::istream::sentry sentry(in, true);
-    if (!sentry) return in;
+    if (!sentry)
+        return in;
     char c = '\0';
     in.get(c);
     if (!in || c != '"') {
@@ -186,7 +204,8 @@ std::istream& operator>>(std::istream& in, StringIO&& dest) {
 
 std::istream& operator>>(std::istream& in, DataStruct& dest) {
     std::istream::sentry sentry(in);
-    if (!sentry) return in;
+    if (!sentry)
+        return in;
 
     while (in && std::isspace(in.peek())) in.get();
 
@@ -207,7 +226,8 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
     for (int i = 0; i < 3; ++i) {
         std::string key;
         in >> KeyIO{ key };
-        if (!in) return in;
+        if (!in)
+            return in;
 
         if (in.peek() == ':') {
             in.get();
@@ -215,7 +235,8 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
 
         if (in.peek() == ' ') {
             in >> Delim{ ' ' };
-            if (!in) return in;
+            if (!in)
+                return in;
         }
 
         if (key == "key1" && !hasKey1) {
@@ -235,7 +256,8 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
             return in;
         }
 
-        if (!in) return in;
+        if (!in) 
+            return in;
 
         if (in.peek() == ':') {
             in.get();
@@ -273,8 +295,10 @@ std::ostream& operator<<(std::ostream& out, const DataStruct& src) {
 }
 
 bool compareDataStruct(const DataStruct& a, const DataStruct& b) {
-    if (a.key1 != b.key1) return a.key1 < b.key1;
-    if (a.key2 != b.key2) return a.key2 < b.key2;
+    if (a.key1 != b.key1) 
+        return a.key1 < b.key1;
+    if (a.key2 != b.key2)
+        return a.key2 < b.key2;
     return a.key3 < b.key3;
 }
 
@@ -284,7 +308,8 @@ int main() {
     bool hasAny = false;
 
     while (std::getline(std::cin, line)) {
-        if (line.empty()) continue;
+        if (line.empty())
+            continue;
         std::istringstream iss(line);
         DataStruct ds;
         if (iss >> ds) {
@@ -294,11 +319,10 @@ int main() {
     }
 
     if (!hasAny) {
-        std::cout << "Looks like there is no supported record. Cannot determine input. Test skipped" << std::endl;
-    }
-    else {
-        std::cout << "Atleast one supported record type" << std::endl;
+        std::cout << "No valid records found. Unable to process input. Test skipped" << std::endl;
+        return 0;
     }
 
-    return 0;
+    std::cout << "Atleast one supported record type" << std::endl;
+    return 1;
 }
