@@ -75,7 +75,7 @@ struct KeyIO { std::string& ref; };
 
 std::istream& operator>>(std::istream& in, KeyIO&& dest) {
     std::istream::sentry sentry(in, true);
-    if (!sentry) 
+    if (!sentry)
         return in;
     dest.ref.clear();
     while (in) {
@@ -134,7 +134,7 @@ std::istream& operator>>(std::istream& in, ULLiteralIO&& dest) {
 
 struct BinUllIO
 {
-    unsigned long long& ref; std::string& raw; 
+    unsigned long long& ref; std::string& raw;
 };
 
 std::istream& operator>>(std::istream& in, BinUllIO&& dest) {
@@ -144,7 +144,7 @@ std::istream& operator>>(std::istream& in, BinUllIO&& dest) {
     std::string token;
     while (in) {
         int next = in.peek();
-        if (next == std::char_traits<char>::eof() || next == ' ' || next == ':') 
+        if (next == std::char_traits<char>::eof() || next == ' ' || next == ':')
             break;
         token += static_cast<char>(in.get());
     }
@@ -177,7 +177,7 @@ std::istream& operator>>(std::istream& in, BinUllIO&& dest) {
     return in;
 }
 
-struct StringIO 
+struct StringIO
 {
     std::string& ref;
 };
@@ -256,7 +256,7 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
             return in;
         }
 
-        if (!in) 
+        if (!in)
             return in;
 
         if (in.peek() == ':') {
@@ -295,7 +295,7 @@ std::ostream& operator<<(std::ostream& out, const DataStruct& src) {
 }
 
 bool compareDataStruct(const DataStruct& a, const DataStruct& b) {
-    if (a.key1 != b.key1) 
+    if (a.key1 != b.key1)
         return a.key1 < b.key1;
     if (a.key2 != b.key2)
         return a.key2 < b.key2;
