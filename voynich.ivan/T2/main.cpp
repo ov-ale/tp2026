@@ -7,24 +7,13 @@
 
 int main() {
     std::vector<DataStruct> data;
-
-    std::string testData =
-        "(:key1 0ull:key2 0b0:key3 \"Data\":)\n"
-        "(:key1 89ull:key2 0b0:key3 \"Data\":)\n"
-        "(:key1 \"Data\":key2 \"Data\":key3 \"Data\":)\n"
-        "(:key1 89ull:key2 0b1:key3 \"Data\":)\n"
-        "(:key1 89ull:key2 0b1:key3 \"Data with :\":)\n";
-
-    std::istringstream input(testData);
     std::string line;
 
-    while (std::getline(input, line)) {
+    while (std::getline(std::cin, line)) {
         if (line.empty()) continue;
-
 
         std::istringstream iss(line);
         DataStruct ds;
-
         if (iss >> ds) {
             data.push_back(ds);
         }
@@ -40,3 +29,4 @@ int main() {
 
     return 0;
 }
+
