@@ -11,7 +11,7 @@ struct DataStruct {
     std::string key3;
 };
 
-struct BinaryRecord 
+struct BinaryRecord
 {
     DataStruct data;
     std::string text;
@@ -54,14 +54,14 @@ void printBinary(std::ostream& out, unsigned long long val) {
     out << s;
 }
 
-struct Delim 
-{ 
-    char exp; 
+struct Delim
+{
+    char exp;
 };
 
 std::istream& operator>>(std::istream& in, Delim&& dest) {
     std::istream::sentry sentry(in, true);
-    if (!sentry) 
+    if (!sentry)
         return in;
     char c = '\0';
     in.get(c);
@@ -78,7 +78,7 @@ struct KeyIO
 
 std::istream& operator>>(std::istream& in, KeyIO&& dest) {
     std::istream::sentry sentry(in, true);
-    if (!sentry) 
+    if (!sentry)
         return in;
     dest.ref.clear();
     while (in) {
@@ -95,7 +95,7 @@ std::istream& operator>>(std::istream& in, KeyIO&& dest) {
 
 struct ULLiteralIO
 {
-    unsigned long long& ref; 
+    unsigned long long& ref;
 };
 
 std::istream& operator>>(std::istream& in, ULLiteralIO&& dest) {
@@ -151,7 +151,7 @@ std::istream& operator>>(std::istream& in, BinUllIO&& dest) {
     std::string token;
     while (in) {
         int next = in.peek();
-        if (next == std::char_traits<char>::eof() || next == ' ' || next == ':') 
+        if (next == std::char_traits<char>::eof() || next == ' ' || next == ':')
             break;
         token += static_cast<char>(in.get());
     }
@@ -184,7 +184,7 @@ std::istream& operator>>(std::istream& in, BinUllIO&& dest) {
     return in;
 }
 
-struct StringIO 
+struct StringIO
 {
     std::string& ref;
 };
@@ -263,7 +263,7 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
             return in;
         }
 
-        if (!in) 
+        if (!in)
             return in;
 
         if (in.peek() == ':') {
