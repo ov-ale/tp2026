@@ -124,5 +124,5 @@ void CompositeShape::printContents(std::ostream& os) const
 
 std::pair<Point, Point> CompositeShape::getBoundingBox() const
 {
-    return getBoundingRect();  // Просто вызываем существующий метод
+    return getBoundingRect();
 }
