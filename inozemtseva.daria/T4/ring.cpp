@@ -43,7 +43,7 @@ void Ring::scale(double coefficient)
 {
   if (coefficient <= 0)
   {
-    throw std::invalid_argument("Scale coefficient must be positive");;
+    throw std::invalid_argument("Scale coefficient must be positive");
   }
   outer_radius_ *= coefficient;
   inner_radius_ *= coefficient;

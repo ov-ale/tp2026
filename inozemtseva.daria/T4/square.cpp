@@ -28,7 +28,7 @@ void Square::scale(double coefficient)
 {
   if (coefficient <= 0)
   {
-    throw std::invalid_argument("Scale coefficient must be positive");;
+    throw std::invalid_argument("Scale coefficient must be positive");
   }
 
   Point old_center = getCenter();

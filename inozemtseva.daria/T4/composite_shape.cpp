@@ -51,7 +51,7 @@ void CompositeShape::scale(double coefficient)
 {
   if (coefficient <= 0 || shapes_.empty())
   {
-     throw std::invalid_argument("Scale coefficient must be positive");;
+     throw std::invalid_argument("Scale coefficient must be positive");
   }
   if (shapes_.empty())
   {
