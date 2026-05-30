@@ -11,11 +11,10 @@ class Rectangle : public Shape {
   void move(double dx, double dy) override;
   void scale(double coefficient) override;
   const char* getName() const override;
-
+  std::pair<Point, Point> getBoundingBox() const override;
  private:
   Point bottom_left_;
   Point top_right_;
-  friend std::pair<Point, Point> getBoundingBox(const Shape& shape);
 };
 
 #endif

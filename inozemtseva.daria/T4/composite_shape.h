@@ -15,7 +15,7 @@ class CompositeShape : public Shape {
   void scale(double coefficient) override;
   const char* getName() const override;
   void printContents(std::ostream& os) const;
-
+  std::pair<Point, Point> getBoundingBox() const override;
  private:
   std::vector<std::unique_ptr<Shape>> shapes_;
   std::pair<Point, Point> getBoundingRect() const;

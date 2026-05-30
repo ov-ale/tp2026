@@ -1,8 +1,8 @@
 #include "composite_shape.h"
-#include "bounds_helper.h"
 #include <algorithm>
 #include <iomanip>
 #include <limits>
+#include <stdexcept>
 
 void CompositeShape::add(std::unique_ptr<Shape> shape)
 {
@@ -51,9 +51,12 @@ void CompositeShape::scale(double coefficient)
 {
   if (coefficient <= 0 || shapes_.empty())
   {
+     throw std::invalid_argument("Scale coefficient must be positive");;
+  }
+  if (shapes_.empty())
+  {
     return;
   }
-
   Point old_center = getCenter();
   for (auto& shape : shapes_)
   {
@@ -89,7 +92,7 @@ std::pair<Point, Point> CompositeShape::getBoundingRect() const
 
   for (const auto& shape : shapes_)
   {
-    auto bounds = getBoundingBox(*shape);
+    auto bounds = shape->getBoundingBox();
     Point bl = bounds.first;
     Point tr = bounds.second;
 
@@ -117,4 +120,9 @@ void CompositeShape::printContents(std::ostream& os) const
        << ", (" << c.x_ << ", " << c.y_ << "), "
        << a;
   }
+}
+
+std::pair<Point, Point> CompositeShape::getBoundingBox() const
+{
+    return getBoundingRect();  // Просто вызываем существующий метод
 }

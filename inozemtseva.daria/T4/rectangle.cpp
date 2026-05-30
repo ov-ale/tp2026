@@ -1,5 +1,6 @@
 #include "rectangle.h"
 #include <algorithm>
+#include <stdexcept>
 
 Rectangle::Rectangle(const Point& bottom_left, const Point& top_right)
     : bottom_left_(std::min(bottom_left.x_, top_right.x_),
@@ -32,7 +33,7 @@ void Rectangle::scale(double coefficient)
 {
   if (coefficient <= 0)
   {
-    return;
+    throw std::invalid_argument("Scale coefficient must be positive");;
   }
 
   Point center = getCenter();
@@ -48,4 +49,9 @@ void Rectangle::scale(double coefficient)
 const char* Rectangle::getName() const
 {
   return "RECTANGLE";
+}
+
+std::pair<Point, Point> Rectangle::getBoundingBox() const
+{
+    return {bottom_left_, top_right_};
 }

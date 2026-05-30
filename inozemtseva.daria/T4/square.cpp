@@ -1,4 +1,5 @@
 #include "square.h"
+#include <stdexcept>
 
 Square::Square(const Point& bottom_left, double side_length)
     : bottom_left_(bottom_left),
@@ -27,7 +28,7 @@ void Square::scale(double coefficient)
 {
   if (coefficient <= 0)
   {
-    return;
+    throw std::invalid_argument("Scale coefficient must be positive");;
   }
 
   Point old_center = getCenter();
@@ -39,4 +40,9 @@ void Square::scale(double coefficient)
 const char* Square::getName() const
 {
   return "SQUARE";
+}
+
+std::pair<Point, Point> Square::getBoundingBox() const
+{
+    return {bottom_left_, Point(bottom_left_.x_ + side_length_, bottom_left_.y_ + side_length_)};
 }
