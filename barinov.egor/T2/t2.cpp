@@ -125,18 +125,21 @@ namespace barinov
   class IofGuard
   {
   public:
-    IofGuard(std::basic_ios<char>& s) : s_(s),
-                                        fill_(s.fill()),
-                                        precision_(s.precision()),
-                                        fmt_(s.flags())
+    IofGuard(std::basic_ios<char>& s) :
+      s_(s),
+      fill_(s.fill()),
+      precision_(s.precision()),
+      fmt_(s.flags())
     {
     }
+
     ~IofGuard()
     {
       s_.fill(fill_);
       s_.precision(precision_);
       s_.flags(fmt_);
     }
+
   private:
     std::basic_ios<char>& s_;
     char fill_;
@@ -159,8 +162,10 @@ namespace barinov
       {
         return a.key1 < b.key1;
       }
-      double valA = static_cast<double>(a.key2.first) / static_cast<double>(a.key2.second);
-      double valB = static_cast<double>(b.key2.first) / static_cast<double>(b.key2.second);
+      double valA = static_cast<double>(a.key2.first)
+                    / static_cast<double>(a.key2.second);
+      double valB = static_cast<double>(b.key2.first)
+                    / static_cast<double>(b.key2.second);
       if (std::fabs(valA - valB) > 1e-10)
       {
         return valA < valB;
@@ -231,7 +236,8 @@ namespace barinov
     }
     IofGuard guard(out);
     out << "(:key1 " << src.key1 << "ll";
-    out << ":key2 (:N " << src.key2.first << ":D " << src.key2.second << ":)";
+    out << ":key2 (:N " << src.key2.first
+        << ":D " << src.key2.second << ":)";
     out << ":key3 \"" << src.key3 << "\":)";
     return out;
   }
@@ -260,4 +266,3 @@ int main()
 
   return 0;
 }
-
