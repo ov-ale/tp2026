@@ -9,15 +9,15 @@ Ring::Ring(const Point& center, double outer_radius, double inner_radius)
       outer_radius_(outer_radius),
       inner_radius_(inner_radius)
 {
-  if (outer_radius <= 0)  
+  if (outer_radius <= 0)
   {
       throw std::invalid_argument("Outer radius must be positive");
   }
-  if (inner_radius < 0)  
+  if (inner_radius < 0)
   {
       throw std::invalid_argument("Inner radius cannot be negative");
   }
-  if (inner_radius > outer_radius)  
+  if (inner_radius > outer_radius)
   {
       throw std::invalid_argument("Inner radius cannot be greater than outer radius");
   }
