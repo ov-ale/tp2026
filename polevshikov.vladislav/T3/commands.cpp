@@ -132,6 +132,13 @@ void doInFrame(const std::vector<Polygon>& polygons, std::istream& in, std::ostr
         return;
     }
 
+    char c;
+    if (in.get(c) && c != '\n') {
+        in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        printError(out);
+        return;
+    }
+
     if (polygons.empty()) {
         out << "<FALSE>\n";
         return;
