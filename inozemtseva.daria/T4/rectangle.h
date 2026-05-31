@@ -12,7 +12,7 @@ class Rectangle : public Shape {
   void scale(double coefficient) override;
   const char* getName() const override;
   std::pair<Point, Point> getBoundingBox() const override;
- private:
+  private:
   Point bottom_left_;
   Point top_right_;
 };

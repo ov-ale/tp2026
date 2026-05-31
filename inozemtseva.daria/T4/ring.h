@@ -12,7 +12,7 @@ class Ring : public Shape {
   void scale(double coefficient) override;
   const char* getName() const override;
   std::pair<Point, Point> getBoundingBox() const override;
- private:
+  private:
   Point center_;
   double outer_radius_;
   double inner_radius_;

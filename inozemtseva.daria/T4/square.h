@@ -4,7 +4,7 @@
 #include <utility>
 
 class Square : public Shape {
-public:
+  public:
   Square(const Point& bottom_left, double side_length);
   double getArea() const override;
   Point getCenter() const override;
@@ -12,7 +12,7 @@ public:
   void scale(double coefficient) override;
   const char* getName() const override;
   std::pair<Point, Point> getBoundingBox() const override;
- private:
+  private:
   Point bottom_left_;
   double side_length_;
 };

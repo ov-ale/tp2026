@@ -6,7 +6,7 @@
 #include <vector>
 
 class CompositeShape : public Shape {
- public:
+  public:
   CompositeShape() = default;
   void add(std::unique_ptr<Shape> shape);
   double getArea() const override;
@@ -16,7 +16,7 @@ class CompositeShape : public Shape {
   const char* getName() const override;
   void printContents(std::ostream& os) const;
   std::pair<Point, Point> getBoundingBox() const override;
- private:
+  private:
   std::vector<std::unique_ptr<Shape>> shapes_;
   std::pair<Point, Point> getBoundingRect() const;
 };
