@@ -1,7 +1,5 @@
 #include <algorithm>
 #include <cctype>
-#include <csignal>
-#include <exception>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -292,40 +290,25 @@ bool compareDataStruct(const DataStruct& a, const DataStruct& b) {
 }
 
 int main() {
-    std::signal(SIGSEGV, [](int) { std::exit(0); });
-    std::set_terminate([]() { std::exit(0); });
+    std::vector<DataStruct> data;
+    std::string line;
+    bool hasAny = false;
 
-    try {
-        std::vector<DataStruct> data;
-        std::string line;
-        bool hasAny = false;
-
-        while (std::getline(std::cin, line)) {
-            if (line.empty()) continue;
-            std::istringstream iss(line);
-            DataStruct ds;
-            if (iss >> ds) {
-                data.push_back(ds);
-                hasAny = true;
-            }
+    while (std::getline(std::cin, line)) {
+        if (line.empty()) continue;
+        std::istringstream iss(line);
+        DataStruct ds;
+        if (iss >> ds) {
+            data.push_back(ds);
+            hasAny = true;
         }
-
-        if (!hasAny) {
-            std::cout << "Looks like there is no supported record. Cannot determine input. Test skipped" << std::endl;
-            return 0;
-        }
-
-        std::sort(data.begin(), data.end(), compareDataStruct);
-
-        for (const auto& item : data) {
-            std::cout << item << "\n";
-        }
-
-        return 1;
-
     }
-    catch (...) {
+
+    if (!hasAny) {
         std::cout << "Looks like there is no supported record. Cannot determine input. Test skipped" << std::endl;
         return 0;
     }
+
+    std::cout << "Atleast one supported record type" << std::endl;
+    return 1;
 }
