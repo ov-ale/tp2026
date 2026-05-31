@@ -33,7 +33,7 @@ void Square::scale(double coefficient)
   {
     throw std::invalid_argument("Scale coefficient must be positive");
   }
-  
+
   Point old_center = getCenter();
   side_length_ *= coefficient;
   Point new_center = getCenter();

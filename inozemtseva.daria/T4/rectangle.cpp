@@ -34,11 +34,11 @@ void Rectangle::scale(double coefficient)
   {
     throw std::invalid_argument("Scale coefficient must be positive");
   }
-  
+
   Point center = getCenter();
   double half_width = (top_right_.x_ - bottom_left_.x_) / 2.0 * coefficient;
   double half_height = (top_right_.y_ - bottom_left_.y_) / 2.0 * coefficient;
-  
+
   bottom_left_.x_ = center.x_ - half_width;
   bottom_left_.y_ = center.y_ - half_height;
   top_right_.x_ = center.x_ + half_width;
