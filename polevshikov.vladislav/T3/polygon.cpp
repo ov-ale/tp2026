@@ -4,6 +4,7 @@
 #include <limits>
 #include <cmath>
 #include <numeric>
+#include <algorithm>
 
 struct DelimiterI0 {
     char expected;
@@ -68,7 +69,7 @@ double getArea(const Polygon& poly) {
     long long area = std::accumulate(idx.begin(), idx.end(), 0.0, [&](double sum, size_t i) {
         const Point& a = poly.points[i];
         const Point& b = poly.points[(i + 1) % n];
-        return sum + ((long long)a.x * b.y - (long long)a.y * b.x);
+        return sum + (static_cast<double>(a.x) * b.y - static_cast<double>(a.y) * b.x);
     });
     return std::abs(double(area)) / 2.0;
 }
