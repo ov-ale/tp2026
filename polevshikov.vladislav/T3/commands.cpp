@@ -32,6 +32,9 @@ void doArea(const std::vector<Polygon>& polygons, std::istream& in, std::ostream
 
     } else {
         size_t num = std::stoi(subCmd);
+        if (num < 3) {
+            throw std::invalid_argument("bad vertex count");
+        }
         res = std::accumulate(polygons.begin(), polygons.end(), 0.0, [num](double sum, const Polygon& p) {
             return (p.points.size() == num) ? sum + getArea(p) : sum;
         });
@@ -53,7 +56,7 @@ void doMax(const std::vector<Polygon>& polygons, std::istream& in, std::ostream&
         });
         out << std::fixed << std::setprecision(1) << getArea(*it) << '\n';
 
-    } else if (subCmd == "VERTICES") {
+    } else if (subCmd == "VERTEXES") {
         auto it = std::max_element(polygons.begin(), polygons.end(), [](const Polygon& a, const Polygon& b) {
             return a.points.size() < b.points.size();
         });
@@ -75,7 +78,7 @@ void doMin(const std::vector<Polygon>& polygons, std::istream& in, std::ostream&
         });
         out << std::fixed << std::setprecision(1) << getArea(*it) << '\n';
 
-    } else if (subCmd == "VERTICES") {
+    } else if (subCmd == "VERTEXES") {
         auto it = std::min_element(polygons.begin(), polygons.end(), [](const Polygon& a, const Polygon& b) {
             return a.points.size() < b.points.size();
         });
@@ -101,6 +104,9 @@ void doCount(const std::vector<Polygon>& polygons, std::istream& in, std::ostrea
 
     } else {
         size_t num = std::stoi(subCmd);
+        if (num < 3) {
+            throw std::invalid_argument("bad vertex count");
+        }
         cnt = std::count_if(polygons.begin(), polygons.end(), [num](const Polygon& p) {
             return p.points.size() == num;
         });
@@ -120,6 +126,8 @@ void doRightShapes(const std::vector<Polygon>& polygons, std::ostream& out) {
 void doInFrame(const std::vector<Polygon>& polygons, std::istream& in, std::ostream& out) {
     Polygon target;
     if (!(in >> target)) {
+        in.clear();
+        in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         printError(out);
         return;
     }
