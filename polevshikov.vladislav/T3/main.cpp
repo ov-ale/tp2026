@@ -8,6 +8,8 @@
 #include "polygon.h"
 #include "commands.h"
 
+using namespace std::placeholders;
+
 int main(int argc, char* argv[]) {
     if (argc != 2) {
         std::cerr << "Usage: " << argv[0] << " <filename>\n";
@@ -34,12 +36,12 @@ int main(int argc, char* argv[]) {
 
     std::map<std::string, std::function<void(std::istream&, std::ostream&)>> cmds;
 
-    cmds["AREA"] = [&](std::istream& in, std::ostream& out) {doArea(polygons, in, out);};
-    cmds["MAX"] = [&](std::istream& in, std::ostream& out) {doMax(polygons, in, out);};
-    cmds["MIN"] = [&](std::istream& in, std::ostream& out) {doMin(polygons, in, out);};
-    cmds["COUNT"] = [&](std::istream& in, std::ostream& out) {doCount(polygons, in, out); };
-    cmds["RIGHTSHAPES"] = [&](std::istream&, std::ostream& out) {doRightShapes(polygons, out); };
-    cmds["INFRAME"] = [&](std::istream& in, std::ostream& out) {doInFrame(polygons, in, out); };
+    cmds["AREA"] = std::bind(doArea, std::cref(polygons), _1, _2);
+    cmds["MAX"] = std::bind(doMax, std::cref(polygons), _1, _2);
+    cmds["MIN"] = std::bind(doMin, std::cref(polygons), _1, _2);
+    cmds["COUNT"] = std::bind(doCount, std::cref(polygons), _1, _2);
+    cmds["RIGHTSHAPES"] = std::bind(doRightShapes, std::cref(polygons), _1, _2);
+    cmds["INFRAME"] = std::bind(doInFrame, std::cref(polygons), _1, _2);
 
     std::string cmd;
     while(std::cin >> cmd) {

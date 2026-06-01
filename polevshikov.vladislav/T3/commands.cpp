@@ -4,40 +4,54 @@
 #include <iomanip>
 #include <limits>
 
+bool checkAndConsumeRestOfLine(std::istream& in) {
+    while (in.peek() == ' ' || in.peek() == '\t') {
+        in.get();
+    }
+    char next = in.peek();
+    if (next == '\n' || next == EOF) {
+        if (next == '\n') {
+            in.get();
+        }
+        return true;
+    }
+    return false;
+}
+
 void doArea(const std::vector<Polygon>& polygons, std::istream& in, std::ostream& out) {
     std::string subCmd;
-    in >> subCmd;
+    if (!(in >> subCmd) || !checkAndConsumeRestOfLine(in)) {
+        throw std::invalid_argument("extra symbols");
+    }
 
     double res = 0.0;
     if (subCmd == "EVEN") {
-        res = std::accumulate(polygons.begin(), polygons.end(), 0.0, [](double sum, const Polygon& p) {
-            return (p.points.size() % 2 == 0) ? sum + getArea(p) : sum;
-        });
+        std::vector<Polygon> filtered;
+
+        std::copy_if(polygons.begin(), polygons.end(), std::back_inserter(filtered), isEven);
+        res = std::accumulate(filtered.begin(), filtered.end(), 0.0, sumArea);
 
     } else if (subCmd == "ODD") {
-        res = std::accumulate(polygons.begin(), polygons.end(), 0.0, [](double sum, const Polygon& p) {
-            return (p.points.size() % 2 != 0) ? sum + getArea(p) : sum;
-        });
+        std::vector<Polygon> filtered;
+
+        std::copy_if(polygons.begin(), polygons.end(), std::back_inserter(filtered), isOdd);
+        res = std::accumulate(filtered.begin(), filtered.end(), 0.0, sumArea);
 
     } else if (subCmd == "MEAN") {
         if (polygons.empty()) {
             throw std::logic_error("Empty collection");
         }
 
-        double totalArea = std::accumulate(polygons.begin(), polygons.end(), 0.0, [](double sum, const Polygon&p) {
-            return sum + getArea(p);
-        });
-
-        res = totalArea / polygons.size();
+        res = std::accumulate(polygons.begin(), polygons.end(), 0.0, sumArea) / polygons.size();
 
     } else {
         size_t num = std::stoi(subCmd);
         if (num < 3) {
             throw std::invalid_argument("bad vertex count");
         }
-        res = std::accumulate(polygons.begin(), polygons.end(), 0.0, [num](double sum, const Polygon& p) {
-            return (p.points.size() == num) ? sum + getArea(p) : sum;
-        });
+        std::vector<Polygon> filtered;
+        std::copy_if(polygons.begin(), polygons.end(), std::back_inserter(filtered), HasNVertices{num});
+        res = std::accumulate(filtered.begin(), filtered.end(), 0.0, sumArea);
     }
     out << std::fixed << std::setprecision(1) << res << '\n';
 }
@@ -48,19 +62,20 @@ void doMax(const std::vector<Polygon>& polygons, std::istream& in, std::ostream&
     }
 
     std::string subCmd;
-    in >> subCmd;
+    if (!(in >> subCmd) || !checkAndConsumeRestOfLine(in)) {
+        throw std::invalid_argument("extra symbols");
+    }
 
     if (subCmd == "AREA") {
-        auto it = std::max_element(polygons.begin(), polygons.end(), [](const Polygon& a, const Polygon& b) {
-            return getArea(a) < getArea(b);
-        });
+        auto it = std::max_element(polygons.begin(), polygons.end(), compareByArea);
         out << std::fixed << std::setprecision(1) << getArea(*it) << '\n';
 
     } else if (subCmd == "VERTEXES") {
-        auto it = std::max_element(polygons.begin(), polygons.end(), [](const Polygon& a, const Polygon& b) {
-            return a.points.size() < b.points.size();
-        });
+        auto it = std::max_element(polygons.begin(), polygons.end(), compareBySize);
         out << it->points.size() << "\n";
+
+    } else {
+        throw std::invalid_argument("bad subcommand");
     }
 }
 
@@ -70,46 +85,43 @@ void doMin(const std::vector<Polygon>& polygons, std::istream& in, std::ostream&
     }
 
     std::string subCmd;
-    in >> subCmd;
+    if (!(in >> subCmd) || !checkAndConsumeRestOfLine(in)) {
+        throw std::invalid_argument("extra symbols");
+    }
 
     if (subCmd == "AREA") {
-        auto it = std::min_element(polygons.begin(), polygons.end(), [](const Polygon& a, const Polygon& b) {
-            return getArea(a) < getArea(b);
-        });
+        auto it = std::min_element(polygons.begin(), polygons.end(), compareByArea);
         out << std::fixed << std::setprecision(1) << getArea(*it) << '\n';
 
     } else if (subCmd == "VERTEXES") {
-        auto it = std::min_element(polygons.begin(), polygons.end(), [](const Polygon& a, const Polygon& b) {
-            return a.points.size() < b.points.size();
-        });
+        auto it = std::min_element(polygons.begin(), polygons.end(), compareBySize);
         out << it->points.size() << "\n";
+
+    } else {
+        throw std::invalid_argument("bad subcommand");
     }
 }
 
 void doCount(const std::vector<Polygon>& polygons, std::istream& in, std::ostream& out) {
     std::string subCmd;
-    in >> subCmd;
+    if (!(in >> subCmd) || !checkAndConsumeRestOfLine(in)) {
+        throw std::invalid_argument("extra symbols");
+    }
 
     size_t cnt = 0;
 
     if (subCmd == "EVEN") {
-        cnt = std::count_if(polygons.begin(), polygons.end(), [](const Polygon& p) {
-            return p.points.size() % 2 == 0;
-        });
+        cnt = std::count_if(polygons.begin(), polygons.end(), isEven);
 
     } else if (subCmd == "ODD") {
-        cnt = std::count_if(polygons.begin(), polygons.end(), [](const Polygon& p) {
-            return p.points.size() % 2 != 0;
-        });
+        cnt = std::count_if(polygons.begin(), polygons.end(), isOdd);
 
     } else {
         size_t num = std::stoi(subCmd);
         if (num < 3) {
             throw std::invalid_argument("bad vertex count");
         }
-        cnt = std::count_if(polygons.begin(), polygons.end(), [num](const Polygon& p) {
-            return p.points.size() == num;
-        });
+        cnt = std::count_if(polygons.begin(), polygons.end(), HasNVertices{num});
     }
     out << cnt << '\n';
 }
@@ -118,64 +130,33 @@ void printError(std::ostream& out) {
     out << "<INVALID COMMAND>\n";
 }
 
-void doRightShapes(const std::vector<Polygon>& polygons, std::ostream& out) {
+void doRightShapes(const std::vector<Polygon>& polygons, std::istream& in, std::ostream& out) {
+    if (!checkAndConsumeRestOfLine(in)) {
+        printError(out);
+        return;
+    }
+
     long long count = std::count_if(polygons.begin(), polygons.end(), hasRightAngle);
     out << count << '\n';
 }
 
 void doInFrame(const std::vector<Polygon>& polygons, std::istream& in, std::ostream& out) {
     Polygon target;
-    if (!(in >> target)) {
+    if (!(in >> target) || !checkAndConsumeRestOfLine(in)) {
         in.clear();
         in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         printError(out);
         return;
     }
 
-    char c;
-    if (in.get(c) && c != '\n') {
-        in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        printError(out);
-        return;
-    }
-
     if (polygons.empty()) {
-        out << "<FALSE>\n";
-        return;
+        throw std::logic_error("Empty collection");
     }
 
-    auto findMinX = [](int cur, const Polygon& p) {
-        auto it = std::min_element(p.points.begin(), p.points.end(), [](const Point& a, const Point& b) {
-            return a.x < b.x;
-        });
-        return std::min(cur, it->x);
-    };
-
-    auto findMaxX = [](int cur, const Polygon& p) {
-        auto it = std::max_element(p.points.begin(), p.points.end(), [](const Point& a, const Point& b) {
-            return a.x < b.x;
-        });
-        return std::max(cur, it->x);
-    };
-
-    auto findMinY = [](int cur, const Polygon& p) {
-        auto it = std::min_element(p.points.begin(), p.points.end(), [](const Point& a, const Point& b) {
-            return a.y < b.y;
-        });
-        return std::min(cur, it->y);
-    };
-
-    auto findMaxY = [](int cur, const Polygon& p) {
-        auto it = std::max_element(p.points.begin(), p.points.end(), [](const Point& a, const Point& b) {
-            return a.y < b.y;
-        });
-        return std::max(cur, it->y);
-    };
-
-    int minX = std::accumulate(polygons.begin(), polygons.end(), std::numeric_limits<int>::max(), findMinX);
-    int maxX = std::accumulate(polygons.begin(), polygons.end(), std::numeric_limits<int>::min(), findMaxX);
-    int minY = std::accumulate(polygons.begin(), polygons.end(), std::numeric_limits<int>::max(), findMinY);
-    int maxY = std::accumulate(polygons.begin(), polygons.end(), std::numeric_limits<int>::min(), findMaxY);
+    int minX = std::accumulate(polygons.begin(), polygons.end(), std::numeric_limits<int>::max(), getMinX);
+    int maxX = std::accumulate(polygons.begin(), polygons.end(), std::numeric_limits<int>::min(), getMaxX);
+    int minY = std::accumulate(polygons.begin(), polygons.end(), std::numeric_limits<int>::max(), getMinY);
+    int maxY = std::accumulate(polygons.begin(), polygons.end(), std::numeric_limits<int>::min(), getMaxY);
 
     bool inInside = std::all_of(target.points.begin(), target.points.end(), [minX, maxX, minY, maxY](const Point& p) {
         return p.x >= minX && p.x <= maxX && p.y >= minY && p.y <= maxY;
