@@ -21,11 +21,29 @@ namespace lab2 {
     };
 
     std::istream& operator>>(std::istream& is, CharGuard guard) {
+        std::istream::sentry sentry(is);
+        if (!sentry) return is;
+        
         char c;
         if (is >> c) {
             if (std::tolower(c) != std::tolower(guard.expected)) {
                 is.setstate(std::ios::failbit);
             }
+        }
+        return is;
+    }
+
+    struct ULLSuffixGuard {};
+    
+    std::istream& operator>>(std::istream& is, ULLSuffixGuard) {
+        std::istream::sentry sentry(is);
+        if (!sentry) return is;
+        
+        char u = is.get();
+        char l1 = is.get();
+        char l2 = is.get();
+        if (std::tolower(u) != 'u' || std::tolower(l1) != 'l' || std::tolower(l2) != 'l') {
+            is.setstate(std::ios::failbit);
         }
         return is;
     }
@@ -48,8 +66,10 @@ namespace lab2 {
             if (left.key1 != right.key1) {
                 return left.key1 < right.key1;
             }
-            if (std::abs(left.key2) != std::abs(right.key2)) {
-                return std::abs(left.key2) < std::abs(right.key2);
+            double absLeft = std::abs(left.key2);
+            double absRight = std::abs(right.key2);
+            if (std::abs(absLeft - absRight) > 1e-9) {
+                return absLeft < absRight;
             }
             return left.key3.length() < right.key3.length();
         }
@@ -69,7 +89,7 @@ namespace lab2 {
             is >> keyName;
 
             if (keyName == "key1" && !(keysMask & 1)) {
-                is >> temp.key1 >> CharGuard{'u'} >> CharGuard{'l'} >> CharGuard{'l'};
+                is >> temp.key1 >> ULLSuffixGuard{};
                 keysMask |= 1;
             }
             else if (keyName == "key2" && !(keysMask & 2)) {
@@ -89,7 +109,7 @@ namespace lab2 {
             }
             is >> CharGuard{':'};
         }
-
+        
         is >> CharGuard{')'};
 
         if (is && keysMask == 7) {
@@ -106,12 +126,12 @@ namespace lab2 {
         if (!sentry) return os;
 
         StreamStateSaver saver(os);
-
+        
         os << "(:key1 " << src.key1 << "ull"
            << ":key2 #c(" << std::fixed << std::setprecision(1)
            << src.key2.real() << " " << src.key2.imag() << ")"
            << ":key3 " << std::quoted(src.key3) << ":)";
-
+           
         return os;
     }
 }
@@ -119,7 +139,7 @@ namespace lab2 {
 int main() {
     std::vector<lab2::DataStruct> recordsList;
 
-    while (std::cin) {
+    while (!std::cin.eof()) {
         std::copy(
             std::istream_iterator<lab2::DataStruct>(std::cin),
             std::istream_iterator<lab2::DataStruct>(),
