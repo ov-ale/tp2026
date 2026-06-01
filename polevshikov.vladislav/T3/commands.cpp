@@ -45,13 +45,23 @@ void doArea(const std::vector<Polygon>& polygons, std::istream& in, std::ostream
         res = std::accumulate(polygons.begin(), polygons.end(), 0.0, sumArea) / polygons.size();
 
     } else {
-        size_t num = std::stoi(subCmd);
-        if (num < 3) {
-            throw std::invalid_argument("bad vertex count");
+        try {
+            size_t pos = 0;
+            long long val = std::stoll(subCmd, &pos);
+            if (pos != subCmd.size() || val < 3) {
+                printError(out);
+                return;
+            }
+
+            size_t num = static_cast<size_t>(val);
+            std::vector<Polygon> filtered;
+            std::copy_if(polygons.begin(), polygons.end(), std::back_inserter(filtered), HasNVertices{num});
+            res = std::accumulate(filtered.begin(), filtered.end(), 0.0, sumArea);
+
+        } catch (const std::exception&) {
+            printError(out);
+            return;
         }
-        std::vector<Polygon> filtered;
-        std::copy_if(polygons.begin(), polygons.end(), std::back_inserter(filtered), HasNVertices{num});
-        res = std::accumulate(filtered.begin(), filtered.end(), 0.0, sumArea);
     }
     out << std::fixed << std::setprecision(1) << res << '\n';
 }
@@ -117,11 +127,21 @@ void doCount(const std::vector<Polygon>& polygons, std::istream& in, std::ostrea
         cnt = std::count_if(polygons.begin(), polygons.end(), isOdd);
 
     } else {
-        size_t num = std::stoi(subCmd);
-        if (num < 3) {
-            throw std::invalid_argument("bad vertex count");
+        try {
+            size_t pos = 0;
+            long long val = std::stoll(subCmd, &pos);
+            if (pos != subCmd.size() || val < 3) {
+                printError(out);
+                return;
+            }
+
+            size_t num = static_cast<size_t>(val);
+            cnt = std::count_if(polygons.begin(), polygons.end(), HasNVertices{num});
+
+        } catch (std::exception&) {
+            printError(out);
+            return;
         }
-        cnt = std::count_if(polygons.begin(), polygons.end(), HasNVertices{num});
     }
     out << cnt << '\n';
 }
