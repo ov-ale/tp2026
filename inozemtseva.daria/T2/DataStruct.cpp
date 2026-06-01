@@ -179,8 +179,8 @@ std::ostream& operator<<(std::ostream& out, const DataStruct& d)
   out << std::fixed << std::setprecision(10);
 
   out << "(:key1 0x" << hexStream.str()
-  << " :key2 #c(" << d.key2_.real() << " " << d.key2_.imag()
-  << ") :key3 \"" << d.key3_ << "\":)";
+  << ":key2#c(" << d.key2_.real() << " " << d.key2_.imag()
+  << "):key3 \"" << d.key3_ << "\":)";
 
   out.copyfmt(oldState);
   return out;
