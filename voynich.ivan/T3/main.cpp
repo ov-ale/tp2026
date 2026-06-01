@@ -20,7 +20,7 @@ bool operator==(const Point& a, const Point& b) {
 }
 
 struct Polygon{
-    std::vector< Point > points; 
+    std::vector< Point > points;
 };
 
 std::istream& operator>>(std::istream& in, Point& point){
@@ -54,7 +54,7 @@ std::istream& operator>>(std::istream& in, Polygon& poly){
     points.reserve(n);
 
     std::copy_n(
-        std::istream_iterator<Point>(in), 
+        std::istream_iterator<Point>(in),
         n,
         std::back_inserter(points)
     );
@@ -104,7 +104,7 @@ double computeArea(const Polygon& poly){
 
     long long sum = std::inner_product(
         pts.begin(), pts.end()-1,
-        pts.begin()+1, 
+        pts.begin()+1,
         0LL,
         std::plus<long long>(),
         CrossProduct()
@@ -139,7 +139,7 @@ struct AreaOdd {
 struct AreaWithVertexCount {
     size_t target;
     explicit AreaWithVertexCount(size_t t) : target(t) {}
-    
+
     double operator()(double sum, const Polygon& p) const {
         return sum + (p.points.size() == target ? computeArea(p) : 0.0);
     }
@@ -172,13 +172,12 @@ struct CountOdd {
 struct CountWithVertexCount {
     size_t target;
     explicit CountWithVertexCount(size_t t) : target(t) {}
-    
+
     bool operator()(const Polygon& p) const {
         return p.points.size() == target;
     }
 };
 
-// Функторы для INFRAME (поиск границ)
 struct PointXLess {
     bool operator()(const Point& a, const Point& b) const {
         return a.x < b.x;
@@ -205,10 +204,10 @@ struct PointYGreater {
 
 struct PointInFrame {
     int min_x, max_x, min_y, max_y;
-    
+
     PointInFrame(int minx, int maxx, int miny, int maxy)
         : min_x(minx), max_x(maxx), min_y(miny), max_y(maxy) {}
-    
+
     bool operator()(const Point& p) const {
         return p.x >= min_x && p.x <= max_x && p.y >= min_y && p.y <= max_y;
     }
@@ -237,12 +236,12 @@ int main(int argc, char* argv[]){
                 std::cout << "<INVALID COMMAND>\n";
                 continue;
             }
-            
+
             if (polygons.empty()) {
                 std::cout << "<INVALID COMMAND>\n";
                 continue;
             }
-            
+
             if (param == "MEAN") {
                 double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0, AreaSum());
                 std::cout << std::fixed << std::setprecision(1) << sum / polygons.size() << "\n";
@@ -272,7 +271,7 @@ int main(int argc, char* argv[]){
                 std::cout << "<INVALID COMMAND>\n";
                 continue;
             }
-            
+
             if (param == "AREA") {
                 auto it = std::max_element(polygons.begin(), polygons.end(), AreaGreater());
                 std::cout << std::fixed << std::setprecision(1) << computeArea(*it) << "\n";
@@ -291,7 +290,7 @@ int main(int argc, char* argv[]){
                 std::cout << "<INVALID COMMAND>\n";
                 continue;
             }
-            
+
             if (param == "AREA") {
                 auto it = std::min_element(polygons.begin(), polygons.end(), AreaGreater());
                 std::cout << std::fixed << std::setprecision(1) << computeArea(*it) << "\n";
@@ -310,7 +309,7 @@ int main(int argc, char* argv[]){
                 std::cout << "<INVALID COMMAND>\n";
                 continue;
             }
-            
+
             if (param == "EVEN") {
                 size_t count = std::count_if(polygons.begin(), polygons.end(), CountEven());
                 std::cout << count << "\n";
@@ -338,14 +337,14 @@ int main(int argc, char* argv[]){
                 std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                 continue;
             }
-            
+
             int added = 0;
             PolygonEqual equal(target);
             auto it = polygons.begin();
             while ((it = std::find_if(it, polygons.end(), equal)) != polygons.end()) {
                 it = polygons.insert(it + 1, target);
                 added++;
-                it++; 
+                it++;
             }
         }
         else if (command == "INFRAME") {
@@ -356,30 +355,30 @@ int main(int argc, char* argv[]){
                 std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                 continue;
             }
-            
+
             if (polygons.empty()) {
                 std::cout << "<INVALID COMMAND>\n";
                 continue;
             }
-            
+
             std::vector<Point> all_points;
             for (const auto& poly : polygons) {
                 all_points.insert(all_points.end(), poly.points.begin(), poly.points.end());
             }
-            
+
             auto min_x_it = std::min_element(all_points.begin(), all_points.end(), PointXLess());
             auto max_x_it = std::max_element(all_points.begin(), all_points.end(), PointXGreater());
             auto min_y_it = std::min_element(all_points.begin(), all_points.end(), PointYLess());
             auto max_y_it = std::max_element(all_points.begin(), all_points.end(), PointYGreater());
-            
+
             int min_x = min_x_it->x;
             int max_x = max_x_it->x;
             int min_y = min_y_it->y;
             int max_y = max_y_it->y;
-            
+
             bool all_inside = std::all_of(target.points.begin(), target.points.end(),
                 PointInFrame(min_x, max_x, min_y, max_y));
-            
+
             std::cout << (all_inside ? "<TRUE>" : "<FALSE>") << "\n";
         }
         else {
@@ -388,3 +387,4 @@ int main(int argc, char* argv[]){
         }
     }
 }
+
