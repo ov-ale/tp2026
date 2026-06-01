@@ -23,7 +23,7 @@ namespace lab2 {
     std::istream& operator>>(std::istream& is, CharGuard guard) {
         std::istream::sentry sentry(is);
         if (!sentry) return is;
-        
+
         char c;
         if (is >> c) {
             if (std::tolower(c) != std::tolower(guard.expected)) {
@@ -34,11 +34,11 @@ namespace lab2 {
     }
 
     struct ULLSuffixGuard {};
-    
+
     std::istream& operator>>(std::istream& is, ULLSuffixGuard) {
         std::istream::sentry sentry(is);
         if (!sentry) return is;
-        
+
         char u = is.get();
         char l1 = is.get();
         char l2 = is.get();
@@ -109,7 +109,7 @@ namespace lab2 {
             }
             is >> CharGuard{':'};
         }
-        
+
         is >> CharGuard{')'};
 
         if (is && keysMask == 7) {
@@ -126,12 +126,12 @@ namespace lab2 {
         if (!sentry) return os;
 
         StreamStateSaver saver(os);
-        
+
         os << "(:key1 " << src.key1 << "ull"
            << ":key2 #c(" << std::fixed << std::setprecision(1)
            << src.key2.real() << " " << src.key2.imag() << ")"
            << ":key3 " << std::quoted(src.key3) << ":)";
-           
+
         return os;
     }
 }
