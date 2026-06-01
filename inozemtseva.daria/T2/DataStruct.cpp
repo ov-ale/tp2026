@@ -41,14 +41,17 @@ namespace {
       return false;
     }
 
-    std::string nums = value.substr(2);
-    if (nums.front() != '(') return false;
-    nums = nums.substr(1, nums.size() - 2);
+    std::string inner = value.substr(2);
+    if (inner.front() != '(') return false;
+    inner = inner.substr(1, inner.size() - 2);
 
-    std::istringstream ss(nums);
-    double realPart = 0.0;
-    double imagPart = 0.0;
+    size_t dashPos = inner.find('-', 1);
+    if (dashPos != std::string::npos && inner.find(' ') == std::string::npos) {
+      inner.insert(dashPos, " ");
+    }
 
+    std::istringstream ss(inner);
+    double realPart = 0.0, imagPart = 0.0;
     if (!(ss >> realPart >> imagPart)) return false;
 
     std::string remainder;
@@ -176,8 +179,8 @@ std::ostream& operator<<(std::ostream& out, const DataStruct& d)
   out << std::fixed << std::setprecision(10);
 
   out << "(:key1 0x" << hexStream.str()
-  << ":key2#c(" << d.key2_.real() << " " << d.key2_.imag()
-  << "):key3\"" << d.key3_ << "\":)";
+  << " :key2 #c(" << d.key2_.real() << " " << d.key2_.imag()
+  << ") :key3 \"" << d.key3_ << "\":)";
 
   out.copyfmt(oldState);
   return out;
