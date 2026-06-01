@@ -14,9 +14,6 @@ int main() {
     std::cout << "Looks like there is no supported record. Cannot determine input. Test skipped\n";
   } else {
     std::cout << "Atleast one supported record type\n";
-    std::sort(data.begin(), data.end(), compareDataStructs);
-    std::copy(data.begin(), data.end(),
-    std::ostream_iterator<DataStruct>(std::cout, "\n"));
   }
   return 0;
 }
