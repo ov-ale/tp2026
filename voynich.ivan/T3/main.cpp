@@ -241,11 +241,23 @@ int main(int argc, char* argv[]) {
     std::string filename = argv[1];
     std::vector<Polygon> polygons = readPolygons(filename);
 
-    std::string command;
-    while (std::cin >> command) {
+    std::string line;
+    while (std::getline(std::cin, line)) {
+        if (line.empty()) continue;
+
+        std::istringstream iss(line);
+        std::string command;
+        if (!(iss >> command)) continue;
+
         if (command == "AREA") {
             std::string param;
-            if (!(std::cin >> param)) {
+            if (!(iss >> param)) {
+                std::cout << "<INVALID COMMAND>\n";
+                continue;
+            }
+
+            char remaining;
+            if (iss >> remaining) {
                 std::cout << "<INVALID COMMAND>\n";
                 continue;
             }
@@ -283,7 +295,13 @@ int main(int argc, char* argv[]) {
         }
         else if (command == "MAX") {
             std::string param;
-            if (!(std::cin >> param) || polygons.empty()) {
+            if (!(iss >> param) || polygons.empty()) {
+                std::cout << "<INVALID COMMAND>\n";
+                continue;
+            }
+
+            char remaining;
+            if (iss >> remaining) {
                 std::cout << "<INVALID COMMAND>\n";
                 continue;
             }
@@ -302,7 +320,13 @@ int main(int argc, char* argv[]) {
         }
         else if (command == "MIN") {
             std::string param;
-            if (!(std::cin >> param) || polygons.empty()) {
+            if (!(iss >> param) || polygons.empty()) {
+                std::cout << "<INVALID COMMAND>\n";
+                continue;
+            }
+
+            char remaining;
+            if (iss >> remaining) {
                 std::cout << "<INVALID COMMAND>\n";
                 continue;
             }
@@ -321,7 +345,13 @@ int main(int argc, char* argv[]) {
         }
         else if (command == "COUNT") {
             std::string param;
-            if (!(std::cin >> param)) {
+            if (!(iss >> param)) {
+                std::cout << "<INVALID COMMAND>\n";
+                continue;
+            }
+
+            char remaining;
+            if (iss >> remaining) {
                 std::cout << "<INVALID COMMAND>\n";
                 continue;
             }
@@ -350,28 +380,14 @@ int main(int argc, char* argv[]) {
             }
         }
         else if (command == "ECHO") {
-            std::streampos pos = std::cin.tellg();
-
             Polygon target;
-            if (!(std::cin >> target)) {
+            if (!(iss >> target)) {
                 std::cout << "<INVALID COMMAND>\n";
-                std::cin.clear();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                 continue;
             }
 
-            std::string remaining;
-            if (std::getline(std::cin, remaining)) {
-                while (!remaining.empty() && std::isspace(static_cast<unsigned char>(remaining.back()))) {
-                    remaining.pop_back();
-                }
-                if (!remaining.empty()) {
-                    std::cout << "<INVALID COMMAND>\n";
-                    continue;
-                }
-            }
-
-            if (target.points.size() < 3) {
+            char remaining;
+            if (iss >> remaining) {
                 std::cout << "<INVALID COMMAND>\n";
                 continue;
             }
@@ -381,89 +397,77 @@ int main(int argc, char* argv[]) {
 
             for (size_t i = 0; i < polygons.size(); ++i) {
                 if (equal(polygons[i])) {
-                polygons.insert(polygons.begin() + i + 1, target);
-                added++;
-                i++;
+                    polygons.insert(polygons.begin() + i + 1, target);
+                    added++;
+                    i++;
+                }
             }
+            std::cout << added << "\n";
+        }
+        else if (command == "INFRAME") {
+            int expectedCount;
+            if (!(iss >> expectedCount)) {
+                std::cout << "<INVALID COMMAND>\n";
+                continue;
             }
-        std::cout << added << "\n";
-        }
 
-    else if (command == "INFRAME") {
-    int expectedCount;
-    if (!(std::cin >> expectedCount)) {
-        std::cout << "<INVALID COMMAND>\n";
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        continue;
-    }
+            std::vector<Point> points;
+            bool invalidInput = false;
 
-    std::vector<Point> points;
-    bool invalidInput = false;
+            for (int i = 0; i < expectedCount; ++i) {
+                char openBracket, semiColon, closeBracket;
+                int x, y;
 
-    for (int i = 0; i < expectedCount; ++i) {
-        char openBracket, semiColon, closeBracket;
-        int x, y;
-
-        if (!(std::cin >> openBracket >> x >> semiColon >> y >> closeBracket) ||
-            openBracket != '(' || semiColon != ';' || closeBracket != ')') {
-            invalidInput = true;
-            break;
-        }
-        points.push_back({x, y});
-    }
-
-    std::string remaining;
-    if (std::getline(std::cin, remaining)) {
-        while (!remaining.empty() && std::isspace(static_cast<unsigned char>(remaining.back()))) {
-            remaining.pop_back();
-        }
-        if (!remaining.empty()) {
-            invalidInput = true;
-        }
-    }
-
-    if (invalidInput || points.size() != static_cast<size_t>(expectedCount)) {
-        std::cout << "<INVALID COMMAND>\n";
-    }
-    else if (expectedCount < 3) {
-        std::cout << "<INVALID COMMAND>\n";
-    }
-    else if (polygons.empty()) {
-        std::cout << "<INVALID COMMAND>\n";
-    }
-    else {
-        Polygon target;
-        target.points = points;
-
-        int min_x = polygons[0].points[0].x;
-        int max_x = polygons[0].points[0].x;
-        int min_y = polygons[0].points[0].y;
-        int max_y = polygons[0].points[0].y;
-
-        for (const auto& poly : polygons) {
-            for (const auto& p : poly.points) {
-                if (p.x < min_x) min_x = p.x;
-                if (p.x > max_x) max_x = p.x;
-                if (p.y < min_y) min_y = p.y;
-                if (p.y > max_y) max_y = p.y;
+                if (!(iss >> openBracket >> x >> semiColon >> y >> closeBracket) ||
+                    openBracket != '(' || semiColon != ';' || closeBracket != ')') {
+                    invalidInput = true;
+                    break;
+                }
+                points.push_back({x, y});
             }
-        }
 
-        bool all_inside = true;
-        for (const auto& p : target.points) {
-            if (p.x < min_x || p.x > max_x || p.y < min_y || p.y > max_y) {
-                all_inside = false;
-                break;
+            char remaining;
+            if (iss >> remaining) {
+                invalidInput = true;
+            }
+
+            if (invalidInput || points.size() != static_cast<size_t>(expectedCount) || expectedCount < 3) {
+                std::cout << "<INVALID COMMAND>\n";
+            }
+            else if (polygons.empty()) {
+                std::cout << "<INVALID COMMAND>\n";
+            }
+            else {
+                Polygon target;
+                target.points = points;
+
+                int min_x = polygons[0].points[0].x;
+                int max_x = polygons[0].points[0].x;
+                int min_y = polygons[0].points[0].y;
+                int max_y = polygons[0].points[0].y;
+
+                for (const auto& poly : polygons) {
+                    for (const auto& p : poly.points) {
+                        if (p.x < min_x) min_x = p.x;
+                        if (p.x > max_x) max_x = p.x;
+                        if (p.y < min_y) min_y = p.y;
+                        if (p.y > max_y) max_y = p.y;
+                    }
+                }
+
+                bool all_inside = true;
+                for (const auto& p : target.points) {
+                    if (p.x < min_x || p.x > max_x || p.y < min_y || p.y > max_y) {
+                        all_inside = false;
+                        break;
+                    }
+                }
+                std::cout << (all_inside ? "<TRUE>" : "<FALSE>") << "\n";
             }
         }
-        std::cout << (all_inside ? "<TRUE>" : "<FALSE>") << "\n";
-    }
-}
         else {
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             std::cout << "<INVALID COMMAND>\n";
         }
     }
+    return 0;
 }
-
