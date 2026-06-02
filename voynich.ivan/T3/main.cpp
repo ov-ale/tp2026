@@ -390,15 +390,51 @@ int main(int argc, char* argv[]) {
         }
 
         else if (command == "INFRAME") {
-    Polygon target;
-    if (!(std::cin >> target)) {
+    int expectedCount;
+    if (!(std::cin >> expectedCount)) {
         std::cout << "<INVALID COMMAND>\n";
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         continue;
     }
 
-    if (target.points.size() < 3 || polygons.empty()) {
+    std::vector<Point> points;
+    bool invalidInput = false;
+    for (int i = 0; i < expectedCount; ++i) {
+        char openBracket, semiColon, closeBracket;
+        int x, y;
+
+        if (!(std::cin >> openBracket >> x >> semiColon >> y >> closeBracket) ||
+            openBracket != '(' || semiColon != ';' || closeBracket != ')') {
+            invalidInput = true;
+            break;
+        }
+        points.push_back({x, y});
+    }
+
+    if (invalidInput) {
+        std::cout << "<INVALID COMMAND>\n";
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        continue;
+    }
+
+    if (points.size() != static_cast<size_t>(expectedCount)) {
+        std::cout << "<INVALID COMMAND>\n";
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        continue;
+    }
+
+    if (expectedCount < 3) {
+        std::cout << "<INVALID COMMAND>\n";
+        continue;
+    }
+
+    Polygon target;
+    target.points = points;
+
+    if (polygons.empty()) {
         std::cout << "<INVALID COMMAND>\n";
         continue;
     }
