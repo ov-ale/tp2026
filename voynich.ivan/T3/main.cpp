@@ -389,7 +389,7 @@ int main(int argc, char* argv[]) {
         std::cout << added << "\n";
         }
 
-        else if (command == "INFRAME") {
+    else if (command == "INFRAME") {
     int expectedCount;
     if (!(std::cin >> expectedCount)) {
         std::cout << "<INVALID COMMAND>\n";
@@ -423,53 +423,42 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    if (invalidInput) {
+    if (invalidInput || points.size() != static_cast<size_t>(expectedCount)) {
         std::cout << "<INVALID COMMAND>\n";
-        std::cin.clear();
-        continue;
     }
-
-    if (points.size() != static_cast<size_t>(expectedCount)) {
+    else if (expectedCount < 3) {
         std::cout << "<INVALID COMMAND>\n";
-        continue;
     }
-
-    if (expectedCount < 3) {
+    else if (polygons.empty()) {
         std::cout << "<INVALID COMMAND>\n";
-        continue;
     }
+    else {
+        Polygon target;
+        target.points = points;
 
-    Polygon target;
-    target.points = points;
+        int min_x = polygons[0].points[0].x;
+        int max_x = polygons[0].points[0].x;
+        int min_y = polygons[0].points[0].y;
+        int max_y = polygons[0].points[0].y;
 
-    if (polygons.empty()) {
-        std::cout << "<INVALID COMMAND>\n";
-        continue;
-    }
-
-    int min_x = polygons[0].points[0].x;
-    int max_x = polygons[0].points[0].x;
-    int min_y = polygons[0].points[0].y;
-    int max_y = polygons[0].points[0].y;
-
-    for (const auto& poly : polygons) {
-        for (const auto& p : poly.points) {
-            if (p.x < min_x) min_x = p.x;
-            if (p.x > max_x) max_x = p.x;
-            if (p.y < min_y) min_y = p.y;
-            if (p.y > max_y) max_y = p.y;
+        for (const auto& poly : polygons) {
+            for (const auto& p : poly.points) {
+                if (p.x < min_x) min_x = p.x;
+                if (p.x > max_x) max_x = p.x;
+                if (p.y < min_y) min_y = p.y;
+                if (p.y > max_y) max_y = p.y;
+            }
         }
-    }
 
-    bool all_inside = true;
-    for (const auto& p : target.points) {
-        if (p.x < min_x || p.x > max_x || p.y < min_y || p.y > max_y) {
-            all_inside = false;
-            break;
+        bool all_inside = true;
+        for (const auto& p : target.points) {
+            if (p.x < min_x || p.x > max_x || p.y < min_y || p.y > max_y) {
+                all_inside = false;
+                break;
+            }
         }
+        std::cout << (all_inside ? "<TRUE>" : "<FALSE>") << "\n";
     }
-    std::cout << (all_inside ? "<TRUE>" : "<FALSE>") << "\n";
-
 }
         else {
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
