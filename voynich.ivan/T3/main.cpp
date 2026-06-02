@@ -9,10 +9,10 @@
 #include <numeric>
 #include <iomanip>
 #include <limits>
+#include <cctype>
+#include <cmath>
 
-// 5 variant
-
-struct Point{
+struct Point {
     int x, y;
 };
 
@@ -20,38 +20,41 @@ bool operator==(const Point& a, const Point& b) {
     return a.x == b.x && a.y == b.y;
 }
 
-struct Polygon{
-    std::vector< Point > points;
+struct Polygon {
+    std::vector<Point> points;
 };
 
-std::istream& operator>>(std::istream& in, Point& point){
+std::istream& operator>>(std::istream& in, Point& point) {
     char leftBr = 0;
     char semicolon = 0;
     char rightBr = 0;
-
     int x = 0;
     int y = 0;
 
-    if(in >> leftBr >> x >> semicolon >> y >> rightBr){
-        if(leftBr == '(' && semicolon == ';' && rightBr ==')'){
+    if (in >> leftBr >> x >> semicolon >> y >> rightBr) {
+        if (leftBr == '(' && semicolon == ';' && rightBr == ')') {
             point.x = x;
             point.y = y;
-        }
-        else{
+        } else {
             in.setstate(std::ios::failbit);
         }
     }
     return in;
 }
 
-std::istream& operator>>(std::istream& in, Polygon& poly){
+std::istream& operator>>(std::istream& in, Polygon& poly) {
     size_t n = 0;
-    if(!(in >> n)){
+    if (!(in >> n)) {
         in.setstate(std::ios::failbit);
         return in;
     }
 
-    std::vector< Point > points;
+    if (n < 3) {
+        in.setstate(std::ios::failbit);
+        return in;
+    }
+
+    std::vector<Point> points;
     points.reserve(n);
 
     std::copy_n(
@@ -60,7 +63,7 @@ std::istream& operator>>(std::istream& in, Polygon& poly){
         std::back_inserter(points)
     );
 
-    if(!in || points.size() != n){
+    if (!in || points.size() != n) {
         in.setstate(std::ios::failbit);
         return in;
     }
@@ -68,44 +71,53 @@ std::istream& operator>>(std::istream& in, Polygon& poly){
     return in;
 }
 
-std::vector<Polygon> readPolygons(const std::string& filename){
+std::vector<Polygon> readPolygons(const std::string& filename) {
     std::ifstream file(filename);
-    if(!file.is_open()){
-        std::cerr<<"Error: cannot open file: "<< filename << std::endl;
+    if (!file.is_open()) {
+        std::cerr << "Error: cannot open file: " << filename << std::endl;
         return {};
     }
 
     std::vector<Polygon> result;
     std::string line;
 
-    while(std::getline(file, line)){
-        if(line.empty()) continue;
+    while (std::getline(file, line)) {
+        if (line.empty()) continue;
+
+        while (!line.empty() && std::isspace(static_cast<unsigned char>(line.back()))) {
+            line.pop_back();
+        }
+
+        if (line.empty()) continue;
+
         std::istringstream iss(line);
 
-        std::copy(
-            std::istream_iterator<Polygon>(iss),
-            std::istream_iterator<Polygon>(),
-            std::back_inserter(result)
-        );
+        Polygon p;
+        if (iss >> p) {
+            char remaining;
+            if (!(iss >> remaining)) {
+                result.push_back(p);
+            }
+        }
     }
 
     return result;
 }
 
-struct CrossProduct{
-    long long operator()(const Point& a, const Point& b)const{
+struct CrossProduct {
+    long long operator()(const Point& a, const Point& b) const {
         return static_cast<long long>(a.x) * b.y -
-        static_cast<long long>(b.x) * a.y;
+               static_cast<long long>(b.x) * a.y;
     }
 };
 
-double computeArea(const Polygon& poly){
+double computeArea(const Polygon& poly) {
     const auto& pts = poly.points;
-    if(pts.size() < 3) return 0.0;
+    if (pts.size() < 3) return 0.0;
 
     long long sum = std::inner_product(
-        pts.begin(), pts.end()-1,
-        pts.begin()+1,
+        pts.begin(), pts.end() - 1,
+        pts.begin() + 1,
         0LL,
         std::plus<long long>(),
         CrossProduct()
@@ -115,13 +127,19 @@ double computeArea(const Polygon& poly){
     return std::abs(sum) / 2.0;
 }
 
-struct PolygonEqual{
+struct PolygonEqual {
     const Polygon& target;
-    explicit PolygonEqual(const Polygon& t): target(t){}
+    explicit PolygonEqual(const Polygon& t) : target(t) {}
 
-    bool operator()(const Polygon& p)const{
-        if(p.points.size() != target.points.size()) return false;
+    bool operator()(const Polygon& p) const {
+        if (p.points.size() != target.points.size()) return false;
         return std::equal(p.points.begin(), p.points.end(), target.points.begin());
+    }
+};
+
+struct AreaSum {
+    double operator()(double sum, const Polygon& p) const {
+        return sum + computeArea(p);
     }
 };
 
@@ -214,14 +232,8 @@ struct PointInFrame {
     }
 };
 
-struct AreaSum {
-    double operator()(double sum, const Polygon& p) const {
-        return sum + computeArea(p);
-    }
-};
-
-int main(int argc, char* argv[]){
-    if(argc<2){
+int main(int argc, char* argv[]) {
+    if (argc != 2) {
         std::cerr << "Error: file name missing\n";
         return 1;
     }
@@ -229,7 +241,7 @@ int main(int argc, char* argv[]){
     std::string filename = argv[1];
     std::vector<Polygon> polygons = readPolygons(filename);
 
-        std::string command;
+    std::string command;
     while (std::cin >> command) {
         if (command == "AREA") {
             std::string param;
@@ -239,7 +251,7 @@ int main(int argc, char* argv[]){
             }
 
             if (polygons.empty()) {
-                std::cout << "<INVALID COMMAND>\n";
+                std::cout << std::fixed << std::setprecision(1) << 0.0 << "\n";
                 continue;
             }
 
@@ -258,9 +270,13 @@ int main(int argc, char* argv[]){
             else {
                 try {
                     size_t vertexCount = std::stoul(param);
-                    double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
-                        AreaWithVertexCount(vertexCount));
-                    std::cout << std::fixed << std::setprecision(1) << sum << "\n";
+                    if (vertexCount < 3) {
+                        std::cout << "<INVALID COMMAND>\n";
+                    } else {
+                        double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
+                            AreaWithVertexCount(vertexCount));
+                        std::cout << std::fixed << std::setprecision(1) << sum << "\n";
+                    }
                 } catch (...) {
                     std::cout << "<INVALID COMMAND>\n";
                 }
@@ -322,9 +338,13 @@ int main(int argc, char* argv[]){
             else {
                 try {
                     size_t vertexCount = std::stoul(param);
-                    size_t count = std::count_if(polygons.begin(), polygons.end(),
-                        CountWithVertexCount(vertexCount));
-                    std::cout << count << "\n";
+                    if (vertexCount < 3) {
+                        std::cout << "<INVALID COMMAND>\n";
+                    } else {
+                        size_t count = std::count_if(polygons.begin(), polygons.end(),
+                            CountWithVertexCount(vertexCount));
+                        std::cout << count << "\n";
+                    }
                 } catch (...) {
                     std::cout << "<INVALID COMMAND>\n";
                 }
@@ -341,12 +361,15 @@ int main(int argc, char* argv[]){
 
             int added = 0;
             PolygonEqual equal(target);
-            auto it = polygons.begin();
-            while ((it = std::find_if(it, polygons.end(), equal)) != polygons.end()) {
-                it = polygons.insert(it + 1, target);
-                added++;
-                it++;
+
+            for (size_t i = 0; i < polygons.size(); ++i) {
+                if (equal(polygons[i])) {
+                    polygons.insert(polygons.begin() + i + 1, target);
+                    added++;
+                    i++;
+                }
             }
+            std::cout << added << "\n";
         }
         else if (command == "INFRAME") {
             Polygon target;
@@ -357,7 +380,7 @@ int main(int argc, char* argv[]){
                 continue;
             }
 
-            if (polygons.empty()) {
+            if (polygons.empty() || target.points.size() < 3) {
                 std::cout << "<INVALID COMMAND>\n";
                 continue;
             }
@@ -365,6 +388,11 @@ int main(int argc, char* argv[]){
             std::vector<Point> all_points;
             for (const auto& poly : polygons) {
                 all_points.insert(all_points.end(), poly.points.begin(), poly.points.end());
+            }
+
+            if (all_points.empty()) {
+                std::cout << "<INVALID COMMAND>\n";
+                continue;
             }
 
             auto min_x_it = std::min_element(all_points.begin(), all_points.end(), PointXLess());
@@ -388,4 +416,3 @@ int main(int argc, char* argv[]){
         }
     }
 }
-
