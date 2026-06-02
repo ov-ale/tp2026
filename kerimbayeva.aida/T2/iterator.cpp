@@ -156,7 +156,8 @@ std::istream& operator>>(std::istream& in, BinUllIO&& dest) {
         in.setstate(std::ios::failbit);
         return in;
     }
-    for (char c : numberPart) {
+    for
+        (char c : numberPart) {
         if (c != '0' && c != '1') {
             in.setstate(std::ios::failbit);
             return in;
@@ -293,22 +294,32 @@ int main() {
     std::vector<DataStruct> data;
     std::string line;
     bool hasAny = false;
+    bool hasUnsupported = false;
 
     while (std::getline(std::cin, line)) {
         if (line.empty()) continue;
         std::istringstream iss(line);
         DataStruct ds;
-        if (iss >> ds) {
+
+        if (iss >> ds && (iss >> std::ws).eof()) {
             data.push_back(ds);
             hasAny = true;
+        }
+        else {
+            hasUnsupported = true;
         }
     }
 
     if (!hasAny) {
         std::cout << "Looks like there is no supported record. Cannot determine input. Test skipped" << std::endl;
-        return 0;
+        return 1;
     }
 
     std::cout << "Atleast one supported record type" << std::endl;
-    return 1;
+
+    if (hasUnsupported) {
+        return 1;
+    }
+
+    return 0;
 }
