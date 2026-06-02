@@ -250,12 +250,11 @@ int main(int argc, char* argv[]) {
                 continue;
             }
 
-            if (polygons.empty()) {
-                std::cout << "<INVALID COMMAND>\n";
-                continue;
-            }
-
             if (param == "MEAN") {
+                if (polygons.empty()) {
+                    std::cout << "<INVALID COMMAND>\n";
+                     continue;
+                }
                 double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0, AreaSum());
                 std::cout << std::fixed << std::setprecision(1) << sum / polygons.size() << "\n";
             }
@@ -268,20 +267,20 @@ int main(int argc, char* argv[]) {
                 std::cout << std::fixed << std::setprecision(1) << sum << "\n";
             }
             else {
-            try {
-                size_t vertexCount = std::stoul(param);
-                if (vertexCount < 3) {
-                std::cout << "<INVALID COMMAND>\n";
-                } else {
-                    double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
-                    AreaWithVertexCount(vertexCount));
-                    std::cout << std::fixed << std::setprecision(1) << sum << "\n";
+                try {
+                    size_t vertexCount = std::stoul(param);
+                    if (vertexCount < 3) {
+                        std::cout << "<INVALID COMMAND>\n";
+                    } else {
+                        double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
+                        AreaWithVertexCount(vertexCount));
+                        std::cout << std::fixed << std::setprecision(1) << sum << "\n";
+                    }
+                } catch (...) {
+                    std::cout << "<INVALID COMMAND>\n";
                 }
-            } catch (...) {
-                std::cout << "<INVALID COMMAND>\n";
             }
         }
-    }
         else if (command == "MAX") {
             std::string param;
             if (!(std::cin >> param) || polygons.empty()) {
@@ -351,6 +350,8 @@ int main(int argc, char* argv[]) {
             }
         }
         else if (command == "ECHO") {
+            std::streampos pos = std::cin.tellg();
+
             Polygon target;
             if (!(std::cin >> target)) {
                 std::cout << "<INVALID COMMAND>\n";
@@ -359,18 +360,35 @@ int main(int argc, char* argv[]) {
                 continue;
             }
 
+            std::string remaining;
+            if (std::getline(std::cin, remaining)) {
+                while (!remaining.empty() && std::isspace(static_cast<unsigned char>(remaining.back()))) {
+                    remaining.pop_back();
+                }
+                if (!remaining.empty()) {
+                    std::cout << "<INVALID COMMAND>\n";
+                    continue;
+                }
+            }
+
+            if (target.points.size() < 3) {
+                std::cout << "<INVALID COMMAND>\n";
+                continue;
+            }
+
             int added = 0;
             PolygonEqual equal(target);
 
             for (size_t i = 0; i < polygons.size(); ++i) {
                 if (equal(polygons[i])) {
-                    polygons.insert(polygons.begin() + i + 1, target);
-                    added++;
-                    i++;
-                }
+                polygons.insert(polygons.begin() + i + 1, target);
+                added++;
+                i++;
             }
-            std::cout << added << "\n";
+            }
+        std::cout << added << "\n";
         }
+
         else if (command == "INFRAME") {
             Polygon target;
             if (!(std::cin >> target)) {
@@ -380,39 +398,30 @@ int main(int argc, char* argv[]) {
                 continue;
             }
 
-            if (polygons.empty() || target.points.size() < 3) {
-                std::cout << "<INVALID COMMAND>\n";
-                continue;
-            }
-
-            std::vector<Point> all_points;
-            for (const auto& poly : polygons) {
-                all_points.insert(all_points.end(), poly.points.begin(), poly.points.end());
-            }
-
-            if (all_points.empty()) {
-                std::cout << "<INVALID COMMAND>\n";
-                continue;
-            }
-
-            auto min_x_it = std::min_element(all_points.begin(), all_points.end(), PointXLess());
-            auto max_x_it = std::max_element(all_points.begin(), all_points.end(), PointXGreater());
-            auto min_y_it = std::min_element(all_points.begin(), all_points.end(), PointYLess());
-            auto max_y_it = std::max_element(all_points.begin(), all_points.end(), PointYGreater());
-
-            int min_x = min_x_it->x;
-            int max_x = max_x_it->x;
-            int min_y = min_y_it->y;
-            int max_y = max_y_it->y;
-
-            bool all_inside = std::all_of(target.points.begin(), target.points.end(),
-                PointInFrame(min_x, max_x, min_y, max_y));
-
-            std::cout << (all_inside ? "<TRUE>" : "<FALSE>") << "\n";
-        }
-        else {
+        if (target.points.size() < 3 || polygons.empty()) {
             std::cout << "<INVALID COMMAND>\n";
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            continue;
+        }
+
+        std::vector<Point> all_points;
+        for (const auto& poly : polygons) {
+            all_points.insert(all_points.end(), poly.points.begin(), poly.points.end());
+        }
+
+        if (all_points.empty()) {
+            std::cout << "<INVALID COMMAND>\n";
+            continue;
+        }
+
+        int min_x = std::min_element(all_points.begin(), all_points.end(), PointXLess())->x;
+        int max_x = std::max_element(all_points.begin(), all_points.end(), PointXGreater())->x;
+        int min_y = std::min_element(all_points.begin(), all_points.end(), PointYLess())->y;
+        int max_y = std::max_element(all_points.begin(), all_points.end(), PointYGreater())->y;
+
+        bool all_inside = std::all_of(target.points.begin(), target.points.end(),
+        PointInFrame(min_x, max_x, min_y, max_y));
+
+        std::cout << (all_inside ? "<TRUE>" : "<FALSE>") << "\n";
         }
     }
 }
