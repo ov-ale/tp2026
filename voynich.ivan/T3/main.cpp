@@ -390,39 +390,42 @@ int main(int argc, char* argv[]) {
         }
 
         else if (command == "INFRAME") {
-            Polygon target;
-            if (!(std::cin >> target)) {
-                std::cout << "<INVALID COMMAND>\n";
-                std::cin.clear();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                continue;
-            }
+    Polygon target;
+    if (!(std::cin >> target)) {
+        std::cout << "<INVALID COMMAND>\n";
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        continue;
+    }
 
-        if (target.points.size() < 3 || polygons.empty()) {
-            std::cout << "<INVALID COMMAND>\n";
-            continue;
+    if (target.points.size() < 3 || polygons.empty()) {
+        std::cout << "<INVALID COMMAND>\n";
+        continue;
+    }
+
+    int min_x = polygons[0].points[0].x;
+    int max_x = polygons[0].points[0].x;
+    int min_y = polygons[0].points[0].y;
+    int max_y = polygons[0].points[0].y;
+
+    for (const auto& poly : polygons) {
+        for (const auto& p : poly.points) {
+            if (p.x < min_x) min_x = p.x;
+            if (p.x > max_x) max_x = p.x;
+            if (p.y < min_y) min_y = p.y;
+            if (p.y > max_y) max_y = p.y;
         }
+    }
 
-        std::vector<Point> all_points;
-        for (const auto& poly : polygons) {
-            all_points.insert(all_points.end(), poly.points.begin(), poly.points.end());
+    bool all_inside = true;
+    for (const auto& p : target.points) {
+        if (p.x < min_x || p.x > max_x || p.y < min_y || p.y > max_y) {
+            all_inside = false;
+            break;
         }
-
-        if (all_points.empty()) {
-            std::cout << "<INVALID COMMAND>\n";
-            continue;
-        }
-
-        int min_x = std::min_element(all_points.begin(), all_points.end(), PointXLess())->x;
-        int max_x = std::max_element(all_points.begin(), all_points.end(), PointXGreater())->x;
-        int min_y = std::min_element(all_points.begin(), all_points.end(), PointYLess())->y;
-        int max_y = std::max_element(all_points.begin(), all_points.end(), PointYGreater())->y;
-
-        bool all_inside = std::all_of(target.points.begin(), target.points.end(),
-        PointInFrame(min_x, max_x, min_y, max_y));
-
-        std::cout << (all_inside ? "<TRUE>" : "<FALSE>") << "\n";
-        }
+    }
+    std::cout << (all_inside ? "<TRUE>" : "<FALSE>") << "\n";
+}
         else {
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             std::cout << "<INVALID COMMAND>\n";
