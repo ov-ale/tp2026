@@ -251,7 +251,7 @@ int main(int argc, char* argv[]) {
             }
 
             if (polygons.empty()) {
-                std::cout << std::fixed << std::setprecision(1) << 0.0 << "\n";
+                std::cout << "<INVALID COMMAND>\n";
                 continue;
             }
 
@@ -268,20 +268,20 @@ int main(int argc, char* argv[]) {
                 std::cout << std::fixed << std::setprecision(1) << sum << "\n";
             }
             else {
-                try {
-                    size_t vertexCount = std::stoul(param);
-                    if (vertexCount < 3) {
-                        std::cout << "<INVALID COMMAND>\n";
-                    } else {
-                        double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
-                            AreaWithVertexCount(vertexCount));
-                        std::cout << std::fixed << std::setprecision(1) << sum << "\n";
-                    }
-                } catch (...) {
-                    std::cout << "<INVALID COMMAND>\n";
+            try {
+                size_t vertexCount = std::stoul(param);
+                if (vertexCount < 3) {
+                std::cout << "<INVALID COMMAND>\n";
+                } else {
+                    double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
+                    AreaWithVertexCount(vertexCount));
+                    std::cout << std::fixed << std::setprecision(1) << sum << "\n";
                 }
+            } catch (...) {
+                std::cout << "<INVALID COMMAND>\n";
             }
         }
+    }
         else if (command == "MAX") {
             std::string param;
             if (!(std::cin >> param) || polygons.empty()) {
