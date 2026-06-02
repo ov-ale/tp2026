@@ -10,6 +10,7 @@
 #include <iomanip>
 #include <limits>
 
+// 5 variant
 
 struct Point{
     int x, y;
