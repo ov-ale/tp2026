@@ -400,6 +400,7 @@ int main(int argc, char* argv[]) {
 
     std::vector<Point> points;
     bool invalidInput = false;
+
     for (int i = 0; i < expectedCount; ++i) {
         char openBracket, semiColon, closeBracket;
         int x, y;
@@ -412,17 +413,24 @@ int main(int argc, char* argv[]) {
         points.push_back({x, y});
     }
 
+    std::string remaining;
+    if (std::getline(std::cin, remaining)) {
+        while (!remaining.empty() && std::isspace(static_cast<unsigned char>(remaining.back()))) {
+            remaining.pop_back();
+        }
+        if (!remaining.empty()) {
+            invalidInput = true;
+        }
+    }
+
     if (invalidInput) {
         std::cout << "<INVALID COMMAND>\n";
         std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         continue;
     }
 
     if (points.size() != static_cast<size_t>(expectedCount)) {
         std::cout << "<INVALID COMMAND>\n";
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         continue;
     }
 
@@ -461,6 +469,7 @@ int main(int argc, char* argv[]) {
         }
     }
     std::cout << (all_inside ? "<TRUE>" : "<FALSE>") << "\n";
+
 }
         else {
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
