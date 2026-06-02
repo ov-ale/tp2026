@@ -423,6 +423,10 @@ int main(int argc, char* argv[]) {
 
         std::cout << (all_inside ? "<TRUE>" : "<FALSE>") << "\n";
         }
+        else {
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cout << "<INVALID COMMAND>\n";
+        }
     }
 }
 
